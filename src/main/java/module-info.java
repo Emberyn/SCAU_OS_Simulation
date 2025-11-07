@@ -1,0 +1,9 @@
+module org.example.scau_os_simulation {
+    requires javafx.controls;
+    requires javafx.fxml;
+
+    opens org.example.scau_os_simulation to javafx.fxml;
+    opens org.example.scau_os_simulation.controller to javafx.fxml;
+    exports org.example.scau_os_simulation;
+    exports org.example.scau_os_simulation.controller;
+}

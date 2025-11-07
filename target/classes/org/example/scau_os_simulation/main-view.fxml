@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.scau_os_simulation.controller.MainController"
+            prefHeight="600.0" prefWidth="800.0">
+    <top>
+        <MenuBar>
+            <Menu text="文件">
+                <MenuItem text="退出" onAction="#onExitAction"/>
+            </Menu>
+            <Menu text="帮助">
+                <MenuItem text="关于" onAction="#onAboutAction"/>
+            </Menu>
+        </MenuBar>
+    </top>
+    
+    <center>
+        <TabPane fx:id="tabPane">
+            <Tab fx:id="processTab" text="进程管理" closable="false">
+                <VBox fx:id="processContainer" spacing="10">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+                    <HBox spacing="10">
+                        <Button fx:id="createProcessBtn" text="创建进程" onAction="#onCreateProcessClick"/>
+                        <Button fx:id="terminateProcessBtn" text="终止进程" onAction="#onTerminateProcessClick"/>
+                    </HBox>
+                    <TableView fx:id="processTableView">
+                        <columns>
+                            <TableColumn text="PID" fx:id="pidColumn"/>
+                            <TableColumn text="名称" fx:id="nameColumn"/>
+                            <TableColumn text="状态" fx:id="stateColumn"/>
+                            <TableColumn text="优先级" fx:id="priorityColumn"/>
+                            <TableColumn text="内存地址" fx:id="memoryAddressColumn"/>
+                            <TableColumn text="内存大小" fx:id="memorySizeColumn"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+            
+            <Tab fx:id="memoryTab" text="内存管理" closable="false">
+                <VBox fx:id="memoryContainer" spacing="10">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+                    <Label text="内存使用情况"/>
+                    <ProgressBar fx:id="memoryUsageBar" progress="0.0" prefWidth="Infinity"/>
+                    <Label fx:id="memoryInfoLabel" text="已使用: 0KB / 总计: 1024KB"/>
+                    <TableView fx:id="memoryBlockTableView">
+                        <columns>
+                            <TableColumn text="起始地址" fx:id="startAddressColumn"/>
+                            <TableColumn text="大小" fx:id="blockSizeColumn"/>
+                            <TableColumn text="进程" fx:id="processColumn"/>
+                        </columns>
+                    </TableView>
+                </VBox>
+            </Tab>
+            
+            <Tab fx:id="fileSystemTab" text="文件系统" closable="false">
+                <VBox fx:id="fileSystemContainer" spacing="10">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+                    <HBox spacing="10">
+                        <Button text="创建文件" onAction="#onCreateFileClick"/>
+                        <Button text="创建目录" onAction="#onCreateDirectoryClick"/>
+                        <Button text="删除" onAction="#onDeleteClick"/>
+                    </HBox>
+                    <TreeView fx:id="fileSystemTreeView"/>
+                </VBox>
+            </Tab>
+        </TabPane>
+    </center>
+    
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #f0f0f0;">
+            <padding>
+                <Insets top="5" right="10" bottom="5" left="10"/>
+            </padding>
+            <Label text="状态: 系统运行中"/>
+        </HBox>
+    </bottom>
+</BorderPane>
