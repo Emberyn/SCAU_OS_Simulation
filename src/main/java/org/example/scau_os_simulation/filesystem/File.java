@@ -1,14 +1,14 @@
 package org.example.scau_os_simulation.filesystem;
 
 public class File {
-    private String name;
-    private int size; // 文件大小，单位KB
-    private byte[] content;
+    private final String name;
+    private final int size;
+    private final byte[] content;
     
     public File(String name, int size) {
         this.name = name;
         this.size = size;
-        this.content = new byte[size * 1024]; // 转换为字节
+        this.content = new byte[size * 1024];
     }
     
     public String getName() {

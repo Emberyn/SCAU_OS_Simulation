@@ -1,8 +1,8 @@
 package org.example.scau_os_simulation.memory;
 
 public class MemoryBlock {
-    private int startAddress;
-    private int size;
+    private final int startAddress;
+    private final int size;
     
     public MemoryBlock(int startAddress, int size) {
         this.startAddress = startAddress;

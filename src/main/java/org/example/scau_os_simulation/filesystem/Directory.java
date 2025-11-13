@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Directory {
-    private String name;
-    private List<Object> children; // 可以是File或Directory
+    private final String name;
+    private final List<Object> children;
     
     public Directory(String name) {
         this.name = name;

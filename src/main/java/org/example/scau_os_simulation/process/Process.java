@@ -1,10 +1,20 @@
 package org.example.scau_os_simulation.process;
 
 public class Process {
-    private PCB pcb;
+    private final PCB pcb;
+    private Executable executable;
     
     public Process(PCB pcb) {
         this.pcb = pcb;
+        this.executable = null;
+    }
+
+    public void setExecutable(Executable executable) {
+        this.executable = executable;
+    }
+
+    public Executable getExecutable() {
+        return executable;
     }
     
     public void run() {

@@ -19,17 +19,29 @@
     </top>
     
     <center>
-        <TabPane fx:id="tabPane">
+        <TabPane fx:id="tabPane" style="-fx-background-color: #ffffff; -fx-padding: 10;">
             <Tab fx:id="processTab" text="进程管理" closable="false">
-                <VBox fx:id="processContainer" spacing="10">
+                <VBox fx:id="processContainer" spacing="10" style="-fx-background-color: #fafafa; -fx-padding: 10; -fx-background-radius: 8;">
                     <padding>
                         <Insets top="10" right="10" bottom="10" left="10"/>
                     </padding>
                     <HBox spacing="10">
-                        <Button fx:id="createProcessBtn" text="创建进程" onAction="#onCreateProcessClick"/>
-                        <Button fx:id="terminateProcessBtn" text="终止进程" onAction="#onTerminateProcessClick"/>
+                        <Button fx:id="createProcessBtn" text="创建进程" onAction="#onCreateProcessClick" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 6;"/>
+                        <Button fx:id="terminateProcessBtn" text="终止进程" onAction="#onTerminateProcessClick" style="-fx-background-color: #E53935; -fx-text-fill: white; -fx-background-radius: 6;"/>
                     </HBox>
-                    <TableView fx:id="processTableView">
+                    <HBox spacing="10">
+                        <Label text="系统时钟:"/>
+                        <Label fx:id="systemClockLabel" text="0"/>
+                        <Label text="运行进程PID:"/>
+                        <Label fx:id="runningPidLabel" text="-"/>
+                        <Label text="指令:"/>
+                        <Label fx:id="irLabel" text="-"/>
+                        <Label text="AX:"/>
+                        <Label fx:id="axLabel" text="0"/>
+                        <Label text="时间片:"/>
+                        <Label fx:id="tsLabel" text="6"/>
+                    </HBox>
+                    <TableView fx:id="processTableView" style="-fx-background-color: white; -fx-border-color: #ddd; -fx-background-radius: 6; -fx-border-radius: 6;">
                         <columns>
                             <TableColumn text="PID" fx:id="pidColumn"/>
                             <TableColumn text="名称" fx:id="nameColumn"/>
@@ -39,18 +51,28 @@
                             <TableColumn text="内存大小" fx:id="memorySizeColumn"/>
                         </columns>
                     </TableView>
+                    <HBox spacing="10">
+                        <VBox spacing="5">
+                            <Label text="就绪队列"/>
+                            <ListView fx:id="readyQueueListView"/>
+                        </VBox>
+                        <VBox spacing="5">
+                            <Label text="阻塞队列"/>
+                            <ListView fx:id="blockedQueueListView"/>
+                        </VBox>
+                    </HBox>
                 </VBox>
             </Tab>
             
             <Tab fx:id="memoryTab" text="内存管理" closable="false">
-                <VBox fx:id="memoryContainer" spacing="10">
+                <VBox fx:id="memoryContainer" spacing="10" style="-fx-background-color: #fafafa; -fx-padding: 10; -fx-background-radius: 8;">
                     <padding>
                         <Insets top="10" right="10" bottom="10" left="10"/>
                     </padding>
                     <Label text="内存使用情况"/>
                     <ProgressBar fx:id="memoryUsageBar" progress="0.0" prefWidth="Infinity"/>
                     <Label fx:id="memoryInfoLabel" text="已使用: 0KB / 总计: 1024KB"/>
-                    <TableView fx:id="memoryBlockTableView">
+                    <TableView fx:id="memoryBlockTableView" style="-fx-background-color: white; -fx-border-color: #ddd; -fx-background-radius: 6; -fx-border-radius: 6;">
                         <columns>
                             <TableColumn text="起始地址" fx:id="startAddressColumn"/>
                             <TableColumn text="大小" fx:id="blockSizeColumn"/>
@@ -61,27 +83,58 @@
             </Tab>
             
             <Tab fx:id="fileSystemTab" text="文件系统" closable="false">
-                <VBox fx:id="fileSystemContainer" spacing="10">
+                <VBox fx:id="fileSystemContainer" spacing="10" style="-fx-background-color: #fafafa; -fx-padding: 10; -fx-background-radius: 8;">
                     <padding>
                         <Insets top="10" right="10" bottom="10" left="10"/>
                     </padding>
                     <HBox spacing="10">
-                        <Button text="创建文件" onAction="#onCreateFileClick"/>
-                        <Button text="创建目录" onAction="#onCreateDirectoryClick"/>
-                        <Button text="删除" onAction="#onDeleteClick"/>
+                        <Button text="创建文件" onAction="#onCreateFileClick" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 6;"/>
+                        <Button text="创建目录" onAction="#onCreateDirectoryClick" style="-fx-background-color: #00ACC1; -fx-text-fill: white; -fx-background-radius: 6;"/>
+                        <Button text="删除" onAction="#onDeleteClick" style="-fx-background-color: #FB8C00; -fx-text-fill: white; -fx-background-radius: 6;"/>
                     </HBox>
-                    <TreeView fx:id="fileSystemTreeView"/>
+                    <HBox spacing="10">
+                        <Label text="磁盘使用"/>
+                        <ProgressBar fx:id="diskUsageBar" progress="0.0" prefWidth="200"/>
+                        <Label fx:id="diskInfoLabel" text="已使用: 0KB / 总计: 0KB"/>
+                    </HBox>
+                    <TreeView fx:id="fileSystemTreeView" style="-fx-background-color: white; -fx-border-color: #ddd; -fx-background-radius: 6; -fx-border-radius: 6;"/>
+                </VBox>
+            </Tab>
+            <Tab text="设备管理" closable="false">
+                <VBox spacing="10" style="-fx-background-color: #fafafa; -fx-padding: 10; -fx-background-radius: 8;">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+                    <Label text="设备使用状态" style="-fx-font-weight: bold; -fx-font-size: 12px;"/>
+                    <TableView fx:id="deviceTableView" style="-fx-background-color: white; -fx-border-color: #ddd; -fx-background-radius: 6; -fx-border-radius: 6;">
+                        <columns>
+                            <TableColumn text="类型" fx:id="deviceTypeColumn"/>
+                            <TableColumn text="使用中" fx:id="deviceInUseColumn"/>
+                            <TableColumn text="进程PID" fx:id="devicePidColumn"/>
+                            <TableColumn text="剩余时间" fx:id="deviceRemainColumn"/>
+                        </columns>
+                    </TableView>
+                    <Label text="设备等待队列" style="-fx-font-weight: bold; -fx-font-size: 12px;"/>
+                    <TableView fx:id="waitQueueTableView" style="-fx-background-color: white; -fx-border-color: #ddd; -fx-background-radius: 6; -fx-border-radius: 6;">
+                        <columns>
+                            <TableColumn text="设备" fx:id="waitDeviceColumn"/>
+                            <TableColumn text="进程PID" fx:id="waitPidColumn"/>
+                            <TableColumn text="请求时间" fx:id="waitTimeColumn"/>
+                        </columns>
+                    </TableView>
                 </VBox>
             </Tab>
         </TabPane>
     </center>
     
     <bottom>
-        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #f0f0f0;">
+        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #f0f0f0; -fx-padding: 6;">
             <padding>
                 <Insets top="5" right="10" bottom="5" left="10"/>
             </padding>
             <Label text="状态: 系统运行中"/>
+            <TextField fx:id="commandField" promptText="$mkdir /user/docs 或 $create /user/new.txt" prefWidth="400"/>
+            <Button fx:id="runCommandBtn" text="执行" onAction="#onRunCommandClick"/>
         </HBox>
     </bottom>
 </BorderPane>

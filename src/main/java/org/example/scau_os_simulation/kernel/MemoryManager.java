@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MemoryManager {
-    private Memory memory;
-    private List<MemoryBlock> allocatedBlocks;
+    private final Memory memory;
+    private final List<MemoryBlock> allocatedBlocks;
     
     public MemoryManager(Memory memory) {
         this.memory = memory;

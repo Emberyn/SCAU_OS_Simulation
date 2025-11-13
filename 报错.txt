@@ -1,0 +1,2718 @@
+{
+  "$schema": "https://raw.githubusercontent.com/schemastore/schemastore/master/src/schemas/json/sarif-2.1.0-rtm.5.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "IntelliJ IDEA",
+          "version": "243.23654.189",
+          "informationUri": "https://www.jetbrains.com?utm_source=product&utm_medium=link&utm_campaign=IU&utm_content=2024.3",
+          "rules": [
+            {
+              "id": "PatternVariableCanBeUsed",
+              "name": "可以使用模式变量"
+            },
+            {
+              "id": "ClassCanBeRecord",
+              "name": "类可以是记录类"
+            },
+            {
+              "id": "FieldMayBeFinal",
+              "name": "字段可能为 'final'"
+            },
+            {
+              "id": "UnusedAssignment",
+              "name": "未使用的赋值"
+            },
+            {
+              "id": "CanBeFinal",
+              "name": "声明可以有 'final' 修饰符"
+            },
+            {
+              "id": "UnusedReturnValue",
+              "name": "方法可以为 'void'"
+            },
+            {
+              "id": "UNUSED_IMPORT",
+              "name": "未使用的 import"
+            },
+            {
+              "id": "StringEqualsEmptyString",
+              "name": "'String.equals()' 可被替换为 'String.isEmpty()'"
+            },
+            {
+              "id": "XmlUnresolvedReference",
+              "name": "未解析的引用"
+            },
+            {
+              "id": "VulnerableLibrariesLocal",
+              "name": "易受攻击的声明依赖项"
+            },
+            {
+              "id": "DuplicatedCode",
+              "name": "重复的代码段"
+            },
+            {
+              "id": "SpellCheckingInspection",
+              "name": "拼写错误"
+            }
+          ],
+          "language": "en-US",
+          "contents": [
+            "localizedData",
+            "nonLocalizedData"
+          ],
+          "isComprehensive": false
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "workingDirectory": {
+            "uri": "file:///D:/Codes/JavaCode/SCAU_OS_Simulation/"
+          }
+        }
+      ],
+      "language": "en-US",
+      "results": [
+        {
+          "ruleId": "PatternVariableCanBeUsed",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "变量 'file' 可被替换为模式变量"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 72,
+                  "startColumn": 14,
+                  "endLine": 72,
+                  "endColumn": 18,
+                  "charOffset": 2313,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "file"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "PatternVariableCanBeUsed",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "变量 'target' 可被替换为模式变量"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 92,
+                  "startColumn": 19,
+                  "endLine": 92,
+                  "endColumn": 25,
+                  "charOffset": 3091,
+                  "charLength": 6,
+                  "snippet": {
+                    "text": "target"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "PatternVariableCanBeUsed",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "变量 'f' 可被替换为模式变量"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 148,
+                  "startColumn": 14,
+                  "endLine": 148,
+                  "endColumn": 15,
+                  "charOffset": 5145,
+                  "charLength": 1,
+                  "snippet": {
+                    "text": "f"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "ClassCanBeRecord",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "类可以是记录类"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/device/DeviceRequest.java"
+                },
+                "region": {
+                  "startLine": 3,
+                  "startColumn": 14,
+                  "endLine": 3,
+                  "endColumn": 27,
+                  "charOffset": 61,
+                  "charLength": 13,
+                  "snippet": {
+                    "text": "DeviceRequest"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'memoryManager' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/ProcessManager.java"
+                },
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 27,
+                  "endLine": 11,
+                  "endColumn": 40,
+                  "charOffset": 329,
+                  "charLength": 13,
+                  "snippet": {
+                    "text": "memoryManager"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'name' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/process/PCB.java"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 20,
+                  "endLine": 5,
+                  "endColumn": 24,
+                  "charOffset": 108,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "name"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'size' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/memory/Memory.java"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 17,
+                  "endLine": 4,
+                  "endColumn": 21,
+                  "charOffset": 86,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "size"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'memoryAddress' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/process/PCB.java"
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 17,
+                  "endLine": 8,
+                  "endColumn": 30,
+                  "charOffset": 188,
+                  "charLength": 13,
+                  "snippet": {
+                    "text": "memoryAddress"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'processes' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/ProcessManager.java"
+                },
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 27,
+                  "endLine": 10,
+                  "endColumn": 36,
+                  "charOffset": 292,
+                  "charLength": 9,
+                  "snippet": {
+                    "text": "processes"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'rootDirectory' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 23,
+                  "endLine": 9,
+                  "endColumn": 36,
+                  "charOffset": 315,
+                  "charLength": 13,
+                  "snippet": {
+                    "text": "rootDirectory"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'allocatedBlocks' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/MemoryManager.java"
+                },
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 31,
+                  "endLine": 11,
+                  "endColumn": 46,
+                  "charOffset": 298,
+                  "charLength": 15,
+                  "snippet": {
+                    "text": "allocatedBlocks"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'size' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/memory/MemoryBlock.java"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 17,
+                  "endLine": 5,
+                  "endColumn": 21,
+                  "charOffset": 121,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "size"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'name' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/filesystem/File.java"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 20,
+                  "endLine": 4,
+                  "endColumn": 24,
+                  "charOffset": 91,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "name"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'children' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/filesystem/Directory.java"
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 26,
+                  "endLine": 8,
+                  "endColumn": 34,
+                  "charOffset": 179,
+                  "charLength": 8,
+                  "snippet": {
+                    "text": "children"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'priority' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/process/PCB.java"
+                },
+                "region": {
+                  "startLine": 6,
+                  "startColumn": 17,
+                  "endLine": 6,
+                  "endColumn": 25,
+                  "charOffset": 130,
+                  "charLength": 8,
+                  "snippet": {
+                    "text": "priority"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'pcb' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/process/Process.java"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 17,
+                  "endLine": 4,
+                  "endColumn": 20,
+                  "charOffset": 88,
+                  "charLength": 3,
+                  "snippet": {
+                    "text": "pcb"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'size' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/filesystem/File.java"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 17,
+                  "endLine": 5,
+                  "endColumn": 21,
+                  "charOffset": 113,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "size"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'content' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/filesystem/File.java"
+                },
+                "region": {
+                  "startLine": 6,
+                  "startColumn": 20,
+                  "endLine": 6,
+                  "endColumn": 27,
+                  "charOffset": 151,
+                  "charLength": 7,
+                  "snippet": {
+                    "text": "content"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'memorySize' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/process/PCB.java"
+                },
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 17,
+                  "endLine": 9,
+                  "endColumn": 27,
+                  "charOffset": 219,
+                  "charLength": 10,
+                  "snippet": {
+                    "text": "memorySize"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'startAddress' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/memory/MemoryBlock.java"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 17,
+                  "endLine": 4,
+                  "endColumn": 29,
+                  "charOffset": 91,
+                  "charLength": 12,
+                  "snippet": {
+                    "text": "startAddress"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'data' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/memory/Memory.java"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 20,
+                  "endLine": 5,
+                  "endColumn": 24,
+                  "charOffset": 124,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "data"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'totalSize' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/filesystem/FileSystem.java"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 17,
+                  "endLine": 4,
+                  "endColumn": 26,
+                  "charOffset": 94,
+                  "charLength": 9,
+                  "snippet": {
+                    "text": "totalSize"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'pid' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/process/PCB.java"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 17,
+                  "endLine": 4,
+                  "endColumn": 20,
+                  "charOffset": 84,
+                  "charLength": 3,
+                  "snippet": {
+                    "text": "pid"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'memory' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/MemoryManager.java"
+                },
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 20,
+                  "endLine": 10,
+                  "endColumn": 26,
+                  "charOffset": 260,
+                  "charLength": 6,
+                  "snippet": {
+                    "text": "memory"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'name' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/filesystem/Directory.java"
+                },
+                "region": {
+                  "startLine": 7,
+                  "startColumn": 20,
+                  "endLine": 7,
+                  "endColumn": 24,
+                  "charOffset": 148,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "name"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "FieldMayBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "字段 'fileSystem' 可能为 'final'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 24,
+                  "endLine": 8,
+                  "endColumn": 34,
+                  "charOffset": 281,
+                  "charLength": 10,
+                  "snippet": {
+                    "text": "fileSystem"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "UnusedAssignment",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "变量 'availableSize' 初始值设定项 '0' 冗余"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/MemoryManager.java"
+                },
+                "region": {
+                  "startLine": 25,
+                  "startColumn": 33,
+                  "endLine": 25,
+                  "endColumn": 34,
+                  "charOffset": 707,
+                  "charLength": 1,
+                  "snippet": {
+                    "text": "0"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/MemoryManager.java"
+                },
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 20,
+                  "endLine": 10,
+                  "endColumn": 26,
+                  "charOffset": 260,
+                  "charLength": 6,
+                  "snippet": {
+                    "text": "memory"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/process/PCB.java"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 17,
+                  "endLine": 4,
+                  "endColumn": 20,
+                  "charOffset": 84,
+                  "charLength": 3,
+                  "snippet": {
+                    "text": "pid"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/ProcessManager.java"
+                },
+                "region": {
+                  "startLine": 10,
+                  "startColumn": 27,
+                  "endLine": 10,
+                  "endColumn": 36,
+                  "charOffset": 292,
+                  "charLength": 9,
+                  "snippet": {
+                    "text": "processes"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 23,
+                  "endLine": 9,
+                  "endColumn": 36,
+                  "charOffset": 315,
+                  "charLength": 13,
+                  "snippet": {
+                    "text": "rootDirectory"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/ProcessManager.java"
+                },
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 27,
+                  "endLine": 11,
+                  "endColumn": 40,
+                  "charOffset": 329,
+                  "charLength": 13,
+                  "snippet": {
+                    "text": "memoryManager"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/memory/Memory.java"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 20,
+                  "endLine": 5,
+                  "endColumn": 24,
+                  "charOffset": 124,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "data"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/process/PCB.java"
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 17,
+                  "endLine": 8,
+                  "endColumn": 30,
+                  "charOffset": 188,
+                  "charLength": 13,
+                  "snippet": {
+                    "text": "memoryAddress"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/filesystem/File.java"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 17,
+                  "endLine": 5,
+                  "endColumn": 21,
+                  "charOffset": 113,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "size"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/memory/Memory.java"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 17,
+                  "endLine": 4,
+                  "endColumn": 21,
+                  "charOffset": 86,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "size"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/filesystem/Directory.java"
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 26,
+                  "endLine": 8,
+                  "endColumn": 34,
+                  "charOffset": 179,
+                  "charLength": 8,
+                  "snippet": {
+                    "text": "children"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/MemoryManager.java"
+                },
+                "region": {
+                  "startLine": 11,
+                  "startColumn": 31,
+                  "endLine": 11,
+                  "endColumn": 46,
+                  "charOffset": 298,
+                  "charLength": 15,
+                  "snippet": {
+                    "text": "allocatedBlocks"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/filesystem/File.java"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 20,
+                  "endLine": 4,
+                  "endColumn": 24,
+                  "charOffset": 91,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "name"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/filesystem/Directory.java"
+                },
+                "region": {
+                  "startLine": 7,
+                  "startColumn": 20,
+                  "endLine": 7,
+                  "endColumn": 24,
+                  "charOffset": 148,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "name"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/memory/MemoryBlock.java"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 17,
+                  "endLine": 5,
+                  "endColumn": 21,
+                  "charOffset": 121,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "size"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/process/PCB.java"
+                },
+                "region": {
+                  "startLine": 9,
+                  "startColumn": 17,
+                  "endLine": 9,
+                  "endColumn": 27,
+                  "charOffset": 219,
+                  "charLength": 10,
+                  "snippet": {
+                    "text": "memorySize"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/process/Process.java"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 17,
+                  "endLine": 4,
+                  "endColumn": 20,
+                  "charOffset": 88,
+                  "charLength": 3,
+                  "snippet": {
+                    "text": "pcb"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/process/PCB.java"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 20,
+                  "endLine": 5,
+                  "endColumn": 24,
+                  "charOffset": 108,
+                  "charLength": 4,
+                  "snippet": {
+                    "text": "name"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/memory/MemoryBlock.java"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 17,
+                  "endLine": 4,
+                  "endColumn": 29,
+                  "charOffset": 91,
+                  "charLength": 12,
+                  "snippet": {
+                    "text": "startAddress"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/filesystem/FileSystem.java"
+                },
+                "region": {
+                  "startLine": 4,
+                  "startColumn": 17,
+                  "endLine": 4,
+                  "endColumn": 26,
+                  "charOffset": 94,
+                  "charLength": 9,
+                  "snippet": {
+                    "text": "totalSize"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/process/PCB.java"
+                },
+                "region": {
+                  "startLine": 6,
+                  "startColumn": 17,
+                  "endLine": 6,
+                  "endColumn": 25,
+                  "charOffset": 130,
+                  "charLength": 8,
+                  "snippet": {
+                    "text": "priority"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/filesystem/File.java"
+                },
+                "region": {
+                  "startLine": 6,
+                  "startColumn": 20,
+                  "endLine": 6,
+                  "endColumn": 27,
+                  "charOffset": 151,
+                  "charLength": 7,
+                  "snippet": {
+                    "text": "content"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CanBeFinal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "声明可以具有 final 修饰符"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 24,
+                  "endLine": 8,
+                  "endColumn": 34,
+                  "charOffset": 281,
+                  "charLength": 10,
+                  "snippet": {
+                    "text": "fileSystem"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "UnusedReturnValue",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "方法的返回值从未使用过"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 47,
+                  "startColumn": 22,
+                  "endLine": 47,
+                  "endColumn": 37,
+                  "charOffset": 1412,
+                  "charLength": 15,
+                  "snippet": {
+                    "text": "createDirectory"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "UnusedReturnValue",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "方法的返回值从未使用过"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/DeviceManager.java"
+                },
+                "region": {
+                  "startLine": 28,
+                  "startColumn": 20,
+                  "endLine": 28,
+                  "endColumn": 33,
+                  "charOffset": 1308,
+                  "charLength": 13,
+                  "snippet": {
+                    "text": "requestDevice"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "UnusedReturnValue",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "方法的返回值从未使用过"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/device/Device.java"
+                },
+                "region": {
+                  "startLine": 32,
+                  "startColumn": 20,
+                  "endLine": 32,
+                  "endColumn": 28,
+                  "charOffset": 629,
+                  "charLength": 8,
+                  "snippet": {
+                    "text": "allocate"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "UnusedReturnValue",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "方法的返回值从未使用过"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 126,
+                  "startColumn": 17,
+                  "endLine": 126,
+                  "endColumn": 33,
+                  "charOffset": 4070,
+                  "charLength": 16,
+                  "snippet": {
+                    "text": "createExecutable"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "UnusedReturnValue",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "方法的返回值从未使用过"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 58,
+                  "startColumn": 20,
+                  "endLine": 58,
+                  "endColumn": 30,
+                  "charOffset": 1718,
+                  "charLength": 10,
+                  "snippet": {
+                    "text": "deleteFile"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "UNUSED_IMPORT",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "未使用的 import 'import org.example.scau_os_simulation.process.ProcessState;'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/ProcessManager.java"
+                },
+                "region": {
+                  "startLine": 5,
+                  "startColumn": 1,
+                  "endLine": 5,
+                  "endColumn": 60,
+                  "charOffset": 154,
+                  "charLength": 59,
+                  "snippet": {
+                    "text": "import org.example.scau_os_simulation.process.ProcessState;"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "StringEqualsEmptyString",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "'equals(\"\")' 可被替换为 'isEmpty()'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 79,
+                  "startColumn": 38,
+                  "endLine": 79,
+                  "endColumn": 44,
+                  "charOffset": 2531,
+                  "charLength": 6,
+                  "snippet": {
+                    "text": "equals"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "XmlUnresolvedReference",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "无法解析符号'mkdir /user/docs 或 $create /user/new.txt'"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/resources/org/example/scau_os_simulation/main-view.fxml"
+                },
+                "region": {
+                  "startLine": 127,
+                  "startColumn": 57,
+                  "endLine": 127,
+                  "endColumn": 100,
+                  "charOffset": 5905,
+                  "charLength": 43,
+                  "snippet": {
+                    "text": "\"$mkdir /user/docs 或 $create /user/new.txt\""
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "VulnerableLibrariesLocal",
+          "kind": "fail",
+          "level": "warning",
+          "message": {
+            "text": "<html><body>提供可传递易受攻击的依赖项 maven:org.openjfx:javafx-graphics:17.0.6 <ul><li><a href=\"https://www.mend.io/vulnerability-database/CVE-2024-20925?utm_source=JetBrains\">CVE-2024-20925</a> 3.1 Insufficient Information </li></ul> 结果由 <a href=\"https://www.mend.io/jetbrains-lp/?utm_source=JetBrains\">Mend.io</a> 提供技术支持</body></html>"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/pom.xml"
+                },
+                "region": {
+                  "startLine": 18,
+                  "startColumn": 9,
+                  "endLine": 22,
+                  "endColumn": 22,
+                  "charOffset": 643,
+                  "charLength": 168,
+                  "snippet": {
+                    "text": "<dependency>\n            <groupId>org.openjfx</groupId>\n            <artifactId>javafx-controls</artifactId>\n            <version>17.0.6</version>\n        </dependency>"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "DuplicatedCode",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "重复代码: 行 61-70"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 61,
+                  "startColumn": 19,
+                  "endLine": 62,
+                  "endColumn": 10,
+                  "charOffset": 1849,
+                  "charLength": 30,
+                  "snippet": {
+                    "text": "Directory dir = rootDirectory;"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "DuplicatedCode",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "重复代码: 行 81-90"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/java/org/example/scau_os_simulation/kernel/FileSystemManager.java"
+                },
+                "region": {
+                  "startLine": 81,
+                  "startColumn": 19,
+                  "endLine": 82,
+                  "endColumn": 10,
+                  "charOffset": 2617,
+                  "charLength": 30,
+                  "snippet": {
+                    "text": "Directory dir = rootDirectory;"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'mavenrc' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'JAVACMD' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 149,
+                  "startColumn": 7,
+                  "endLine": 149,
+                  "endColumn": 36,
+                  "charOffset": 4459,
+                  "charLength": 29,
+                  "snippet": {
+                    "text": "JAVACMD=\"$JAVA_HOME/bin/java\""
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'Xrunjdwp' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 33,
+                  "startColumn": 1,
+                  "endLine": 33,
+                  "endColumn": 93,
+                  "charOffset": 1355,
+                  "charLength": 92,
+                  "snippet": {
+                    "text": "#       set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'usebackq' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'Dmaven' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'JAVACMD' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 152,
+                  "startColumn": 5,
+                  "endLine": 152,
+                  "endColumn": 54,
+                  "charOffset": 4507,
+                  "charLength": 49,
+                  "snippet": {
+                    "text": "JAVACMD=\"`\\\\unset -f command; \\\\command -v java`\""
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'mavenrc' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 34,
+                  "startColumn": 1,
+                  "endLine": 34,
+                  "endColumn": 61,
+                  "charOffset": 1448,
+                  "charLength": 60,
+                  "snippet": {
+                    "text": "#   MAVEN_SKIP_RC - flag to disable loading of mavenrc files"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'JBEAP' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 185,
+                  "startColumn": 5,
+                  "endLine": 185,
+                  "endColumn": 54,
+                  "charOffset": 5286,
+                  "charLength": 49,
+                  "snippet": {
+                    "text": "# workaround for JBEAP-8937 (on Solaris 10/Sparc)"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'Xrunjdwp' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'setlocal' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'MVNW' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'REPOURL' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'scau' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/src/main/resources/org/example/scau_os_simulation/main-view.fxml"
+                },
+                "region": {
+                  "startLine": 8,
+                  "startColumn": 28,
+                  "endLine": 9,
+                  "endColumn": 1,
+                  "charOffset": 215,
+                  "charLength": 58,
+                  "snippet": {
+                    "text": "\"org.example.scau_os_simulation.controller.MainController\""
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'CLASSWORLDS' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 166,
+                  "startColumn": 1,
+                  "endLine": 166,
+                  "endColumn": 71,
+                  "charOffset": 4802,
+                  "charLength": 70,
+                  "snippet": {
+                    "text": "CLASSWORLDS_LAUNCHER=org.codehaus.plexus.classworlds.launcher.Launcher"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'PROJECTBASEDIR' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 285,
+                  "startColumn": 8,
+                  "endLine": 285,
+                  "endColumn": 58,
+                  "charOffset": 9145,
+                  "charLength": 50,
+                  "snippet": {
+                    "text": "MAVEN_PROJECTBASEDIR=${MAVEN_BASEDIR:-\"$BASE_DIR\"}"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'Dmaven' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 314,
+                  "startColumn": 4,
+                  "endLine": 314,
+                  "endColumn": 17,
+                  "charOffset": 10150,
+                  "charLength": 13,
+                  "snippet": {
+                    "text": "-Dmaven.home="
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'saveddir' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 94,
+                  "startColumn": 3,
+                  "endLine": 94,
+                  "endColumn": 12,
+                  "charOffset": 2865,
+                  "charLength": 9,
+                  "snippet": {
+                    "text": "saveddir="
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'JAVACMD' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 147,
+                  "startColumn": 7,
+                  "endLine": 147,
+                  "endColumn": 39,
+                  "charOffset": 4411,
+                  "charLength": 32,
+                  "snippet": {
+                    "text": "JAVACMD=\"$JAVA_HOME/jre/sh/java\""
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'scau' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/pom.xml"
+                },
+                "region": {
+                  "startLine": 63,
+                  "startColumn": 40,
+                  "endLine": 64,
+                  "endColumn": 29,
+                  "charOffset": 2296,
+                  "charLength": 104,
+                  "snippet": {
+                    "text": "org.example.scau_os_simulation/org.example.scau_os_simulation.OSApplication\n                            "
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'PROJECTBASEDIR' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 300,
+                  "startColumn": 5,
+                  "endLine": 300,
+                  "endColumn": 26,
+                  "charOffset": 9699,
+                  "charLength": 21,
+                  "snippet": {
+                    "text": "MAVEN_PROJECTBASEDIR="
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'libexec' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 64,
+                  "startColumn": 16,
+                  "endLine": 64,
+                  "endColumn": 38,
+                  "charOffset": 2234,
+                  "charLength": 22,
+                  "snippet": {
+                    "text": "/usr/libexec/java_home"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'PROJECTBASEDIR' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'delims' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'endlocal' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'wdir' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 187,
+                  "startColumn": 7,
+                  "endLine": 187,
+                  "endColumn": 12,
+                  "charOffset": 5372,
+                  "charLength": 5,
+                  "snippet": {
+                    "text": "wdir="
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'mavenrc' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 47,
+                  "startColumn": 17,
+                  "endLine": 47,
+                  "endColumn": 26,
+                  "charOffset": 1774,
+                  "charLength": 9,
+                  "snippet": {
+                    "text": "/.mavenrc"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'libexec' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 61,
+                  "startColumn": 5,
+                  "endLine": 61,
+                  "endColumn": 89,
+                  "charOffset": 2029,
+                  "charLength": 84,
+                  "snippet": {
+                    "text": "# Use /usr/libexec/java_home if available, otherwise fall back to /Library/Java/Home"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'HOMEPATH' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'HOMEDRIVE' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'mavenrc' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 48,
+                  "startColumn": 13,
+                  "endLine": 48,
+                  "endColumn": 22,
+                  "charOffset": 1806,
+                  "charLength": 9,
+                  "snippet": {
+                    "text": "/.mavenrc"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'WDIR' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'wdir' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 179,
+                  "startColumn": 3,
+                  "endLine": 179,
+                  "endColumn": 12,
+                  "charOffset": 5167,
+                  "charLength": 9,
+                  "snippet": {
+                    "text": "wdir=\"$1\""
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'Dmaven' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw"
+                },
+                "region": {
+                  "startLine": 315,
+                  "startColumn": 4,
+                  "endLine": 315,
+                  "endColumn": 40,
+                  "charOffset": 10180,
+                  "charLength": 36,
+                  "snippet": {
+                    "text": "-Dmaven.multiModuleProjectDirectory="
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "SpellCheckingInspection",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "拼写错误: 在单词 'ERRORLEVEL' 中"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "..\\ile://D:/Codes/JavaCode/SCAU_OS_Simulation/mvnw.cmd"
+                },
+                "region": {
+                  "startLine": 1,
+                  "startColumn": 1,
+                  "endLine": 189,
+                  "endColumn": 1,
+                  "charOffset": 0,
+                  "charLength": 6734,
+                  "snippet": {
+                    "text": "@REM ----------------------------------------------------------------------------\n@REM Licensed to the Apache Software Foundation (ASF) under one\n@REM or more contributor license agreements.  See the NOTICE file\n@REM distributed with this work for additional information\n@REM regarding copyright ownership.  The ASF licenses this file\n@REM to you under the Apache License, Version 2.0 (the\n@REM \"License\"); you may not use this file except in compliance\n@REM with the License.  You may obtain a copy of the License at\n@REM\n@REM    https://www.apache.org/licenses/LICENSE-2.0\n@REM\n@REM Unless required by applicable law or agreed to in writing,\n@REM software distributed under the License is distributed on an\n@REM \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY\n@REM KIND, either express or implied.  See the License for the\n@REM specific language governing permissions and limitations\n@REM under the License.\n@REM ----------------------------------------------------------------------------\n\n@REM ----------------------------------------------------------------------------\n@REM Maven Start Up Batch script\n@REM\n@REM Required ENV vars:\n@REM JAVA_HOME - location of a JDK home dir\n@REM\n@REM Optional ENV vars\n@REM M2_HOME - location of maven2's installed home dir\n@REM MAVEN_BATCH_ECHO - set to 'on' to enable the echoing of the batch commands\n@REM MAVEN_BATCH_PAUSE - set to 'on' to wait for a keystroke before ending\n@REM MAVEN_OPTS - parameters passed to the Java VM when running Maven\n@REM     e.g. to debug Maven itself, use\n@REM set MAVEN_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000\n@REM MAVEN_SKIP_RC - flag to disable loading of mavenrc files\n@REM ----------------------------------------------------------------------------\n\n@REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'\n@echo off\n@REM set title of command window\ntitle %0\n@REM enable echoing by setting MAVEN_BATCH_ECHO to 'on'\n@if \"%MAVEN_BATCH_ECHO%\" == \"on\"  echo %MAVEN_BATCH_ECHO%\n\n@REM set %HOME% to equivalent of $HOME\nif \"%HOME%\" == \"\" (set \"HOME=%HOMEDRIVE%%HOMEPATH%\")\n\n@REM Execute a user defined script before this one\nif not \"%MAVEN_SKIP_RC%\" == \"\" goto skipRcPre\n@REM check for pre script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_pre.bat\" call \"%USERPROFILE%\\mavenrc_pre.bat\" %*\nif exist \"%USERPROFILE%\\mavenrc_pre.cmd\" call \"%USERPROFILE%\\mavenrc_pre.cmd\" %*\n:skipRcPre\n\n@setlocal\n\nset ERROR_CODE=0\n\n@REM To isolate internal variables from possible post scripts, we use another setlocal\n@setlocal\n\n@REM ==== START VALIDATION ====\nif not \"%JAVA_HOME%\" == \"\" goto OkJHome\n\necho.\necho Error: JAVA_HOME not found in your environment. >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n:OkJHome\nif exist \"%JAVA_HOME%\\bin\\java.exe\" goto init\n\necho.\necho Error: JAVA_HOME is set to an invalid directory. >&2\necho JAVA_HOME = \"%JAVA_HOME%\" >&2\necho Please set the JAVA_HOME variable in your environment to match the >&2\necho location of your Java installation. >&2\necho.\ngoto error\n\n@REM ==== END VALIDATION ====\n\n:init\n\n@REM Find the project base dir, i.e. the directory that contains the folder \".mvn\".\n@REM Fallback to current working directory if not found.\n\nset MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%\nIF NOT \"%MAVEN_PROJECTBASEDIR%\"==\"\" goto endDetectBaseDir\n\nset EXEC_DIR=%CD%\nset WDIR=%EXEC_DIR%\n:findBaseDir\nIF EXIST \"%WDIR%\"\\.mvn goto baseDirFound\ncd ..\nIF \"%WDIR%\"==\"%CD%\" goto baseDirNotFound\nset WDIR=%CD%\ngoto findBaseDir\n\n:baseDirFound\nset MAVEN_PROJECTBASEDIR=%WDIR%\ncd \"%EXEC_DIR%\"\ngoto endDetectBaseDir\n\n:baseDirNotFound\nset MAVEN_PROJECTBASEDIR=%EXEC_DIR%\ncd \"%EXEC_DIR%\"\n\n:endDetectBaseDir\n\nIF NOT EXIST \"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\" goto endReadAdditionalConfig\n\n@setlocal EnableExtensions EnableDelayedExpansion\nfor /F \"usebackq delims=\" %%a in (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\jvm.config\") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a\n@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%\n\n:endReadAdditionalConfig\n\nSET MAVEN_JAVA_EXE=\"%JAVA_HOME%\\bin\\java.exe\"\nset WRAPPER_JAR=\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.jar\"\nset WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain\n\nset DOWNLOAD_URL=\"https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n\nFOR /F \"usebackq tokens=1,2 delims==\" %%A IN (\"%MAVEN_PROJECTBASEDIR%\\.mvn\\wrapper\\maven-wrapper.properties\") DO (\n    IF \"%%A\"==\"wrapperUrl\" SET DOWNLOAD_URL=%%B\n)\n\n@REM Extension to allow automatically downloading the maven-wrapper.jar from Maven-central\n@REM This allows using the maven wrapper in projects that prohibit checking in binary data.\nif exist %WRAPPER_JAR% (\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Found %WRAPPER_JAR%\n    )\n) else (\n    if not \"%MVNW_REPOURL%\" == \"\" (\n        SET DOWNLOAD_URL=\"%MVNW_REPOURL%/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar\"\n    )\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Couldn't find %WRAPPER_JAR%, downloading it ...\n        echo Downloading from: %DOWNLOAD_URL%\n    )\n\n    powershell -Command \"&{\"^\n\t\t\"$webclient = new-object System.Net.WebClient;\"^\n\t\t\"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {\"^\n\t\t\"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');\"^\n\t\t\"}\"^\n\t\t\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')\"^\n\t\t\"}\"\n    if \"%MVNW_VERBOSE%\" == \"true\" (\n        echo Finished downloading %WRAPPER_JAR%\n    )\n)\n@REM End of extension\n\n@REM Provide a \"standardized\" way to retrieve the CLI args that will\n@REM work with both Windows and non-Windows executions.\nset MAVEN_CMD_LINE_ARGS=%*\n\n%MAVEN_JAVA_EXE% ^\n  %JVM_CONFIG_MAVEN_PROPS% ^\n  %MAVEN_OPTS% ^\n  %MAVEN_DEBUG_OPTS% ^\n  -classpath %WRAPPER_JAR% ^\n  \"-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%\" ^\n  %WRAPPER_LAUNCHER% %MAVEN_CONFIG% %*\nif ERRORLEVEL 1 goto error\ngoto end\n\n:error\nset ERROR_CODE=1\n\n:end\n@endlocal & set ERROR_CODE=%ERROR_CODE%\n\nif not \"%MAVEN_SKIP_RC%\"==\"\" goto skipRcPost\n@REM check for post script, once with legacy .bat ending and once with .cmd ending\nif exist \"%USERPROFILE%\\mavenrc_post.bat\" call \"%USERPROFILE%\\mavenrc_post.bat\"\nif exist \"%USERPROFILE%\\mavenrc_post.cmd\" call \"%USERPROFILE%\\mavenrc_post.cmd\"\n:skipRcPost\n\n@REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'\nif \"%MAVEN_BATCH_PAUSE%\"==\"on\" pause\n\nif \"%MAVEN_TERMINATE_CMD%\"==\"on\" exit %ERROR_CODE%\n\ncmd /C exit /B %ERROR_CODE%\n"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "newlineSequences": [
+        "\r\n",
+        "\n"
+      ]
+    }
+  ]
+}

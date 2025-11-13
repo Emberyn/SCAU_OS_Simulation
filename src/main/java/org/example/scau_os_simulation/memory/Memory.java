@@ -1,12 +1,12 @@
 package org.example.scau_os_simulation.memory;
 
 public class Memory {
-    private int size; // 内存大小，单位KB
-    private byte[] data;
+    private final int size;
+    private final byte[] data;
     
     public Memory(int size) {
         this.size = size;
-        this.data = new byte[size * 1024]; // 转换为字节
+        this.data = new byte[size * 1024];
     }
     
     public int getSize() {

@@ -2,15 +2,16 @@ package org.example.scau_os_simulation.kernel;
 
 import org.example.scau_os_simulation.process.PCB;
 import org.example.scau_os_simulation.process.Process;
-import org.example.scau_os_simulation.process.ProcessState;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ProcessManager {
-    private List<Process> processes;
-    private MemoryManager memoryManager;
+    private final List<Process> processes;
+    private final MemoryManager memoryManager;
     private int nextPid = 0;
+    private final Deque<Process> readyQueue = new ArrayDeque<>();
+    private final Deque<Process> blockedQueue = new ArrayDeque<>();
+    private Process running;
     
     public ProcessManager(MemoryManager memoryManager) {
         this.memoryManager = memoryManager;
@@ -33,6 +34,8 @@ public class ProcessManager {
         // 创建进程
         Process process = new Process(pcb);
         processes.add(process);
+        process.ready();
+        readyQueue.addLast(process);
         
         System.out.println("创建进程: " + name + ", PID: " + pcb.getPid());
         return process;
@@ -47,6 +50,9 @@ public class ProcessManager {
             // 移除进程
             processes.remove(process);
             System.out.println("终止进程: " + process.getPcb().getName() + ", PID: " + pid);
+            if (running == process) running = null;
+            readyQueue.remove(process);
+            blockedQueue.remove(process);
         }
     }
     
@@ -68,5 +74,48 @@ public class ProcessManager {
     
     public List<Process> getProcesses() {
         return processes;
+    }
+
+    public Deque<Process> getReadyQueue() {
+        return readyQueue;
+    }
+
+    public Deque<Process> getBlockedQueue() {
+        return blockedQueue;
+    }
+
+    public Process getRunning() {
+        return running;
+    }
+
+    public void scheduleNext() {
+        if (running != null) {
+            running.ready();
+            readyQueue.addLast(running);
+        }
+        Process next = readyQueue.pollFirst();
+        if (next == null) return;
+        running = next;
+        running.run();
+        running.getPcb().resetTimeSlice();
+    }
+
+    public void onTimeSliceEnd() {
+        scheduleNext();
+    }
+
+    public void onProcessBlocked(int pid) {
+        Process p = findProcess(pid);
+        if (p == null) return;
+        readyQueue.remove(p);
+        blockedQueue.addLast(p);
+    }
+
+    public void onDeviceComplete(int pid) {
+        Process p = findProcess(pid);
+        if (p == null) return;
+        blockedQueue.remove(p);
+        p.ready();
+        readyQueue.addLast(p);
     }
 }
