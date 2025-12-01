@@ -35,6 +35,8 @@ import org.example.scau_os_simulation.memory.MemoryBlock;
 import org.example.scau_os_simulation.performance.PerformanceChartUtil;
 import org.example.scau_os_simulation.filesystem.File;
 import org.example.scau_os_simulation.filesystem.Directory;
+import org.example.scau_os_simulation.filesystem.TextEditorWindow;
+import org.example.scau_os_simulation.performance.PerformanceMonitor;
 import org.example.scau_os_simulation.process.PCB;
 import org.example.scau_os_simulation.device.Device;
 import org.example.scau_os_simulation.device.DeviceRequest;
@@ -70,6 +72,10 @@ public class MainController implements Initializable
     private VBox performanceChartContainer;
 
     @FXML
+    private Button startSystemBtn; // 对应 FXML 中的 fx:id
+    @FXML
+    private Button stopSystemBtn;  // 对应 FXML 中的 fx:id
+    @FXML
     private Button createProcessBtn;
     @FXML
     private Button terminateProcessBtn;
@@ -99,6 +105,9 @@ public class MainController implements Initializable
     private Label axLabel;
     @FXML
     private Label tsLabel;
+    @FXML
+    private Label systemStatusLabel; // 建议在界面加一个 Label 显示状态
+
     @FXML
     private ListView<String> outputListView;
     @FXML
@@ -135,6 +144,12 @@ public class MainController implements Initializable
     private Button undoBtn;
     @FXML
     private Button redoBtn;
+    @FXML
+    private Button createFileBtn;
+    @FXML
+    private Button createDirectoryBtn;
+    @FXML
+    private Button deleteFileBtn;
     @FXML
     private Button copyFileBtn;
     @FXML
@@ -202,6 +217,44 @@ public class MainController implements Initializable
         updateAllViews();
         updateFileSystemView(); // 初始化时更新一次即可
 
+        // 1. 绑定双击事件：双击文件打开编辑器
+        fileSystemTreeView.setOnMouseClicked(event ->
+        {
+            if (Kernel.getInstance().getScheduler() == null || !Kernel.getInstance().getScheduler().isRunning()) {
+                if (event.getClickCount() == 2) {
+                    showWarning("系统未启动", "请先点击顶部的 [▶ 启动系统] 按钮。");
+                }
+                return;
+            }
+
+            if (event.getClickCount() == 2 && event.getButton() == javafx.scene.input.MouseButton.PRIMARY)
+            {
+                openSelectedFile();
+            }
+        });
+
+        // 2. 绑定右键菜单：添加“编辑”选项
+        javafx.scene.control.ContextMenu contextMenu = new javafx.scene.control.ContextMenu();
+        javafx.scene.control.MenuItem editItem = new javafx.scene.control.MenuItem("编辑 / 查看");
+        javafx.scene.control.MenuItem deleteItem = new javafx.scene.control.MenuItem("删除");
+
+        editItem.setOnAction(e -> openSelectedFile());
+        deleteItem.setOnAction(e -> onDeleteClick()); // 复用已有的删除方法
+
+        contextMenu.getItems().addAll(editItem, deleteItem);
+        fileSystemTreeView.setContextMenu(contextMenu);
+        contextMenu.setOnShowing(e -> {
+            boolean isRunning = Kernel.getInstance().getScheduler() != null &&
+                    Kernel.getInstance().getScheduler().isRunning();
+
+            // 遍历所有菜单项并根据运行状态禁用/启用
+            for (javafx.scene.control.MenuItem item : contextMenu.getItems()) {
+                item.setDisable(!isRunning);
+            }
+        });
+
+        updateControlButtonsState(false);
+
         // 周期刷新仅更新"进程/内存/设备"，【修改点】移除 updateFileSystemView()
         uiExec.scheduleAtFixedRate(() -> Platform.runLater(() ->
         {
@@ -210,8 +263,61 @@ public class MainController implements Initializable
             updateDeviceView();
             updateOperationLogView();
             updatePerformanceChart();
+            updatePerformanceMetrics();
             // updateFileSystemView(); <--- 已移除，避免重建文件树导致无法展开
         }), 0, 500, TimeUnit.MILLISECONDS);
+
+    }
+
+    /**
+     * 根据系统运行状态，批量启用或禁用操作按钮
+     *
+     * @param isRunning true=系统运行中(启用按钮)，false=系统停止(禁用按钮)
+     */
+    private void updateControlButtonsState(boolean isRunning)
+    {
+        // 如果系统正在运行(isRunning=true)，disable应为false(不禁用)
+        // 如果系统停止(isRunning=false)，disable应为true(禁用)
+        boolean disable = !isRunning;
+
+        // 1. 进程管理按钮
+        if (createProcessBtn != null) createProcessBtn.setDisable(disable);
+        if (terminateProcessBtn != null) terminateProcessBtn.setDisable(disable);
+
+        // 2. 内存/撤销按钮
+        if (defragmentBtn != null) defragmentBtn.setDisable(disable);
+        if (undoBtn != null) undoBtn.setDisable(disable);
+        if (redoBtn != null) redoBtn.setDisable(disable);
+
+        // 3. 命令行按钮
+        if (runCommandBtn != null) runCommandBtn.setDisable(disable);
+        if (commandField != null) commandField.setDisable(disable);
+
+        // 4. 文件操作按钮 (如果你希望文件操作也必须在启动后进行)
+        if (createFileBtn != null) createFileBtn.setDisable(disable);
+        if (createDirectoryBtn != null) createDirectoryBtn.setDisable(disable);
+        if (deleteFileBtn != null) deleteFileBtn.setDisable(disable);
+
+        // 注意：startSystemBtn 和 stopSystemBtn 不需要在这里控制，
+        // 它们在自己的点击事件里单独控制
+    }
+
+    @FXML
+    protected void onStartSystemClick()
+    {
+        // 1. 启动内核
+        Kernel.getInstance().start();
+
+        // 2. 更新按钮状态
+        startSystemBtn.setDisable(true); // 启动后禁用启动按钮
+        if (stopSystemBtn != null)
+        {
+            stopSystemBtn.setDisable(false); // 启用暂停按钮
+        }
+        updateControlButtonsState(true);
+
+        // 3. 提示用户
+        showInfo("系统已启动", "CPU 开始运行，调度器已激活。");
     }
 
     @FXML
@@ -636,6 +742,50 @@ public class MainController implements Initializable
         }
     }
 
+    /**
+     * 打开当前选中文件的编辑器
+     */
+    private void openSelectedFile()
+    {
+        TreeItem<String> selectedItem = fileSystemTreeView.getSelectionModel().getSelectedItem();
+
+        // 1. 校验是否选中
+        if (selectedItem == null)
+        {
+            return;
+        }
+
+        // 2. 获取完整路径
+        String path = buildPathFromTree(selectedItem);
+
+        // 3. 从内核文件系统获取对象
+        Object node = kernel.getFileSystemManager().getFileByPath(path);
+
+        // 4. 判断类型：如果是文件则打开，如果是目录则忽略或展开
+        if (node instanceof File)
+        {
+            File file = (File) node;
+
+            // 5. 创建并显示编辑器窗口
+            // 注意：使用 Platform.runLater 确保在 JavaFX 线程中运行（虽然通常已经是）
+            Platform.runLater(() ->
+            {
+                try
+                {
+                    TextEditorWindow editor = new TextEditorWindow(file, path);
+                    editor.show(); // 使用 show() 允许同时打开多个窗口，不要用 showAndWait()
+                } catch (Exception e)
+                {
+                    showError("打开失败", "无法打开文件编辑器: " + e.getMessage());
+                }
+            });
+        } else if (node instanceof Directory)
+        {
+            // 如果是目录，双击通常是展开/折叠，TreeView 自带此功能，此处可不做处理
+            // 或者可以在这里提示“无法编辑目录”
+        }
+    }
+
     private void updateAllViews()
     {
         updateProcessView();
@@ -772,19 +922,31 @@ public class MainController implements Initializable
 
     private void updatePerformanceMetrics()
     {
-        double cpuUtilization = kernel.getCpuUtilization();
-        double systemLoad = kernel.getSystemLoad();
+        // 获取 PerformanceMonitor 的数据
+        // 注意：如果你之前重构了 PerformanceMonitor，确保这里调用正确
+        PerformanceMonitor pm = kernel.getPerformanceMonitor();
 
-        cpuUtilizationBar.setProgress(cpuUtilization);
-        systemLoadBar.setProgress(systemLoad);
+        // 获取平均值等统计数据
+        double avgCpu = pm.getAverageCpuUtilization();
+        double avgMem = pm.getAverageMemoryUtilization();
+        double peakCpu = pm.getPeakCpuUtilization();
+        double peakMem = pm.getPeakMemoryUtilization();
 
-        cpuUtilizationLabel.setText(String.format("CPU使用率: %.2f%%", cpuUtilization * 100));
-        systemLoadLabel.setText(String.format("系统负载: %.2f", systemLoad));
+        // 更新文本标签 (乘 100 显示百分号)
+        avgCpuLabel.setText(String.format("平均CPU: %.2f%%", avgCpu * 100));
+        avgMemoryLabel.setText(String.format("平均内存: %.2f%%", avgMem * 100));
+        peakCpuLabel.setText(String.format("峰值CPU: %.2f%%", peakCpu * 100));
+        peakMemoryLabel.setText(String.format("峰值内存: %.2f%%", peakMem * 100));
 
-        avgCpuLabel.setText(String.format("平均CPU: %.2f%%", kernel.getPerformanceMonitor().getAverageCpuUtilization() * 100));
-        avgMemoryLabel.setText(String.format("平均内存: %.2f%%", kernel.getPerformanceMonitor().getAverageMemoryUtilization() * 100));
-        peakCpuLabel.setText(String.format("峰值CPU: %.2f%%", kernel.getPerformanceMonitor().getPeakCpuUtilization() * 100));
-        peakMemoryLabel.setText(String.format("峰值内存: %.2f%%", kernel.getPerformanceMonitor().getPeakMemoryUtilization() * 100));
+        // 更新实时状态条
+        double currentCpu = kernel.getCpuUtilization();
+        double currentLoad = kernel.getSystemLoad();
+
+        cpuUtilizationBar.setProgress(currentCpu); // 进度条需要 0.0-1.0
+        systemLoadBar.setProgress(currentLoad);
+
+        cpuUtilizationLabel.setText(String.format("CPU: %.2f%%", currentCpu * 100));
+        systemLoadLabel.setText(String.format("负载: %.2f", currentLoad)); // 负载通常直接显示数值
     }
 
     private void initBindings()

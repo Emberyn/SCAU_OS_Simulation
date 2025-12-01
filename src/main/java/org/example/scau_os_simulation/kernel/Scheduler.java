@@ -28,7 +28,7 @@ public class Scheduler
     /**
      * 调度线程池：单线程定时器，周期性推进系统时钟
      */
-    private final ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService exec;
     /**
      * 系统时钟（毫秒片计数，不是真实时间）
      */
@@ -71,6 +71,9 @@ public class Scheduler
         if (running) return;              // 避免重复启动
         running = true;
 
+        // 每次启动时创建一个新的线程池
+        exec = Executors.newSingleThreadScheduledExecutor();
+
         // processManager.scheduleNext();    // 启动前先挑选一个运行进程
         // 每 200ms 推进一次系统：执行一条指令并推进设备
         exec.scheduleAtFixedRate(() ->
@@ -91,8 +94,17 @@ public class Scheduler
                 }
                 // cpu.executeOne();         // CPU 执行一条指令（可能导致终止/阻塞/轮转）
                 deviceManager.tick();     // 推进设备时间片并处理完成事件
+
+                // 计算 CPU 利用率 (有进程运行就是 1.0，否则是 0.0)
                 double cpuUtil = processManager.getRunning() == null ? 0.0 : 1.0;
+
+                // 获取内存使用率 (0.0 到 1.0)
                 double memUsage = Kernel.getInstance().getMemoryManager().getMemoryUsageRate();
+                // 如果控制台疯狂输出 "CPU: 0.0 | Mem: 0.0"，说明源头数据就是 0
+                // System.out.println("DEBUG -> Clock:" + systemClock + " | CPU: " + cpuUtil + " | Mem: " + memUsage +
+                //        " | Running: " );
+
+                // 记录快照到 PerformanceMonitor
                 Kernel.getInstance().getPerformanceMonitor().recordSnapshot(
                         cpuUtil,
                         memUsage,
@@ -100,8 +112,10 @@ public class Scheduler
                         processManager.getReadyQueue().size(),
                         processManager.getBlockedQueue().size()
                 );
-            } catch (Exception ignored)
+            } catch (Exception e)
             {
+                e.printStackTrace();
+                System.err.println("调度器发生严重错误: " + e.getMessage());
             }
         }, 0, 200, TimeUnit.MILLISECONDS);
     }
@@ -114,9 +128,19 @@ public class Scheduler
      */
     public void stop()
     {
-        running = false;          // 修改运行标记
-        exec.shutdownNow();       // 立即停止调度线程
+        if (!running) return;
+        running = false;
+
+        // 安全关闭线程池
+        if (exec != null && !exec.isShutdown()) {
+            exec.shutdownNow();
+        }
     }
+
+    public boolean isRunning() {
+        return running;
+    }
+
 
     /**
      * 获取当前系统时钟

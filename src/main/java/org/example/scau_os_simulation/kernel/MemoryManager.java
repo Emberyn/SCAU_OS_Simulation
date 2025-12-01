@@ -247,7 +247,7 @@ public class MemoryManager
             externalFragment += memory.getSize() - currentAddress;
         }
 
-        return totalUsed == 0 ? 0.0 : (double) externalFragment / (totalUsed + externalFragment) * 100;
+        return totalUsed == 0 ? 0.0 : (double) externalFragment / (totalUsed + externalFragment);
     }
 
     /**
@@ -265,7 +265,7 @@ public class MemoryManager
             totalUsed += block.getSize();
         }
 
-        return (double) totalUsed / memory.getSize() * 100;
+        return (double) totalUsed / memory.getSize();
     }
 
     /**

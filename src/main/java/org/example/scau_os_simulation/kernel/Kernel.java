@@ -139,111 +139,142 @@ public class Kernel
      */
     public void initialize()
     {
-        // 第一步：初始化内存
-        // 创建1024KB的内存，就像租了一个1024KB大小的办公空间
-        Memory memory = new Memory(1024); // 1024KB内存
-        memoryManager = new MemoryManager(memory);
-
-        // 第二步：初始化文件系统
-        // 创建2048KB的磁盘空间，就像准备了文件柜来存放公司文件
-        FileSystem fileSystem = new FileSystem(2048); // 2048KB磁盘空间
-        fileSystemManager = new FileSystemManager(fileSystem);
-
-        // 第三步：初始化进程管理器
-        // 创建进程管理器，并让它使用我们准备好的内存管理器
-        // 就像成立人力资源部门，并告诉他们可以使用公司的办公空间
-        processManager = new ProcessManager(memoryManager);
-
-        // 第四步：初始化设备管理器
-        // 创建设备管理器，并让它与进程管理器协作
-        // 就像成立设备管理部门，并让他们与人力资源部门配合工作
-        deviceManager = new DeviceManager(processManager);
-
-        // 第四步补充：初始化同步管理器
-        // 创建同步管理器，用于管理信号量等同步机制
-        syncManager = new SyncManager();
-
-        // 第四步补充：初始化操作日志记录器
-        // 创建操作日志记录器，用于记录所有系统操作
-        operationLogger = new OperationLogger();
-
-        // 第四步补充：初始化性能监控器
-        // 创建性能监控器，用于监控系统性能指标
-        performanceMonitor = new PerformanceMonitor(100); // 保存最近100个快照
-
-        // 第四步补充：初始化撤销管理器
-        // 创建撤销管理器，用于管理可撤销操作
-        undoManager = new UndoManager(50); // 保存最近50个操作
-
-        // 第五步：创建可执行文件
-        // 为系统创建10个可执行文件，就像准备10种不同的工作任务
-        // 每个文件包含一些简单的指令，模拟真实程序的行为
-        for (int i = 1; i <= 10; i++)
+        try
         {
-            java.util.List<String> ins = new java.util.ArrayList<>();
-            ins.add("x=" + (i * 3 % 99));  // 设置变量x的值
-            ins.add("x++");                // x自增
-            ins.add("x--");                // x自减
-            ins.add("!A" + (i % 5));       // 使用设备A（根据i的值选择设备）
-            ins.add("x++");                // x自增
-            ins.add("!B" + (i % 4));       // 使用设备B（根据i的值选择设备）
-            ins.add("x++");                // x自增
-            ins.add("!C" + (i % 3));       // 使用设备C（根据i的值选择设备）
-            ins.add("x++");                // x自增
-            ins.add("end");                // 程序结束
-            fileSystemManager.createExecutable("/system/exec", "p" + i + ".e", ins);
+            // 第一步：初始化内存
+            // 创建1024KB的内存，就像租了一个1024KB大小的办公空间
+            Memory memory = new Memory(1024); // 1024KB内存
+            memoryManager = new MemoryManager(memory);
+
+            // 第二步：初始化文件系统
+            // 创建2048KB的磁盘空间，就像准备了文件柜来存放公司文件
+            FileSystem fileSystem = new FileSystem(2048); // 2048KB磁盘空间
+            fileSystemManager = new FileSystemManager(fileSystem);
+
+            // 第三步：初始化进程管理器
+            // 创建进程管理器，并让它使用我们准备好的内存管理器
+            // 就像成立人力资源部门，并告诉他们可以使用公司的办公空间
+            processManager = new ProcessManager(memoryManager);
+
+            // 第四步：初始化设备管理器
+            // 创建设备管理器，并让它与进程管理器协作
+            // 就像成立设备管理部门，并让他们与人力资源部门配合工作
+            deviceManager = new DeviceManager(processManager);
+
+            // 第四步补充：初始化同步管理器
+            // 创建同步管理器，用于管理信号量等同步机制
+            syncManager = new SyncManager();
+
+            // 第四步补充：初始化操作日志记录器
+            // 创建操作日志记录器，用于记录所有系统操作
+            operationLogger = new OperationLogger();
+
+            // 第四步补充：初始化性能监控器
+            // 创建性能监控器，用于监控系统性能指标
+            performanceMonitor = new PerformanceMonitor(100); // 保存最近100个快照
+
+            // 第四步补充：初始化撤销管理器
+            // 创建撤销管理器，用于管理可撤销操作
+            undoManager = new UndoManager(50); // 保存最近50个操作
+
+            // 第五步：创建可执行文件
+            // 为系统创建10个可执行文件，就像准备10种不同的工作任务
+            // 每个文件包含一些简单的指令，模拟真实程序的行为
+            for (int i = 1; i <= 10; i++)
+            {
+                java.util.List<String> ins = new java.util.ArrayList<>();
+                ins.add("x=" + (i * 3 % 99));  // 设置变量x的值
+                ins.add("x++");                // x自增
+                ins.add("x--");                // x自减
+                ins.add("!A" + (i % 5));       // 使用设备A（根据i的值选择设备）
+                ins.add("x++");                // x自增
+                ins.add("!B" + (i % 4));       // 使用设备B（根据i的值选择设备）
+                ins.add("x++");                // x自增
+                ins.add("!C" + (i % 3));       // 使用设备C（根据i的值选择设备）
+                ins.add("x++");                // x自增
+                ins.add("end");                // 程序结束
+                fileSystemManager.createExecutable("/system/exec", "p" + i + ".e", ins);
+            }
+
+            // 补充目录与文件：满足“至少5个目录与15个文件”的要求（简化实现）
+            fileSystemManager.createDirectory("/user", "docs");
+            fileSystemManager.createDirectory("/user", "tmp");
+            fileSystemManager.createDirectory("/user", "logs");
+            fileSystemManager.createDirectory("/user", "bin");
+            fileSystemManager.createDirectory("/user", "data");
+            fileSystemManager.createDirectory("/system", "config");
+
+            fileSystemManager.createFile("/user/docs", "readme.txt", 1);
+            fileSystemManager.createFile("/user/docs", "notes.txt", 1);
+            fileSystemManager.createFile("/user/docs", "manual.txt", 1);
+            fileSystemManager.createFile("/user/logs", "app.log", 1);
+            fileSystemManager.createFile("/user/logs", "error.log", 1);
+            fileSystemManager.createFile("/user/bin", "run.bat", 1);
+            fileSystemManager.createFile("/system/config", "sys.ini", 1);
+            fileSystemManager.createFile("/user/data", "dataset1.txt", 1);
+            fileSystemManager.createFile("/user/data", "dataset2.txt", 1);
+            fileSystemManager.createFile("/user/data", "dataset3.txt", 1);
+
+            // 第五步补充：创建生产者消费者演示程序
+            // 创建信号量
+            syncManager.createSemaphore("mutex", 1);    // 互斥信号量
+            syncManager.createSemaphore("empty", 5);    // 空位信号量（缓冲区大小为5）
+            syncManager.createSemaphore("full", 0);     // 满位信号量
+
+            // 创建生产者消费者可执行文件
+            ProducerConsumerExecutable producer =
+                    new ProducerConsumerExecutable("producer", 1, 3);
+            ProducerConsumerExecutable consumer =
+                    new ProducerConsumerExecutable("consumer", 1, 3);
+
+            fileSystemManager.createExecutable("/system/exec", "producer1.e", producer);
+            fileSystemManager.createExecutable("/system/exec", "consumer1.e", consumer);
+
+            // 第六步：创建进程并加载可执行文件
+            // 为每个可执行文件创建一个进程，就像为每个工作任务分配一个员工
+            for (int i = 1; i <= 10; i++)
+            {
+                // 创建进程，名称为"进程1"到"进程10"
+                org.example.scau_os_simulation.process.Process p = processManager.createProcess("进程" + i, 1);
+                // 加载对应的可执行文件
+                Executable exec = fileSystemManager.loadExecutable("/system/exec/p" + i + ".e");
+                // 如果进程创建成功，就将可执行文件分配给它
+                if (p != null) p.setExecutable(exec);
+            }
+
+            // 第七步：启动调度器
+            // 调度器就像排班经理，负责安排进程（员工）的工作时间
+            scheduler = new Scheduler(processManager, deviceManager);
+            logOutput("内核初始化完成，等待启动...");
         }
-
-        // 补充目录与文件：满足“至少5个目录与15个文件”的要求（简化实现）
-        fileSystemManager.createDirectory("/user", "docs");
-        fileSystemManager.createDirectory("/user", "tmp");
-        fileSystemManager.createDirectory("/user", "logs");
-        fileSystemManager.createDirectory("/user", "bin");
-        fileSystemManager.createDirectory("/user", "data");
-        fileSystemManager.createDirectory("/system", "config");
-
-        fileSystemManager.createFile("/user/docs", "readme.txt", 1);
-        fileSystemManager.createFile("/user/docs", "notes.txt", 1);
-        fileSystemManager.createFile("/user/docs", "manual.txt", 1);
-        fileSystemManager.createFile("/user/logs", "app.log", 1);
-        fileSystemManager.createFile("/user/logs", "error.log", 1);
-        fileSystemManager.createFile("/user/bin", "run.bat", 1);
-        fileSystemManager.createFile("/system/config", "sys.ini", 1);
-        fileSystemManager.createFile("/user/data", "dataset1.txt", 1);
-        fileSystemManager.createFile("/user/data", "dataset2.txt", 1);
-        fileSystemManager.createFile("/user/data", "dataset3.txt", 1);
-
-        // 第五步补充：创建生产者消费者演示程序
-        // 创建信号量
-        syncManager.createSemaphore("mutex", 1);    // 互斥信号量
-        syncManager.createSemaphore("empty", 5);    // 空位信号量（缓冲区大小为5）
-        syncManager.createSemaphore("full", 0);     // 满位信号量
-
-        // 创建生产者消费者可执行文件
-        ProducerConsumerExecutable producer =
-                new ProducerConsumerExecutable("producer", 1, 3);
-        ProducerConsumerExecutable consumer =
-                new ProducerConsumerExecutable("consumer", 1, 3);
-
-        fileSystemManager.createExecutable("/system/exec", "producer1.e", producer);
-        fileSystemManager.createExecutable("/system/exec", "consumer1.e", consumer);
-
-        // 第六步：创建进程并加载可执行文件
-        // 为每个可执行文件创建一个进程，就像为每个工作任务分配一个员工
-        for (int i = 1; i <= 10; i++)
+        catch (Exception e)
         {
-            // 创建进程，名称为"进程1"到"进程10"
-            org.example.scau_os_simulation.process.Process p = processManager.createProcess("进程" + i, 1);
-            // 加载对应的可执行文件
-            Executable exec = fileSystemManager.loadExecutable("/system/exec/p" + i + ".e");
-            // 如果进程创建成功，就将可执行文件分配给它
-            if (p != null) p.setExecutable(exec);
+            e.printStackTrace();
+            System.err.println("内核初始化失败: " + e.getMessage());
+            logOutput("FATAL: 内核初始化失败 - " + e.getMessage());
         }
+    }
 
-        // 第七步：启动调度器
-        // 调度器就像排班经理，负责安排进程（员工）的工作时间
-        scheduler = new Scheduler(processManager, deviceManager);
-        scheduler.start();
+    // 新增一个公开方法，由 UI 控制何时启动
+    public void start()
+    {
+        if (scheduler != null)
+        {
+            scheduler.start();
+            // 可以记录一条日志
+            if (operationLogger != null) {
+                operationLogger.info(
+                        org.example.scau_os_simulation.logging.OperationLogger.OperationType.SYSTEM,
+                        "系统内核已启动调度", null
+                );
+            }
+        }
+        else
+        {
+            // 【关键修改】显式报错
+            System.err.println("严重错误: 调度器(scheduler)未初始化！请检查 initialize() 是否抛出了异常。");
+            logOutput("错误: 无法启动系统，调度器未初始化。");
+        }
     }
 
     /**

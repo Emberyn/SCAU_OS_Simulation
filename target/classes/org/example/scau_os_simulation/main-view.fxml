@@ -21,17 +21,37 @@
     <stylesheets>
         <URL value="@style.css"/>
     </stylesheets>
-    
+
     <top>
-        <!-- 顶部菜单栏：采用现代化设计 -->
-        <MenuBar styleClass="menu-bar">
-            <Menu text="文件">
-                <MenuItem text="退出" onAction="#onExitAction"/>
-            </Menu>
-            <Menu text="帮助">
-                <MenuItem text="关于" onAction="#onAboutAction"/>
-            </Menu>
-        </MenuBar>
+        <!-- 使用 VBox 垂直排列：上面是菜单栏，下面是工具栏 -->
+        <VBox>
+
+            <!-- 1. 顶部菜单栏 (保留原有的) -->
+            <MenuBar styleClass="menu-bar">
+                <Menu text="文件">
+                    <MenuItem text="退出" onAction="#onExitAction"/>
+                </Menu>
+                <Menu text="帮助">
+                    <MenuItem text="关于" onAction="#onAboutAction"/>
+                </Menu>
+            </MenuBar>
+
+            <ToolBar style="-fx-background-color: white; -fx-padding: 10px; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
+                <items>
+                    <!-- 左侧：显示系统状态 -->
+                    <Label fx:id="systemStatusLabel" text="状态: 等待启动"
+                           style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d; -fx-padding: 0 0 0 5;"/>
+
+                    <!-- 中间占位符 -->
+                    <Region HBox.hgrow="ALWAYS" />
+
+                    <!-- 右侧：启动按钮 (样式已移至 CSS 的 #startSystemBtn) -->
+                    <Button fx:id="startSystemBtn"
+                            text="▶ 启动系统"
+                            onAction="#onStartSystemClick" />
+                </items>
+            </ToolBar>
+        </VBox>
     </top>
     
     <center>

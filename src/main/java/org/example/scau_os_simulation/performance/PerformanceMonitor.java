@@ -78,7 +78,7 @@ public class PerformanceMonitor
 
         public double getSystemLoad()
         {
-            return (cpuUtilization + (memoryUsage / 100.0)) / 2.0;
+            return (cpuUtilization + memoryUsage) / 2.0;
         }
     }
 
