@@ -1,7 +1,6 @@
 package org.example.scau_os_simulation.kernel;
 
 import org.example.scau_os_simulation.device.DeviceType;
-import org.example.scau_os_simulation.kernel.Kernel;
 import org.example.scau_os_simulation.process.PCB;
 import org.example.scau_os_simulation.process.Process;
 
@@ -103,6 +102,37 @@ public class CPU {
             deviceManager.requestDevice(pcb.getPid(), type, t);
             pcb.setPc(pcb.getPc() + 1);     // 请求后 PC 前进
             processManager.scheduleNext();   // 让出 CPU，轮转到下一个进程
+            return;
+        }
+        
+        // 信号量操作分支
+        if (instr.startsWith("wait(") && instr.endsWith(")")) {
+            // wait(信号量名) - P操作
+            String semaphoreName = instr.substring(5, instr.length() - 1);
+            boolean acquired = Kernel.getInstance().getSyncManager().wait(semaphoreName, pcb.getPid());
+            if (!acquired) {
+                // 需要阻塞等待
+                pcb.setBlockReason("等待信号量:" + semaphoreName);
+                processManager.onProcessBlocked(pcb.getPid());
+                return;
+            }
+            pcb.setPc(pcb.getPc() + 1);
+            pcb.decTimeSlice();
+            if (pcb.getTimeSlice() == 0) processManager.onTimeSliceEnd();
+            return;
+        }
+        
+        if (instr.startsWith("signal(") && instr.endsWith(")")) {
+            // signal(信号量名) - V操作
+            String semaphoreName = instr.substring(7, instr.length() - 1);
+            int awakenedPid = Kernel.getInstance().getSyncManager().signal(semaphoreName);
+            if (awakenedPid != -1) {
+                // 唤醒了等待的进程
+                processManager.onDeviceComplete(awakenedPid);
+            }
+            pcb.setPc(pcb.getPc() + 1);
+            pcb.decTimeSlice();
+            if (pcb.getTimeSlice() == 0) processManager.onTimeSliceEnd();
             return;
         }
         // 兜底分支：未识别/空操作——仅步进与消耗时间片

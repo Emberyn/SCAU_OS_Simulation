@@ -6,7 +6,6 @@ import org.example.scau_os_simulation.filesystem.FileSystem;
 
 /**
  * 文件系统管理器 - 负责目录/文件的增删查以及空间管理
- *
  * 提供简化的层级文件系统：
  * - 根目录下预置 `system` 与 `user` 两个目录，用于区分系统资源与用户数据；
  * - 支持创建/删除文件与目录，空间分配与释放（按 KB 计量，不涉及碎片与块表）；
@@ -50,19 +49,25 @@ public class FileSystemManager {
      * @return 新建的文件；空间不足或路径不存在时返回 null
      */
     public File createFile(String path, String name, int size) {
+        // 1) 根据路径找到父目录（例如 "/user"）
         Directory parent = findDirectoryByPath(path);
         if (parent == null) {
+            // 路径不存在：返回失败
             return null;
         }
         
-        // 检查文件系统空间
+        // 2) 向文件系统申请空间（按KB计量）
         if (!fileSystem.allocateSpace(size)) {
+            // 空间不足：打印提示并返回失败
             System.out.println("磁盘空间不足");
             return null;
         }
         
+        // 3) 创建文件对象并挂到父目录下
         File newFile = new File(name, size);
         parent.addChild(newFile);
+        
+        // 4) 返回新文件句柄，供调用方继续写入内容
         return newFile;
     }
     
@@ -91,21 +96,30 @@ public class FileSystemManager {
      * @return 删除成功与否
      */
     public boolean deleteFile(String path) {
+        // 1) 将绝对路径按 "/" 切分为段
         String[] parts = path.split("/");
         if (parts.length == 0) return false;
+        
+        // 2) 逐级定位到父目录
         Directory dir = rootDirectory;
         for (int i = 0; i < parts.length - 1; i++) {
             String part = parts[i];
-            if (part.isEmpty()) continue;
+            if (part.isEmpty()) continue;   // 跳过空段（首个""）
             Object child = dir.findChild(part);
-            if (!(child instanceof Directory d)) return false;
+            if (!(child instanceof Directory d)) return false; // 中途不是目录：路径非法
             dir = d;
         }
+        
+        // 3) 在父目录中查找最后一段名称对应的文件
         String name = parts[parts.length - 1];
         Object child = dir.findChild(name);
-        if (!(child instanceof File file)) return false;
+        if (!(child instanceof File file)) return false; // 不是文件：删除失败
+        
+        // 4) 从父目录移除文件节点，并释放占用的磁盘空间
         dir.removeChild(file);
         fileSystem.freeSpace(file.getSize());
+        
+        // 5) 返回删除成功
         return true;
     }
     
@@ -172,7 +186,6 @@ public class FileSystemManager {
 
     /**
      * 生成可执行文件
-     *
      * 将指令行集合写入文件内容；文件大小按64KB块向上取整。
      * 说明：
      * - 指令文本以 UTF-8 存储，每行一条；
@@ -189,6 +202,17 @@ public class FileSystemManager {
     }
 
     /**
+     * 生成可执行文件（从 Executable 对象）
+     */
+    public File createExecutable(String path, String name, org.example.scau_os_simulation.process.Executable exec) {
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        for (int i = 0; i < exec.length(); i++) {
+            lines.add(exec.fetch(i));
+        }
+        return createExecutable(path, name, lines);
+    }
+
+    /**
      * 加载可执行文件
      *
      * 读取文本内容并解析为指令列表，封装为 Executable 对象。
@@ -198,19 +222,26 @@ public class FileSystemManager {
      * - 若任一层不存在或类型不匹配，返回 null。
      */
     public org.example.scau_os_simulation.process.Executable loadExecutable(String path) {
+        // 1) 解析路径并逐级定位到目标文件所在的目录
         String[] parts = path.split("/");
         Directory dir = rootDirectory;
         for (int i = 0; i < parts.length - 1; i++) {
             String part = parts[i];
             if (part.isEmpty()) continue;
             Object child = dir.findChild(part);
-            if (child instanceof Directory d) dir = d; else return null;
+            if (child instanceof Directory d) dir = d; else return null; // 中途碰到非目录：路径非法
         }
+        
+        // 2) 在该目录下找到文件节点
         String fileName = parts[parts.length - 1];
         Object child = dir.findChild(fileName);
-        if (!(child instanceof File f)) return null;
+        if (!(child instanceof File f)) return null; // 目标不是文件：加载失败
+        
+        // 3) 将文件内容按行拆分为指令集合（UTF-8 编码）
         String content = new String(f.getContent(), java.nio.charset.StandardCharsets.UTF_8);
         java.util.List<String> lines = java.util.Arrays.asList(content.split("\n"));
+        
+        // 4) 封装为 Executable，交由 CPU 按 PC 取指执行
         return new org.example.scau_os_simulation.process.Executable(lines);
     }
 
@@ -245,5 +276,14 @@ public class FileSystemManager {
      */
     public FileSystem getFileSystem() {
         return fileSystem;
+    }
+
+    /**
+     * 粘贴文件或目录到指定路径
+     */
+    public Object paste(Object source, String targetPath) {
+        Directory target = findDirectoryByPath(targetPath);
+        if (target == null) throw new IllegalArgumentException("目标路径不存在");
+        return target.copyChild(source, null);
     }
 }

@@ -24,6 +24,11 @@ package org.example.scau_os_simulation.kernel;
 import org.example.scau_os_simulation.filesystem.FileSystem;
 import org.example.scau_os_simulation.process.Executable;
 import org.example.scau_os_simulation.memory.Memory;
+import org.example.scau_os_simulation.sync.SyncManager;
+import org.example.scau_os_simulation.logging.OperationLogger;
+import org.example.scau_os_simulation.performance.PerformanceMonitor;
+import org.example.scau_os_simulation.undo.UndoManager;
+import org.example.scau_os_simulation.process.ProducerConsumerExecutable;
 
 /**
  * 操作系统内核类
@@ -37,7 +42,6 @@ import org.example.scau_os_simulation.memory.Memory;
  * - 它确保整个公司高效运转
  */
 public class Kernel {
-    
     /**
      * 内核的单例实例
      * 
@@ -60,6 +64,18 @@ public class Kernel {
     
     /** 调度器：周期推进系统时钟、驱动 CPU 与设备（排班经理） */
     private Scheduler scheduler;
+    
+    /** 同步管理器：管理信号量等同步机制 */
+    private SyncManager syncManager;
+    
+    /** 操作日志记录器：记录所有系统操作 */
+    private OperationLogger operationLogger;
+    
+    /** 性能监控器：监控系统性能指标 */
+    private PerformanceMonitor performanceMonitor;
+    
+    /** 撤销管理器：管理可撤销操作 */
+    private UndoManager undoManager;
 
     /** 执行结果日志：记录进程结束时的 AX 值等信息 */
     private final java.util.List<String> outputLogs = new java.util.ArrayList<>();
@@ -78,7 +94,6 @@ public class Kernel {
      * 获取内核的单例实例
      * 这是访问内核的全局入口点，任何地方都可以通过这个方法获取内核实例
      * 就像公司的任何人都可以通过总经理办公室找到总经理一样
-     * 
      * @return 内核的单例实例
      */
     public static Kernel getInstance() {
@@ -119,6 +134,22 @@ public class Kernel {
         // 就像成立设备管理部门，并让他们与人力资源部门配合工作
         deviceManager = new DeviceManager(processManager);
         
+        // 第四步补充：初始化同步管理器
+        // 创建同步管理器，用于管理信号量等同步机制
+        syncManager = new SyncManager();
+        
+        // 第四步补充：初始化操作日志记录器
+        // 创建操作日志记录器，用于记录所有系统操作
+        operationLogger = new OperationLogger();
+        
+        // 第四步补充：初始化性能监控器
+        // 创建性能监控器，用于监控系统性能指标
+        performanceMonitor = new PerformanceMonitor(100); // 保存最近100个快照
+        
+        // 第四步补充：初始化撤销管理器
+        // 创建撤销管理器，用于管理可撤销操作
+        undoManager = new UndoManager(50); // 保存最近50个操作
+        
         // 第五步：创建可执行文件
         // 为系统创建10个可执行文件，就像准备10种不同的工作任务
         // 每个文件包含一些简单的指令，模拟真实程序的行为
@@ -156,6 +187,21 @@ public class Kernel {
         fileSystemManager.createFile("/user/data", "dataset2.txt", 1);
         fileSystemManager.createFile("/user/data", "dataset3.txt", 1);
         
+        // 第五步补充：创建生产者消费者演示程序
+        // 创建信号量
+        syncManager.createSemaphore("mutex", 1);    // 互斥信号量
+        syncManager.createSemaphore("empty", 5);    // 空位信号量（缓冲区大小为5）
+        syncManager.createSemaphore("full", 0);     // 满位信号量
+        
+        // 创建生产者消费者可执行文件
+                ProducerConsumerExecutable producer = 
+            new ProducerConsumerExecutable("producer", 1, 3);
+                ProducerConsumerExecutable consumer = 
+            new ProducerConsumerExecutable("consumer", 1, 3);
+        
+        fileSystemManager.createExecutable("/system/exec", "producer1.e", producer);
+        fileSystemManager.createExecutable("/system/exec", "consumer1.e", consumer);
+        
         // 第六步：创建进程并加载可执行文件
         // 为每个可执行文件创建一个进程，就像为每个工作任务分配一个员工
         for (int i = 1; i <= 10; i++) {
@@ -175,11 +221,9 @@ public class Kernel {
     
 /**
      * 关闭操作系统内核
-     * 
      * 这个方法负责安全地关闭所有系统资源，就像公司下班时的清理工作：
      * 1. 让所有员工下班（终止所有进程）
      * 2. 关闭排班系统（停止调度器）
-     * 
      * 这个过程确保系统能够优雅地关闭，不会造成资源泄露或数据丢失
      */
     public void shutdown() {
@@ -203,8 +247,6 @@ public class Kernel {
     }
     
 /**
-     * 获取进程管理器
-     * 
      * @return 进程管理器实例，用于管理所有的进程
      */
     public ProcessManager getProcessManager() {
@@ -212,8 +254,6 @@ public class Kernel {
     }
     
     /**
-     * 获取内存管理器
-     * 
      * @return 内存管理器实例，用于管理系统的内存资源
      */
     public MemoryManager getMemoryManager() {
@@ -221,8 +261,6 @@ public class Kernel {
     }
     
     /**
-     * 获取文件系统管理器
-     * 
      * @return 文件系统管理器实例，用于管理文件和目录
      */
     public FileSystemManager getFileSystemManager() {
@@ -230,8 +268,6 @@ public class Kernel {
     }
     
     /**
-     * 获取设备管理器
-     * 
      * @return 设备管理器实例，用于管理各种硬件设备
      */
     public DeviceManager getDeviceManager() {
@@ -239,11 +275,79 @@ public class Kernel {
     }
     
     /**
-     * 获取调度器
-     * 
      * @return 调度器实例，用于决定哪个进程在什么时候使用CPU
      */
     public Scheduler getScheduler() {
         return scheduler;  // 返回调度器
+    }
+    
+    /**
+     * @return 同步管理器实例，用于管理信号量等同步机制
+     */
+    public SyncManager getSyncManager() {
+        return syncManager;  // 返回同步管理器
+    }
+    
+    /**
+     * @return 操作日志记录器实例，用于记录所有系统操作
+     */
+    public OperationLogger getOperationLogger() {
+        return operationLogger;  // 返回操作日志记录器
+    }
+    
+    /**
+     * @return 性能监控器实例，用于监控系统性能指标
+     */
+    public PerformanceMonitor getPerformanceMonitor() {
+        return performanceMonitor;  // 返回性能监控器
+    }
+    
+    /**
+     * @return 撤销管理器实例，用于管理可撤销操作
+     */
+    public UndoManager getUndoManager() {
+        return undoManager;  // 返回撤销管理器
+    }
+
+    public long getSystemClock() {
+        return scheduler == null ? 0 : scheduler.getSystemClock();
+    }
+
+    public int getTimeSlice() {
+        org.example.scau_os_simulation.process.Process p = processManager == null ? null : processManager.getRunning();
+        return p == null ? 0 : p.getPcb().getTimeSlice();
+    }
+
+    public double getCpuUtilization() {
+        return performanceMonitor == null ? 0.0 : performanceMonitor.getLatestSnapshot().getCpuUtilization();
+    }
+
+    public double getMemoryUtilization() {
+        return performanceMonitor == null ? 0.0 : performanceMonitor.getLatestSnapshot().getMemoryUsage();
+    }
+
+    public double getSystemLoad() {
+        return performanceMonitor == null ? 0.0 : performanceMonitor.getLatestSnapshot().getSystemLoad();
+    }
+
+    public CommandExecutor getCommandExecutor() {
+        return commandExecutor;
+    }
+
+    private final CommandExecutor commandExecutor = new CommandExecutor();
+
+    public static class CommandExecutor {
+        public void execute(String command) {
+            try {
+                String cmd = command.trim().toLowerCase();
+                if (cmd.startsWith("create ")) {
+                    String name = cmd.substring(7).trim();
+                    org.example.scau_os_simulation.process.Process p = Kernel.getInstance().getProcessManager().createProcess(name.isEmpty() ? "新进程" : name, 1);
+                    if (p != null) {
+                        p.setExecutable(Kernel.getInstance().getFileSystemManager().loadExecutable("/system/exec/p1.e"));
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
     }
 }

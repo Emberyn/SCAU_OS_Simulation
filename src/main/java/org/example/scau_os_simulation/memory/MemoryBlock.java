@@ -12,7 +12,7 @@ package org.example.scau_os_simulation.memory;
  * - 在 UI 的“内存块列表”中展示每个块的起止与归属进程。
  */
 public class MemoryBlock {
-    private final int startAddress;
+    private int startAddress;
     private final int size;
     
     /**
@@ -30,6 +30,11 @@ public class MemoryBlock {
         return startAddress;
     }
     
+    /** 设置起始地址（用于内存整理） */
+    public void setStartAddress(int startAddress) {
+        this.startAddress = startAddress;
+    }
+    
     /** 获取大小（KB） */
     public int getSize() {
         return size;
@@ -40,5 +45,13 @@ public class MemoryBlock {
      */
     public int getEndAddress() {
         return startAddress + size - 1;
+    }
+
+    public javafx.beans.property.IntegerProperty startAddressProperty() {
+        return new javafx.beans.property.SimpleIntegerProperty(startAddress);
+    }
+
+    public javafx.beans.property.IntegerProperty sizeProperty() {
+        return new javafx.beans.property.SimpleIntegerProperty(size);
     }
 }

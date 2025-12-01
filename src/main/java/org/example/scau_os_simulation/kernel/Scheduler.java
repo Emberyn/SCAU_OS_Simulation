@@ -62,6 +62,15 @@ public class Scheduler {
                 systemClock++;            // 系统时钟步进（逻辑时钟）
                 cpu.executeOne();         // CPU 执行一条指令（可能导致终止/阻塞/轮转）
                 deviceManager.tick();     // 推进设备时间片并处理完成事件
+                double cpuUtil = processManager.getRunning() == null ? 0.0 : 1.0;
+                double memUsage = Kernel.getInstance().getMemoryManager().getMemoryUsageRate();
+                Kernel.getInstance().getPerformanceMonitor().recordSnapshot(
+                    cpuUtil,
+                    memUsage,
+                    processManager.getProcesses().size(),
+                    processManager.getReadyQueue().size(),
+                    processManager.getBlockedQueue().size()
+                );
             } catch (Exception ignored) {}
         }, 0, 200, TimeUnit.MILLISECONDS);
     }

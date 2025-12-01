@@ -83,4 +83,86 @@ public class Directory {
         }
         return null;
     }
+    
+    /**
+     * 复制文件或目录到当前目录
+     * @param source 要复制的文件或目录
+     * @param newName 新名称（如果为null则自动生成）
+     * @return 复制后的新对象
+     */
+    public Object copyChild(Object source, String newName) {
+        if (source instanceof File) {
+            File sourceFile = (File) source;
+            String name = newName != null ? newName : generateCopyName(sourceFile.getName());
+            File copiedFile = new File(name, sourceFile.getSize());
+            copiedFile.setContent(sourceFile.getContent());
+            addChild(copiedFile);
+            return copiedFile;
+        } else if (source instanceof Directory) {
+            Directory sourceDir = (Directory) source;
+            String name = newName != null ? newName : generateCopyName(sourceDir.getName());
+            Directory copiedDir = new Directory(name);
+            // 递归复制子目录和文件
+            for (Object child : sourceDir.getChildren()) {
+                copiedDir.copyChild(child, null);
+            }
+            addChild(copiedDir);
+            return copiedDir;
+        }
+        throw new IllegalArgumentException("只能复制File或Directory类型的对象");
+    }
+    
+    /**
+     * 生成复制文件的名称（在原名称后添加副本标识）
+     * @param originalName 原始名称
+     * @return 生成的副本名称
+     */
+    private String generateCopyName(String originalName) {
+        String baseName = originalName;
+        String extension = "";
+        
+        // 分离文件名和扩展名
+        int dotIndex = originalName.lastIndexOf('.');
+        if (dotIndex > 0 && dotIndex < originalName.length() - 1) {
+            baseName = originalName.substring(0, dotIndex);
+            extension = originalName.substring(dotIndex);
+        }
+        
+        // 生成唯一的副本名称
+        int counter = 1;
+        String newName;
+        do {
+            newName = baseName + "_副本" + counter + extension;
+            counter++;
+        } while (findChild(newName) != null);
+        
+        return newName;
+    }
+
+    
+    
+    /**
+     * 递归搜索文件或目录（按名称）
+     * @param name 要搜索的名称
+     * @return 找到的对象，未找到返回null
+     */
+    public Object searchRecursive(String name) {
+        // 先在当前目录中查找
+        Object result = findChild(name);
+        if (result != null) {
+            return result;
+        }
+        
+        // 递归搜索子目录
+        for (Object child : children) {
+            if (child instanceof Directory) {
+                Object subResult = ((Directory) child).searchRecursive(name);
+                if (subResult != null) {
+                    return subResult;
+                }
+            }
+        }
+        
+        return null;
+    }
 }

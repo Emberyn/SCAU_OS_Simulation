@@ -101,7 +101,10 @@
 #refreshFileBtn,
 #refreshDirectoryBtn,
 #createFileBtn,
-#runCommandBtn {
+#runCommandBtn,
+#defragmentBtn,
+#undoBtn,
+#redoBtn {
   -fx-background-color: #3498db;
   -fx-text-fill: white;
 }
@@ -110,7 +113,10 @@
 #refreshFileBtn:hover,
 #refreshDirectoryBtn:hover,
 #createFileBtn:hover,
-#runCommandBtn:hover {
+#runCommandBtn:hover,
+#defragmentBtn:hover,
+#undoBtn:hover,
+#redoBtn:hover {
   -fx-background-color: #2980b9;
   -fx-effect: dropshadow(gaussian, rgba(52, 152, 219, 0.4), 8, 0, 0, 2);
 }
@@ -151,6 +157,15 @@
   -fx-text-fill: #ecf0f1;
   -fx-font-family: 'Consolas', 'Monospace';
   -fx-font-size: 12px;
+  -fx-background-radius: 6;
+}
+
+/* 操作日志样式 */
+.log-list {
+  -fx-background-color: #34495e;
+  -fx-text-fill: #ecf0f1;
+  -fx-font-family: 'Consolas', 'Monospace';
+  -fx-font-size: 11px;
   -fx-background-radius: 6;
 }
 
@@ -249,10 +264,36 @@
   -fx-text-fill: #7f8c8d;
 }
 
+.memory-fragmentation {
+  -fx-font-size: 14px;
+  -fx-text-fill: #e67e22;
+  -fx-font-weight: bold;
+}
+
 .memory-blocks {
   -fx-font-size: 16px;
   -fx-font-weight: bold;
   -fx-text-fill: #2c3e50;
+}
+
+/* 性能监控 */
+.performance-label {
+  -fx-font-size: 12px;
+  -fx-text-fill: #7f8c8d;
+}
+
+.performance-value {
+  -fx-font-size: 14px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #2c3e50;
+}
+
+.cpu-progress {
+  -fx-accent: #e74c3c;
+}
+
+.load-progress {
+  -fx-accent: #f39c12;
 }
 
 /* 文件系统 */

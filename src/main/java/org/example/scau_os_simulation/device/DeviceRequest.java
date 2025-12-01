@@ -12,4 +12,6 @@ package org.example.scau_os_simulation.device;
  * @param timeUnits 预计占用的时间片数
  */
 public record DeviceRequest(int pid, DeviceType type, int timeUnits) {
+    public int getPid() { return pid; }
+    public int getExecutionTime() { return timeUnits; }
 }

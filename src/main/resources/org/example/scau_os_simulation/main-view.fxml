@@ -53,6 +53,10 @@
                                     onAction="#onCreateProcessClick"/>
                             <Button fx:id="terminateProcessBtn" text="终止进程" 
                                     onAction="#onTerminateProcessClick"/>
+                            <Button fx:id="undoBtn" text="撤销" 
+                                    onAction="#onUndoClick"/>
+                            <Button fx:id="redoBtn" text="重做" 
+                                    onAction="#onRedoClick"/>
                         </HBox>
                         
                         <!-- 状态信息区域 -->
@@ -106,6 +110,51 @@
                             <Label text="执行结果" styleClass="title"/>
                             <ListView fx:id="outputListView" prefHeight="100" styleClass="output-list"/>
                         </VBox>
+                        
+                        <!-- 操作日志 -->
+                        <VBox spacing="10">
+                            <Label text="操作日志" styleClass="title"/>
+                            <ListView fx:id="operationLogListView" prefHeight="150" styleClass="log-list"/>
+                        </VBox>
+                        
+                        <!-- 性能监控 -->
+                        <VBox spacing="10">
+                            <Label text="性能监控" styleClass="title"/>
+                            <HBox spacing="15">
+                                <VBox spacing="5">
+                                    <Label text="CPU利用率" styleClass="performance-label"/>
+                                    <ProgressBar fx:id="cpuUtilizationBar" progress="0.0" 
+                                               prefWidth="200" styleClass="cpu-progress"/>
+                                    <Label fx:id="cpuUtilizationLabel" text="0.0%" 
+                                           styleClass="performance-value"/>
+                                </VBox>
+                                <VBox spacing="5">
+                                    <Label text="系统负载" styleClass="performance-label"/>
+                                    <ProgressBar fx:id="systemLoadBar" progress="0.0" 
+                                               prefWidth="200" styleClass="load-progress"/>
+                                    <Label fx:id="systemLoadLabel" text="0.0%" 
+                                           styleClass="performance-value"/>
+                                </VBox>
+                            </HBox>
+                            <HBox spacing="15">
+                                <VBox spacing="5">
+                                    <Label text="平均CPU利用率" styleClass="performance-label"/>
+                                    <Label fx:id="avgCpuLabel" text="0.0%" styleClass="performance-value"/>
+                                </VBox>
+                                <VBox spacing="5">
+                                    <Label text="平均内存使用率" styleClass="performance-label"/>
+                                    <Label fx:id="avgMemoryLabel" text="0.0%" styleClass="performance-value"/>
+                                </VBox>
+                                <VBox spacing="5">
+                                    <Label text="峰值CPU利用率" styleClass="performance-label"/>
+                                    <Label fx:id="peakCpuLabel" text="0.0%" styleClass="performance-value"/>
+                                </VBox>
+                                <VBox spacing="5">
+                                    <Label text="峰值内存使用率" styleClass="performance-label"/>
+                                    <Label fx:id="peakMemoryLabel" text="0.0%" styleClass="performance-value"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
                     </VBox>
                 </ScrollPane>
             </Tab>
@@ -123,11 +172,17 @@
                                          prefWidth="600" styleClass="memory-progress"/>
                             <Label fx:id="memoryInfoLabel" text="已使用: 0KB / 总计: 0KB" 
                                    styleClass="memory-info"/>
+                            <Label fx:id="fragmentationLabel" text="碎片率: 0% | 最大连续空闲: 0KB" 
+                                   styleClass="memory-fragmentation"/>
+                            <HBox spacing="15">
+                                <Button fx:id="defragmentBtn" text="内存整理" 
+                                        onAction="#onDefragmentClick"/>
+                            </HBox>
                         </VBox>
                         
                         <VBox spacing="10">
                             <Label text="内存块分配" styleClass="memory-blocks"/>
-                            <TableView fx:id="memoryTableView" 
+                            <TableView fx:id="memoryBlockTableView" 
                                        styleClass="data-table"
                                        prefHeight="300">
                                 <columns>

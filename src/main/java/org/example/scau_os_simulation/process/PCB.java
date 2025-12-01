@@ -15,7 +15,11 @@ public class PCB {
     /** 进程名（用于 UI 展示） */
     private final String name;
     /** 调度优先级（示例用途） */
-    private final int priority;
+    private final int basePriority;
+    /** 当前优先级（动态变化） */
+    private int currentPriority;
+    /** 等待时间（用于动态优先级 aging） */
+    private int waitingTime;
     /** 当前状态（NEW/READY/RUNNING/BLOCKED/TERMINATED） */
     private ProcessState state;
     /** 占用内存的起始地址（字节） */
@@ -39,14 +43,16 @@ public class PCB {
     public PCB(int pid, String name, int priority, int memoryAddress, int memorySize) {
         this.pid = pid;
         this.name = name;
-        this.priority = priority;
+        this.basePriority = priority;
+        this.currentPriority = priority;
+        this.waitingTime = 0;
         this.state = ProcessState.NEW;
         this.memoryAddress = memoryAddress;
         this.memorySize = memorySize;
         this.ax = 0;
         this.pc = 0;
         this.ir = "";
-        this.timeSlice = 6;
+        this.timeSlice = 50;
         this.blockReason = "";
     }
     
@@ -59,7 +65,35 @@ public class PCB {
     }
     
     public int getPriority() {
-        return priority;
+        return currentPriority;
+    }
+    
+    public int getBasePriority() {
+        return basePriority;
+    }
+    
+    public int getWaitingTime() {
+        return waitingTime;
+    }
+    
+    /**
+     * 增加等待时间，并根据等待时间调整优先级（aging机制）
+     * 每等待10个时间单位，优先级增加1，最高不超过基础优先级+5
+     */
+    public void incrementWaitingTime() {
+        waitingTime++;
+        // 每10个时间单位增加一次优先级
+        if (waitingTime % 10 == 0) {
+            currentPriority = Math.min(basePriority + 5, currentPriority + 1);
+        }
+    }
+    
+    /**
+     * 重置等待时间和优先级（当进程开始运行时调用）
+     */
+    public void resetWaitingTime() {
+        waitingTime = 0;
+        currentPriority = basePriority;
     }
     
     public ProcessState getState() {
@@ -124,5 +158,29 @@ public class PCB {
 
     public void setBlockReason(String blockReason) {
         this.blockReason = blockReason;
+    }
+
+    public javafx.beans.property.IntegerProperty pidProperty() {
+        return new javafx.beans.property.SimpleIntegerProperty(pid);
+    }
+
+    public javafx.beans.property.StringProperty nameProperty() {
+        return new javafx.beans.property.SimpleStringProperty(name);
+    }
+
+    public javafx.beans.property.StringProperty stateProperty() {
+        return new javafx.beans.property.SimpleStringProperty(state.name());
+    }
+
+    public javafx.beans.property.IntegerProperty priorityProperty() {
+        return new javafx.beans.property.SimpleIntegerProperty(currentPriority);
+    }
+
+    public javafx.beans.property.IntegerProperty memoryAddressProperty() {
+        return new javafx.beans.property.SimpleIntegerProperty(memoryAddress);
+    }
+
+    public javafx.beans.property.IntegerProperty memorySizeProperty() {
+        return new javafx.beans.property.SimpleIntegerProperty(memorySize);
     }
 }

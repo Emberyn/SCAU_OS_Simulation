@@ -40,8 +40,16 @@ public class Device {
         return inUse;
     }
 
+    public boolean isBusy() {
+        return inUse;
+    }
+
     /** 当前占用设备的进程PID（未占用时为 -1） */
     public int getUsedByPid() {
+        return usedByPid;
+    }
+
+    public int getCurrentUserPid() {
         return usedByPid;
     }
 

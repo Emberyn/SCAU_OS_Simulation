@@ -44,7 +44,6 @@ public class DeviceManager {
 
     /**
      * 申请设备
-     *
      * 若存在空闲设备则立即分配并将进程置为阻塞；否则加入等待队列。
      * @param pid 申请进程PID
      * @param type 设备类型
@@ -108,6 +107,7 @@ public class DeviceManager {
         }
     }
 
+
     /**
      * 获取设备清单
      */
@@ -115,10 +115,21 @@ public class DeviceManager {
         return devices;
     }
 
+
     /**
      * 获取设备等待队列
      */
     public Map<DeviceType, Deque<DeviceRequest>> getWaitQueues() {
         return waitQueues;
+    }
+
+    public java.util.List<Device> getAllDevices() {
+        java.util.List<Device> list = new java.util.ArrayList<>();
+        for (java.util.List<Device> ds : devices.values()) list.addAll(ds);
+        return list;
+    }
+
+    public java.util.Deque<DeviceRequest> getWaitingQueue(DeviceType type) {
+        return waitQueues.get(type);
     }
 }

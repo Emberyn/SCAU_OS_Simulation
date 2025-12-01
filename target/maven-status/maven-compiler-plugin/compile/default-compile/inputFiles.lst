@@ -13,10 +13,17 @@ D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulatio
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\kernel\MemoryManager.java
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\kernel\ProcessManager.java
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\kernel\Scheduler.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\logging\OperationLogger.java
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\memory\Memory.java
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\memory\MemoryBlock.java
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\OSApplication.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\performance\PerformanceChartUtil.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\performance\PerformanceMonitor.java
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\process\Executable.java
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\process\PCB.java
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\process\Process.java
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\process\ProcessState.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\process\ProducerConsumerExecutable.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\sync\Semaphore.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\sync\SyncManager.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\undo\UndoManager.java
