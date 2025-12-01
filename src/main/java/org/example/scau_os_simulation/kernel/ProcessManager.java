@@ -8,54 +8,73 @@ import java.util.*;
 /**
  * 进程管理器 - 操作系统的人力资源部
  */
-public class ProcessManager {
-    /** 所有进程的主列表 */
+public class ProcessManager
+{
+    /**
+     * 所有进程的主列表
+     */
     private final List<Process> processes;
-    /** 内存管理器 */
+    /**
+     * 内存管理器
+     */
     private final MemoryManager memoryManager;
-    /** 下一个可分配的 PID 计数器 */
+    /**
+     * 下一个可分配的 PID 计数器
+     */
     private int nextPid = 0;
 
-    /** * 【修改点】就绪队列改为 List，不再使用 PriorityQueue。
+    /**
+     * 【修改点】就绪队列改为 List，不再使用 PriorityQueue。
      * 因为 PriorityQueue 无法感知对象内部 priority 属性的变化（Aging机制失效问题）。
      */
     private final List<Process> readyQueue = new ArrayList<>();
 
-    /** 阻塞队列 */
+    /**
+     * 阻塞队列
+     */
     private final Deque<Process> blockedQueue = new ArrayDeque<>();
-    /** 当前正在 CPU 上运行的进程 */
+    /**
+     * 当前正在 CPU 上运行的进程
+     */
     private Process running;
 
-    public ProcessManager(MemoryManager memoryManager) {
+    public ProcessManager(MemoryManager memoryManager)
+    {
         this.memoryManager = memoryManager;
         this.processes = new ArrayList<>();
     }
 
-    public List<Process> getProcesses() {
+    public List<Process> getProcesses()
+    {
         return processes;
     }
 
     // 【修改点】返回类型改为 List
-    public List<Process> getReadyQueue() {
+    public List<Process> getReadyQueue()
+    {
         return readyQueue;
     }
 
-    public Deque<Process> getBlockedQueue() {
+    public Deque<Process> getBlockedQueue()
+    {
         return blockedQueue;
     }
 
-    public Process getRunning() {
+    public Process getRunning()
+    {
         return running;
     }
 
     /**
      * 创建一个新进程
      */
-    public Process createProcess(String name, int priority) {
+    public Process createProcess(String name, int priority)
+    {
         int memorySize = 64; // 默认64KB
         int memoryAddress = memoryManager.allocateMemory(memorySize);
 
-        if (memoryAddress < 0) {
+        if (memoryAddress < 0)
+        {
             System.out.println("内存不足，无法创建进程");
             Map<String, Object> details = new HashMap<>();
             details.put("name", name);
@@ -97,9 +116,11 @@ public class ProcessManager {
     /**
      * 终止一个进程
      */
-    public void terminateProcess(int pid) {
+    public void terminateProcess(int pid)
+    {
         Process process = findProcess(pid);
-        if (process != null) {
+        if (process != null)
+        {
             memoryManager.freeMemory(process.getPcb().getMemoryAddress(), process.getPcb().getMemorySize());
             processes.remove(process);
             System.out.println("终止进程: " + process.getPcb().getName() + ", PID: " + pid);
@@ -117,19 +138,40 @@ public class ProcessManager {
             if (running == process) running = null;
             readyQueue.remove(process);
             blockedQueue.remove(process);
+
+            boolean wasRunning = (running == process);
+
+            if (wasRunning)
+            {
+                running = null;
+            }
+
+            readyQueue.remove(process);
+            blockedQueue.remove(process);
+
+            // 如果刚刚终止的是运行中进程，立即调度下一个
+            if (wasRunning)
+            {
+                scheduleNext();
+            }
         }
     }
 
-    public void terminateAllProcesses() {
+    public void terminateAllProcesses()
+    {
         List<Process> processesCopy = new ArrayList<>(processes);
-        for (Process process : processesCopy) {
+        for (Process process : processesCopy)
+        {
             terminateProcess(process.getPcb().getPid());
         }
     }
 
-    public Process findProcess(int pid) {
-        for (Process process : processes) {
-            if (process.getPcb().getPid() == pid) {
+    public Process findProcess(int pid)
+    {
+        for (Process process : processes)
+        {
+            if (process.getPcb().getPid() == pid)
+            {
                 return process;
             }
         }
@@ -139,11 +181,14 @@ public class ProcessManager {
     /**
      * 更新等待时间（Aging机制）
      */
-    public void updateWaitingTimes() {
-        for (Process process : readyQueue) {
+    public void updateWaitingTimes()
+    {
+        for (Process process : readyQueue)
+        {
             process.getPcb().incrementWaitingTime();
         }
-        for (Process process : blockedQueue) {
+        for (Process process : blockedQueue)
+        {
             process.getPcb().incrementWaitingTime();
         }
     }
@@ -151,12 +196,14 @@ public class ProcessManager {
     /**
      * 选择并切换到下一个运行的进程
      */
-    public void scheduleNext() {
+    public void scheduleNext()
+    {
         // 1) aging：更新等待时间
         updateWaitingTimes();
 
         // 2) 若当前有运行中的进程，则将其恢复为就绪态并放回队列
-        if (running != null) {
+        if (running != null)
+        {
             running.ready();
             // 【修改点】使用 add
             readyQueue.add(running);
@@ -167,7 +214,8 @@ public class ProcessManager {
         // 【修改点】手动查找优先级最高的进程
         // 规则：优先级高(Priority值大)的优先；如果相同，PID小的优先
         Process next = readyQueue.stream()
-                .max((p1, p2) -> {
+                .max((p1, p2) ->
+                {
                     int pDiff = p1.getPcb().getPriority() - p2.getPcb().getPriority();
                     if (pDiff != 0) return pDiff;
                     return p2.getPcb().getPid() - p1.getPcb().getPid(); // PID越小越优先，所以反过来减
@@ -188,11 +236,13 @@ public class ProcessManager {
         running.getPcb().resetWaitingTime();
     }
 
-    public void onTimeSliceEnd() {
+    public void onTimeSliceEnd()
+    {
         scheduleNext();
     }
 
-    public void onProcessBlocked(int pid) {
+    public void onProcessBlocked(int pid)
+    {
         Process p = findProcess(pid);
         if (p == null) return;
         readyQueue.remove(p);
@@ -202,7 +252,8 @@ public class ProcessManager {
     /**
      * 设备完成请求后的处理
      */
-    public void onDeviceComplete(int pid) {
+    public void onDeviceComplete(int pid)
+    {
         Process p = findProcess(pid);
         if (p == null) return;
         blockedQueue.remove(p);
