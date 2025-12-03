@@ -1044,50 +1044,89 @@ public class MainController implements Initializable
 
     /**
      * 更新文件系统视图
-     * 重新构建文件目录树，并更新磁盘使用率。
      */
-    private void updateFileSystemView()
-    {
+    private void updateFileSystemView() {
         Directory rootDir = kernel.getFileSystemManager().getRootDirectory();
+
         // 创建树的根节点
         TreeItem<String> rootItem = new TreeItem<>(rootDir.getName());
-        rootItem.setExpanded(true); // 展开根节点
+        rootItem.setGraphic(createIcon("folder")); // 添加文件夹图标
+        rootItem.setExpanded(true);
 
         // 递归填充树结构
         populateFileSystemTree(rootDir, rootItem);
         fileSystemTreeView.setRoot(rootItem);
 
-        // 更新磁盘空间使用情况
-        int totalDiskSpace = kernel.getFileSystemManager().getFileSystem().getTotalSize();
-        int usedDiskSpace = kernel.getFileSystemManager().getFileSystem().getUsedSize();
-        double diskUsage = (double) usedDiskSpace / totalDiskSpace;
-        diskUsageBar.setProgress(diskUsage);
-        diskInfoLabel.setText(String.format("已用: %d KB / 总量: %d KB", usedDiskSpace, totalDiskSpace));
+        // 更新磁盘信息
+        if (kernel.getFileSystemManager().getFileSystem() != null) {
+            int total = kernel.getFileSystemManager().getFileSystem().getTotalSize();
+            int used = kernel.getFileSystemManager().getFileSystem().getUsedSize();
+            double usage = total > 0 ? (double) used / total : 0;
+
+            if (diskUsageBar != null) diskUsageBar.setProgress(usage);
+            if (diskInfoLabel != null) diskInfoLabel.setText(String.format("已用: %d KB / 总量: %d KB", used, total));
+        }
     }
 
     /**
-     * 递归填充文件树的辅助方法
-     * @param parent 实际的目录对象
-     * @param parentItem 对应的 UI 树节点
+     * 递归填充文件树 (带图标逻辑)
      */
-    private void populateFileSystemTree(Directory parent, TreeItem<String> parentItem)
-    {
-        for (Object child : parent.getChildren())
-        {
-            if (child instanceof Directory)
-            {
-                // 如果是子目录，创建新节点并递归调用
+    private void populateFileSystemTree(Directory parent, TreeItem<String> parentItem) {
+        for (Object child : parent.getChildren()) {
+            if (child instanceof Directory) {
+                // 子目录 -> 文件夹图标
                 Directory dir = (Directory) child;
                 TreeItem<String> dirItem = new TreeItem<>(dir.getName());
+                dirItem.setGraphic(createIcon("folder"));
                 parentItem.getChildren().add(dirItem);
                 populateFileSystemTree(dir, dirItem);
-            } else if (child instanceof File)
-            {
-                // 如果是文件，直接添加叶子节点
-                parentItem.getChildren().add(new TreeItem<>(((File) child).getName()));
+            } else if (child instanceof File) {
+                // 文件 -> 根据后缀判断图标
+                File f = (File) child;
+                TreeItem<String> fileItem = new TreeItem<>(f.getName());
+
+                if (f.getName().endsWith(".e")) {
+                    fileItem.setGraphic(createIcon("exec"));
+                } else if (f.getName().endsWith(".txt")) {
+                    fileItem.setGraphic(createIcon("text"));
+                } else {
+                    fileItem.setGraphic(createIcon("file"));
+                }
+                parentItem.getChildren().add(fileItem);
             }
         }
     }
+
+    /**
+     * 创建带样式的 Emoji 图标
+     */
+    private javafx.scene.control.Label createIcon(String type) {
+        javafx.scene.control.Label iconLabel = new javafx.scene.control.Label();
+        // 设置字体以确保Emoji显示正常，虽然CSS已设置，这里双重保险
+        iconLabel.setStyle("-fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Segoe UI Symbol';");
+
+        switch (type) {
+            case "folder":
+                iconLabel.setText("📁");
+                iconLabel.getStyleClass().add("folder-icon");
+                break;
+            case "exec":
+                iconLabel.setText("🚀");
+                iconLabel.getStyleClass().add("exec-icon");
+                break;
+            case "text":
+                iconLabel.setText("📝");
+                iconLabel.getStyleClass().add("file-icon");
+                break;
+            default:
+                iconLabel.setText("📄");
+                iconLabel.getStyleClass().add("file-icon");
+                break;
+        }
+        return iconLabel;
+    }
+
+
 
     /**
      * 更新日志视图

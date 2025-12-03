@@ -32,49 +32,66 @@
     -fx-padding: 20; /* 增加留白，拒绝拥挤 */
 }
 
-/* --- 3. 侧边导航栏 (Sidebar) --- */
-.sidebar-nav {
-    -fx-background-color: transparent;
-    -fx-padding: 15 0 0 10;
-}
-.sidebar-nav .tab-header-area { -fx-padding: 0; }
-.sidebar-nav .tab-header-background { -fx-background-color: transparent; }
+/* --- 3. 侧边导航栏 (Sidebar) - 现代扁平化风格 --- */
 
+/* 侧边栏整体容器 */
+.sidebar-nav {
+    -fx-background-color: #ffffff; /* 确保背景纯白 */
+    /* 在右侧添加一条清晰的边界线，分隔内容区域 */
+    -fx-border-color: transparent #e0e0e0 transparent transparent;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+}
+
+/* 调整 TabHeaderArea 位置，使其紧贴边缘 */
+.sidebar-nav .tab-header-area {
+    -fx-padding: 10 0 0 0; /* 顶部留出一点呼吸感 */
+    -fx-background-color: transparent;
+}
+
+/* 单个 Tab 的基础样式 (未选中态) */
 .sidebar-nav .tab {
     -fx-background-color: transparent;
-    -fx-background-radius: 8px;
-    -fx-padding: 10 20;
-    -fx-pref-width: 190;
-    -fx-alignment: CENTER_LEFT;
+    /* 【核心修改】移除圆角，变为现代的直角矩形 */
+    -fx-background-radius: 0;
+    /* 【核心修改】移除间距，让 Tab 紧挨在一起 */
+    -fx-margin: 0;
+    /* 调整内边距：增加垂直高度，减少水平宽度，适应侧边布局 */
+    -fx-padding: 25 10;
+    -fx-alignment: CENTER;
     -fx-cursor: hand;
-    -fx-margin: 0 0 4 0;
-    -fx-border-width: 0;
+    /* 预设一个透明的左侧边框，用于选中时的指示条动画效果 */
+    -fx-border-color: transparent transparent transparent transparent;
+    -fx-border-width: 0 0 0 4; /* 左侧预留4px宽度 */
+    -fx-transition: all 0.2s ease-in-out; /* 添加平滑过渡动画 */
 }
 
-/* 导航项悬停：极淡的灰蓝 */
+/* 导航项悬停：干净清爽的浅灰背景 */
 .sidebar-nav .tab:hover {
-    -fx-background-color: #eef2f6;
+    -fx-background-color: #f5f7fa;
 }
 
-/* 导航项选中：柔和的莫兰迪蓝背景 */
+/* 导航项选中：极淡蓝背景 + 左侧醒目指示条 */
 .sidebar-nav .tab:selected {
-    -fx-background-color: #e3f2fd;
+    /* 柔和的浅蓝背景，去塑料感 */
+    -fx-background-color: #f0f7ff;
+    /* 移除之前的阴影效果 */
     -fx-effect: none;
+    /* 【核心修改】将左侧边框变为醒目的深蓝色，形成指示条 */
+    -fx-border-color: transparent transparent transparent #1976d2;
 }
 
-/* 选中项文字：深蓝高亮 */
+/* 选中项文字：深蓝高亮，加粗，提升层级感 */
 .sidebar-nav .tab:selected .tab-label {
-    -fx-text-fill: #1976d2;
+    -fx-text-fill: #0d47a1;
     -fx-font-weight: bold;
     -fx-font-size: 15px;
 }
 
-/* 选中项左侧指示条 */
-.sidebar-nav .tab:selected:before {
-    -fx-background-color: #1976d2;
-    -fx-scale-y: 0.6;
-    -fx-pref-width: 4;
-    -fx-border-radius: 4;
+/* 基础文字样式调整 */
+.sidebar-nav .tab-label {
+    -fx-text-fill: #546e7a; /* 默认使用柔和的灰蓝色 */
+    -fx-font-weight: normal;
 }
 
 /* --- 4. 按钮与交互 (Buttons) --- */
@@ -144,29 +161,72 @@
 }
 
 /* --- 5. 目录树 (Tree View) 美化 --- */
+/* --- 5. 目录树 (Tree View) 美化 - Windows 11 风格 --- */
 .tree-view {
+    /* 保持背景与卡片一致或纯白 */
     -fx-background-color: transparent;
     -fx-border-color: transparent;
+    -fx-padding: 5;
 }
+
 .tree-cell {
     -fx-background-color: transparent;
-    -fx-padding: 8 5; /* 增加行高，避免拥挤 */
-    -fx-font-family: "Segoe UI", "Microsoft YaHei";
-    -fx-font-size: 13.5px;
+    -fx-padding: 6px 5px; /* 增加行高，视觉更宽松 */
+    -fx-font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2c3e50; /* 深灰蓝文字 */
+    -fx-alignment: center-left;
 }
 
-/* 悬停：极浅的薄荷绿 */
+/* 悬停：极浅的灰蓝 */
 .tree-cell:filled:hover {
-    -fx-background-color: #f1f8e9;
+    -fx-background-color: #f0f5f9;
 }
 
-/* 选中：清新的浅青色背景，柔和护眼 */
+/* 选中：Windows 风格的浅蓝色背景 */
 .tree-cell:filled:selected {
-    -fx-background-color: #e0f2f1;
-    -fx-text-fill: #00695c; /* 深青色文字 */
-    /* 左侧细条高亮 */
-    -fx-border-color: transparent transparent transparent #26a69a;
-    -fx-border-width: 0 0 0 3;
+    -fx-background-color: #cce8ff; /* 经典选中蓝 */
+    -fx-text-fill: #000000;         /* 选中后文字变黑，对比更清晰 */
+    /* 移除左侧细条，采用全背景高亮，更像文件管理器 */
+    -fx-border-color: transparent;
+}
+
+/* 移除点击时的默认蓝色聚焦边框 */
+.tree-cell:focused {
+    -fx-background-insets: 0;
+}
+
+/* 调整左侧折叠小三角 - 柔和灰色 */
+.tree-cell .tree-disclosure-node .arrow {
+    -fx-background-color: #90a4ae;
+    -fx-padding: 2.5px;
+}
+.tree-cell:expanded .tree-disclosure-node .arrow {
+    -fx-background-color: #78909c;
+}
+
+/* --- 自定义图标样式 (配合 Java 代码使用) --- */
+
+/* 文件夹图标 - 暖黄色 */
+.folder-icon {
+    -fx-text-fill: #ffc107; /* 文件夹经典黄 */
+    -fx-font-size: 16px;
+    -fx-padding: 0 8 0 0;   /* 图标右侧留白 */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 2, 0, 0, 1); /* 轻微立体感 */
+}
+
+/* 可执行文件图标 - 绿色 */
+.exec-icon {
+    -fx-text-fill: #4caf50;
+    -fx-font-size: 16px;
+    -fx-padding: 0 8 0 0;
+}
+
+/* 文本/普通文件图标 - 蓝灰色 */
+.file-icon {
+    -fx-text-fill: #78909c;
+    -fx-font-size: 16px;
+    -fx-padding: 0 8 0 0;
 }
 
 /* --- 6. 表格 (Table View) --- */
