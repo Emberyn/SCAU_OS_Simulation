@@ -3,312 +3,331 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.Font?>
 <?import java.net.URL?>
 
-<!--
-  美化后的主界面布局：
-  - 现代化的配色方案和更大的间距
-  - 选项卡采用两端对齐布局
-  - 组件间距更宽松，视觉效果更舒适
-  - 按钮采用圆角设计和悬停效果
-  - 整体采用卡片式设计风格
--->
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.example.scau_os_simulation.controller.MainController"
-            prefHeight="700.0" prefWidth="900.0">
+            prefHeight="800.0" prefWidth="1200.0"
+            styleClass="root-container">
 
     <stylesheets>
         <URL value="@style.css"/>
     </stylesheets>
 
     <top>
-        <!-- 使用 VBox 垂直排列：上面是菜单栏，下面是工具栏 -->
-        <VBox>
-
-            <!-- 1. 顶部菜单栏 (保留原有的) -->
+        <VBox styleClass="header-area">
             <MenuBar styleClass="menu-bar">
-                <Menu text="文件">
+                <Menu text="文件 (F)">
                     <MenuItem text="退出" onAction="#onExitAction"/>
                 </Menu>
-                <Menu text="帮助">
+                <Menu text="视图 (V)">
+                    <MenuItem text="刷新" />
+                </Menu>
+                <Menu text="帮助 (H)">
                     <MenuItem text="关于" onAction="#onAboutAction"/>
                 </Menu>
             </MenuBar>
-
-            <ToolBar style="-fx-background-color: white; -fx-padding: 10px; -fx-border-color: #e0e0e0; -fx-border-width: 0 0 1 0;">
-                <items>
-                    <!-- 左侧：显示系统状态 -->
-                    <Label fx:id="systemStatusLabel" text="状态: 等待启动"
-                           style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d; -fx-padding: 0 0 0 5;"/>
-
-                    <!-- 中间占位符 -->
-                    <Region HBox.hgrow="ALWAYS" />
-
-                    <!-- 右侧：启动按钮 (样式已移至 CSS 的 #startSystemBtn) -->
-                    <Button fx:id="startSystemBtn"
-                            text="▶ 启动系统"
-                            onAction="#onStartSystemClick" />
-                </items>
-            </ToolBar>
         </VBox>
     </top>
-    
+
     <center>
-        <!-- 中央区域：主要功能选项卡 - 采用两端对齐 -->
-        <TabPane fx:id="tabPane" styleClass="tab-pane"
-                 tabMinWidth="120"
-                 tabMaxWidth="200">
-            
-            <Tab fx:id="processTab" text="进程管理" closable="false" styleClass="tab">
-                <ScrollPane fitToWidth="true" styleClass="scroll-pane">
-                    <VBox fx:id="processContainer" spacing="20" styleClass="card">
-                        <padding>
-                            <Insets top="25" right="25" bottom="25" left="25"/>
-                        </padding>
-                        
-                        <!-- 操作按钮区域 -->
-                        <HBox spacing="15">
-                            <Button fx:id="createProcessBtn" text="创建进程" 
-                                    onAction="#onCreateProcessClick"/>
-                            <Button fx:id="terminateProcessBtn" text="终止进程" 
-                                    onAction="#onTerminateProcessClick"/>
-                            <Button fx:id="undoBtn" text="撤销" 
-                                    onAction="#onUndoClick"/>
-                            <Button fx:id="redoBtn" text="重做" 
-                                    onAction="#onRedoClick"/>
+        <TabPane fx:id="tabPane" side="LEFT" tabClosingPolicy="UNAVAILABLE" styleClass="sidebar-nav" rotateGraphic="false">
+
+            <Tab text="进程管理">
+                <AnchorPane styleClass="tab-content-area">
+                    <VBox spacing="15" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+                        <HBox spacing="12" styleClass="card, action-bar" alignment="CENTER_LEFT">
+                            <Button fx:id="createProcessBtn" text="➕ 新建进程" onAction="#onCreateProcessClick" styleClass="button, primary"/>
+                            <Button fx:id="terminateProcessBtn" text="❌ 结束任务" onAction="#onTerminateProcessClick" styleClass="button, danger"/>
+                            <Separator orientation="VERTICAL"/>
+                            <Button fx:id="startSystemBtn" text="▶ 启动系统" onAction="#onStartSystemClick" styleClass="button, success"/>
+                            <Button fx:id="stopSystemBtn" text="⏸ 暂停" onAction="#onStopSystemClick" styleClass="button"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="undoBtn" text="↩ 撤销" onAction="#onUndoClick" styleClass="button, icon-only"/>
+                            <Button fx:id="redoBtn" text="↪ 重做" onAction="#onRedoClick" styleClass="button, icon-only"/>
                         </HBox>
-                        
-                        <!-- 状态信息区域 -->
-                        <HBox spacing="20" styleClass="status-panel">
-                            <Label text="系统时钟:" styleClass="status-label"/>
-                            <Label fx:id="systemClockLabel" text="0" styleClass="status-value status-clock"/>
-                            <Separator orientation="VERTICAL"/>
-                            <Label text="运行进程PID:" styleClass="status-label"/>
-                            <Label fx:id="runningPidLabel" text="-" styleClass="status-value status-pid"/>
-                            <Separator orientation="VERTICAL"/>
-                            <Label text="指令:" styleClass="status-label"/>
-                            <Label fx:id="irLabel" text="-" styleClass="status-value status-instruction"/>
-                            <Separator orientation="VERTICAL"/>
-                            <Label text="AX:" styleClass="status-label"/>
-                            <Label fx:id="axLabel" text="0" styleClass="status-value status-ax"/>
-                            <Separator orientation="VERTICAL"/>
-                            <Label text="时间片:" styleClass="status-label"/>
-                            <Label fx:id="tsLabel" text="6" styleClass="status-value status-timeslice"/>
-                        </HBox>
-                        
-                        <!-- 进程表格 -->
-                        <VBox spacing="10">
-                            <Label text="进程列表" styleClass="title"/>
-                            <TableView fx:id="processTableView" styleClass="data-table"
-                                       prefHeight="200">
-                                <columns>
-                                    <TableColumn text="PID" fx:id="pidColumn" prefWidth="60"/>
-                                    <TableColumn text="名称" fx:id="nameColumn" prefWidth="120"/>
-                                    <TableColumn text="状态" fx:id="stateColumn" prefWidth="100"/>
-                                    <TableColumn text="优先级" fx:id="priorityColumn" prefWidth="80"/>
-                                    <TableColumn text="内存地址" fx:id="memoryAddressColumn" prefWidth="100"/>
-                                    <TableColumn text="内存大小" fx:id="memorySizeColumn" prefWidth="100"/>
-                                </columns>
-                            </TableView>
-                        </VBox>
-                        
-                        <!-- 队列信息 -->
-                        <HBox spacing="20">
-                            <VBox spacing="10" styleClass="queue-panel">
-                                <Label text="就绪队列" styleClass="queue-ready"/>
-                                <ListView fx:id="readyQueueListView" prefHeight="120" styleClass="queue-list"/>
+
+                        <SplitPane dividerPositions="0.75" VBox.vgrow="ALWAYS" style="-fx-background-color:transparent; -fx-padding:0;">
+
+                            <VBox styleClass="card, table-container">
+                                <TableView fx:id="processTableView" VBox.vgrow="ALWAYS">
+                                    <columns>
+                                        <TableColumn text="PID" fx:id="pidColumn" prefWidth="60"/>
+                                        <TableColumn text="进程名称" fx:id="nameColumn" prefWidth="140"/>
+                                        <TableColumn text="状态" fx:id="stateColumn" prefWidth="90"/>
+                                        <TableColumn text="优先级" fx:id="priorityColumn" prefWidth="70"/>
+                                        <TableColumn text="内存基址" fx:id="memoryAddressColumn" prefWidth="90"/>
+                                        <TableColumn text="占用内存" fx:id="memorySizeColumn" prefWidth="90"/>
+                                    </columns>
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                    </columnResizePolicy>
+                                </TableView>
                             </VBox>
-                            <VBox spacing="10" styleClass="queue-panel">
-                                <Label text="阻塞队列" styleClass="queue-blocked"/>
-                                <ListView fx:id="blockedQueueListView" prefHeight="120" styleClass="queue-list"/>
+
+                            <ScrollPane fitToWidth="true" styleClass="card, scroll-panel">
+                                <VBox spacing="20">
+                                    <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+
+                                    <VBox spacing="10">
+                                        <Label text="CPU 实时状态" styleClass="section-header"/>
+                                        <GridPane hgap="10" vgap="8">
+                                            <Label text="系统时钟" styleClass="text-muted" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                            <Label fx:id="systemClockLabel" text="0" styleClass="text-strong" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                                            <Label text="运行进程" styleClass="text-muted" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                            <Label fx:id="runningPidLabel" text="-" styleClass="text-highlight" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                                            <Label text="指令(IR)" styleClass="text-muted" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                            <Label fx:id="irLabel" text="-" styleClass="text-mono" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                                            <Label text="寄存器(AX)" styleClass="text-muted" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                                            <Label fx:id="axLabel" text="0" styleClass="text-mono" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                                            <Label text="剩余时间片" styleClass="text-muted" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                                            <Label fx:id="tsLabel" text="-" styleClass="text-strong" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                                        </GridPane>
+                                    </VBox>
+
+                                    <Separator/>
+
+                                    <VBox spacing="10">
+                                        <Label text="就绪队列 (Ready)" styleClass="section-header"/>
+                                        <ListView fx:id="readyQueueListView" prefHeight="100" styleClass="compact-list"/>
+                                    </VBox>
+
+                                    <VBox spacing="10">
+                                        <Label text="阻塞队列 (Blocked)" styleClass="section-header"/>
+                                        <ListView fx:id="blockedQueueListView" prefHeight="100" styleClass="compact-list"/>
+                                    </VBox>
+
+                                    <Separator/>
+
+                                    <VBox spacing="10">
+                                        <Label text="内核日志" styleClass="section-header"/>
+                                        <ListView fx:id="operationLogListView" prefHeight="150" styleClass="log-list"/>
+                                    </VBox>
+
+                                    <Separator/>
+
+                                    <VBox spacing="10">
+                                        <Label text="程序控制台输出" styleClass="section-header"/>
+                                        <ListView fx:id="outputListView" prefHeight="100" styleClass="log-list"/>
+                                    </VBox>
+
+                                </VBox>
+                            </ScrollPane>
+                        </SplitPane>
+                    </VBox>
+                </AnchorPane>
+            </Tab>
+
+            <Tab text="内存管理">
+                <AnchorPane styleClass="tab-content-area">
+                    <VBox spacing="20" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+                        <HBox spacing="20" styleClass="card" alignment="CENTER_LEFT" prefHeight="100">
+                            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                            <Button fx:id="defragmentBtn" text="🧹 内存碎片整理" onAction="#onDefragmentClick" styleClass="button, large-icon"/>
+
+                            <Separator orientation="VERTICAL"/>
+
+                            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                <HBox>
+                                    <Label text="内存使用率" styleClass="text-muted"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="memoryInfoLabel" text="0 KB / 1024 KB" styleClass="text-strong"/>
+                                </HBox>
+                                <ProgressBar fx:id="memoryUsageBar" progress="0.0" maxWidth="Infinity"/>
+                            </VBox>
+
+                            <VBox spacing="5" alignment="CENTER_RIGHT">
+                                <Label text="碎片率" styleClass="text-muted"/>
+                                <Label fx:id="fragmentationLabel" text="0%" styleClass="text-giant-warning"/>
                             </VBox>
                         </HBox>
-                        
-                        <!-- 执行结果 -->
-                        <VBox spacing="10">
-                            <Label text="执行结果" styleClass="title"/>
-                            <ListView fx:id="outputListView" prefHeight="100" styleClass="output-list"/>
-                        </VBox>
-                        
-                        <!-- 操作日志 -->
-                        <VBox spacing="10">
-                            <Label text="操作日志" styleClass="title"/>
-                            <ListView fx:id="operationLogListView" prefHeight="150" styleClass="log-list"/>
-                        </VBox>
-                        
-                        <!-- 性能监控 -->
-                        <VBox spacing="10">
-                            <Label text="性能监控" styleClass="title"/>
-                            <HBox spacing="15">
-                                <VBox spacing="5">
-                                    <Label text="CPU利用率" styleClass="performance-label"/>
-                                    <ProgressBar fx:id="cpuUtilizationBar" progress="0.0" 
-                                               prefWidth="200" styleClass="cpu-progress"/>
-                                    <Label fx:id="cpuUtilizationLabel" text="0.0%" 
-                                           styleClass="performance-value"/>
-                                </VBox>
-                                <VBox spacing="5">
-                                    <Label text="系统负载" styleClass="performance-label"/>
-                                    <ProgressBar fx:id="systemLoadBar" progress="0.0" 
-                                               prefWidth="200" styleClass="load-progress"/>
-                                    <Label fx:id="systemLoadLabel" text="0.0%" 
-                                           styleClass="performance-value"/>
-                                </VBox>
-                            </HBox>
-                            <HBox spacing="15">
-                                <VBox spacing="5">
-                                    <Label text="平均CPU利用率" styleClass="performance-label"/>
-                                    <Label fx:id="avgCpuLabel" text="0.0%" styleClass="performance-value"/>
-                                </VBox>
-                                <VBox spacing="5">
-                                    <Label text="平均内存使用率" styleClass="performance-label"/>
-                                    <Label fx:id="avgMemoryLabel" text="0.0%" styleClass="performance-value"/>
-                                </VBox>
-                                <VBox spacing="5">
-                                    <Label text="峰值CPU利用率" styleClass="performance-label"/>
-                                    <Label fx:id="peakCpuLabel" text="0.0%" styleClass="performance-value"/>
-                                </VBox>
-                                <VBox spacing="5">
-                                    <Label text="峰值内存使用率" styleClass="performance-label"/>
-                                    <Label fx:id="peakMemoryLabel" text="0.0%" styleClass="performance-value"/>
-                                </VBox>
-                            </HBox>
-                        </VBox>
-                    </VBox>
-                </ScrollPane>
-            </Tab>
-            
-            <Tab fx:id="memoryTab" text="内存管理" closable="false" styleClass="tab">
-                <ScrollPane fitToWidth="true" styleClass="scroll-pane">
-                    <VBox spacing="20" styleClass="card">
-                        <padding>
-                            <Insets top="25" right="25" bottom="25" left="25"/>
-                        </padding>
-                        
-                        <VBox spacing="15">
-                            <Label text="内存使用情况" styleClass="memory-usage"/>
-                            <ProgressBar fx:id="memoryUsageBar" progress="0.0" 
-                                         prefWidth="600" styleClass="memory-progress"/>
-                            <Label fx:id="memoryInfoLabel" text="已使用: 0KB / 总计: 0KB" 
-                                   styleClass="memory-info"/>
-                            <Label fx:id="fragmentationLabel" text="碎片率: 0% | 最大连续空闲: 0KB" 
-                                   styleClass="memory-fragmentation"/>
-                            <HBox spacing="15">
-                                <Button fx:id="defragmentBtn" text="内存整理" 
-                                        onAction="#onDefragmentClick"/>
-                            </HBox>
-                        </VBox>
-                        
-                        <VBox spacing="10">
-                            <Label text="内存块分配" styleClass="memory-blocks"/>
-                            <TableView fx:id="memoryBlockTableView" 
-                                       styleClass="data-table"
-                                       prefHeight="300">
+
+                        <VBox styleClass="card, table-container" VBox.vgrow="ALWAYS">
+                            <Label text="物理内存分配表" styleClass="section-header">
+                                <padding><Insets top="10" left="10" bottom="5"/></padding>
+                            </Label>
+                            <TableView fx:id="memoryBlockTableView" VBox.vgrow="ALWAYS">
                                 <columns>
-                                    <TableColumn text="起始地址" fx:id="startAddressColumn" prefWidth="150"/>
-                                    <TableColumn text="大小" fx:id="blockSizeColumn" prefWidth="100"/>
-                                    <TableColumn text="进程" fx:id="processColumn" prefWidth="200"/>
+                                    <TableColumn text="起始地址 (Hex)" fx:id="startAddressColumn" prefWidth="150"/>
+                                    <TableColumn text="块大小 (KB)" fx:id="blockSizeColumn" prefWidth="150"/>
+                                    <TableColumn text="归属进程" fx:id="processColumn" prefWidth="200"/>
                                 </columns>
+                                <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                </columnResizePolicy>
                             </TableView>
                         </VBox>
                     </VBox>
-                </ScrollPane>
+                </AnchorPane>
             </Tab>
-            
-            <Tab fx:id="fileSystemTab" text="文件系统" closable="false" styleClass="tab">
-                <ScrollPane fitToWidth="true" styleClass="scroll-pane">
-                    <VBox spacing="20" styleClass="card">
-                        <padding>
-                            <Insets top="25" right="25" bottom="25" left="25"/>
-                        </padding>
-                        
-                        <!-- 操作按钮 -->
-                        <HBox spacing="15">
-                            <Button fx:id="createFileBtn" text="创建文件" 
-                                    onAction="#onCreateFileClick"/>
-                            <Button fx:id="createDirectoryBtn" text="创建目录" 
-                                    onAction="#onCreateDirectoryClick"/>
-                            <Button fx:id="deleteFileBtn" text="删除" 
-                                    onAction="#onDeleteClick"/>
+
+            <Tab text="文件系统">
+                <AnchorPane styleClass="tab-content-area">
+                    <VBox spacing="15" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+
+                        <HBox spacing="15" styleClass="card, action-bar" alignment="CENTER_LEFT">
+                            <Button fx:id="createFileBtn" text="📄 新建文件" onAction="#onCreateFileClick" styleClass="button"/>
+                            <Button fx:id="createDirectoryBtn" text="📁 新建目录" onAction="#onCreateDirectoryClick" styleClass="button"/>
+                            <Separator orientation="VERTICAL"/>
+                            <Button fx:id="copyFileBtn" text="📋 复制" onAction="#onCopyFileClick" styleClass="button"/>
+                            <Button fx:id="pasteFileBtn" text="📌 粘贴" onAction="#onPasteFileClick" styleClass="button"/>
+                            <Separator orientation="VERTICAL"/>
+                            <Button fx:id="deleteFileBtn" text="🗑 删除" onAction="#onDeleteClick" styleClass="button, danger"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="searchFileBtn" text="🔍 搜索" onAction="#onSearchFileClick" styleClass="button, primary"/>
                         </HBox>
-                        
-                        <!-- 磁盘使用情况 -->
-                        <VBox spacing="10" styleClass="queue-panel">
-                            <Label text="磁盘使用情况" styleClass="disk-usage"/>
-                            <ProgressBar fx:id="diskUsageBar" progress="0.0" 
-                                         prefWidth="600" styleClass="disk-progress"/>
-                            <Label fx:id="diskInfoLabel" text="已使用: 0KB / 总计: 0KB" 
-                                   styleClass="disk-info"/>
-                        </VBox>
-                        
-                        <!-- 文件树 -->
-                        <VBox spacing="10">
-                            <Label text="文件系统树" styleClass="title"/>
-                            <TreeView fx:id="fileSystemTreeView" 
-                                      styleClass="data-table"
-                                      prefHeight="400"/>
-                        </VBox>
+
+                        <SplitPane dividerPositions="0.32" VBox.vgrow="ALWAYS" style="-fx-background-color:transparent; -fx-padding:0;">
+
+                            <VBox styleClass="card">
+                                <padding><Insets top="15" right="10" bottom="10" left="10"/></padding>
+                                <Label text="资源管理器" styleClass="section-header"/>
+                                <TreeView fx:id="fileSystemTreeView" VBox.vgrow="ALWAYS" showRoot="true" styleClass="tree-view"/>
+                            </VBox>
+
+                            <VBox spacing="20" styleClass="card">
+                                <padding><Insets top="20" right="25" bottom="20" left="25"/></padding>
+
+                                <VBox spacing="12">
+                                    <Label text="本地磁盘 (C:)" styleClass="section-header"/>
+                                    <HBox alignment="CENTER_LEFT" spacing="15">
+                                        <Label text="💾" style="-fx-font-size: 32px; -fx-text-fill: #42a5f5;"/>
+                                        <VBox HBox.hgrow="ALWAYS" spacing="5">
+                                            <HBox>
+                                                <Label text="系统卷" styleClass="text-muted"/>
+                                                <Region HBox.hgrow="ALWAYS"/>
+                                                <Label fx:id="diskInfoLabel" text="计算中..." styleClass="text-strong"/>
+                                            </HBox>
+                                            <ProgressBar fx:id="diskUsageBar" progress="0.0" maxWidth="Infinity" styleClass="blue-bar"/>
+                                        </VBox>
+                                    </HBox>
+                                </VBox>
+
+                                <Separator/>
+
+                                <VBox spacing="10" VBox.vgrow="ALWAYS">
+                                    <Label text="快速指南" styleClass="section-header"/>
+
+                                    <VBox spacing="8" styleClass="instruction-box">
+                                        <HBox alignment="CENTER_LEFT" spacing="10">
+                                            <Label text="🚀" styleClass="icon-label"/>
+                                            <Label text="双击 .e 文件直接运行程序" styleClass="text-content" wrapText="true"/>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" spacing="10">
+                                            <Label text="📝" styleClass="icon-label"/>
+                                            <Label text="双击 .txt 文件使用内置编辑器打开" styleClass="text-content" wrapText="true"/>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" spacing="10">
+                                            <Label text="🖱" styleClass="icon-label"/>
+                                            <Label text="右键点击目录树节点可查看更多选项" styleClass="text-content" wrapText="true"/>
+                                        </HBox>
+                                    </VBox>
+                                </VBox>
+                            </VBox>
+                        </SplitPane>
                     </VBox>
-                </ScrollPane>
+                </AnchorPane>
             </Tab>
-            
-            <Tab text="设备管理" closable="false" styleClass="tab">
-                <ScrollPane fitToWidth="true" styleClass="scroll-pane">
-                    <VBox spacing="20" styleClass="card">
-                        <padding>
-                            <Insets top="25" right="25" bottom="25" left="25"/>
-                        </padding>
-                        
-                        <!-- 设备使用状态 -->
-                        <VBox spacing="15">
-                            <Label text="设备使用状态" styleClass="title"/>
-                            <TableView fx:id="deviceTableView" 
-                                       styleClass="data-table"
-                                       prefHeight="200">
+
+
+
+            <Tab text="设备管理">
+                <AnchorPane styleClass="tab-content-area">
+                    <SplitPane dividerPositions="0.5" orientation="VERTICAL" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" style="-fx-padding:0; -fx-background-color: transparent;">
+                        <VBox styleClass="card, table-container">
+                            <Label text="设备实时状态" styleClass="section-header">
+                                <padding><Insets top="10" left="10"/></padding>
+                            </Label>
+                            <TableView fx:id="deviceTableView" VBox.vgrow="ALWAYS">
                                 <columns>
-                                    <TableColumn text="类型" fx:id="deviceTypeColumn" prefWidth="120"/>
-                                    <TableColumn text="使用中" fx:id="deviceInUseColumn" prefWidth="100"/>
-                                    <TableColumn text="进程PID" fx:id="devicePidColumn" prefWidth="100"/>
-                                    <TableColumn text="剩余时间" fx:id="deviceRemainColumn" prefWidth="120"/>
+                                    <TableColumn text="设备类型" fx:id="deviceTypeColumn"/>
+                                    <TableColumn text="是否忙碌" fx:id="deviceInUseColumn"/>
+                                    <TableColumn text="占用 PID" fx:id="devicePidColumn"/>
+                                    <TableColumn text="剩余时间" fx:id="deviceRemainColumn"/>
                                 </columns>
+                                <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
                             </TableView>
                         </VBox>
-                        
-                        <!-- 设备等待队列 -->
-                        <VBox spacing="15">
-                            <Label text="设备使用状态" styleClass="device-status"/>
-                            <TableView fx:id="waitQueueTableView" 
-                                       styleClass="data-table"
-                                       prefHeight="200">
+
+                        <VBox styleClass="card, table-container">
+                            <Label text="设备等待队列" styleClass="section-header">
+                                <padding><Insets top="10" left="10"/></padding>
+                            </Label>
+                            <TableView fx:id="waitQueueTableView" VBox.vgrow="ALWAYS">
                                 <columns>
-                                    <TableColumn text="设备" fx:id="waitDeviceColumn" prefWidth="150"/>
-                                    <TableColumn text="进程PID" fx:id="waitPidColumn" prefWidth="120"/>
-                                    <TableColumn text="请求时间" fx:id="waitTimeColumn" prefWidth="150"/>
+                                    <TableColumn text="目标设备" fx:id="waitDeviceColumn"/>
+                                    <TableColumn text="等待进程 PID" fx:id="waitPidColumn"/>
+                                    <TableColumn text="预计时长" fx:id="waitTimeColumn"/>
                                 </columns>
+                                <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
                             </TableView>
                         </VBox>
-                    </VBox>
-                </ScrollPane>
+                    </SplitPane>
+                </AnchorPane>
             </Tab>
+
+            <Tab text="性能概览">
+                <AnchorPane styleClass="tab-content-area">
+                    <VBox spacing="15" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+                        <GridPane hgap="15" vgap="15">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="50"/>
+                                <ColumnConstraints percentWidth="50"/>
+                            </columnConstraints>
+
+                            <VBox spacing="10" styleClass="card, monitor-card" GridPane.columnIndex="0">
+                                <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="CPU 利用率" styleClass="section-header"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="cpuUtilizationLabel" text="0%" styleClass="text-highlight-blue"/>
+                                </HBox>
+                                <ProgressBar fx:id="cpuUtilizationBar" maxWidth="Infinity" styleClass="blue-bar"/>
+                                <HBox spacing="15">
+                                    <Label fx:id="avgCpuLabel" text="平均: 0%" styleClass="text-small"/>
+                                    <Label fx:id="peakCpuLabel" text="峰值: 0%" styleClass="text-small"/>
+                                </HBox>
+                            </VBox>
+
+                            <VBox spacing="10" styleClass="card, monitor-card" GridPane.columnIndex="1">
+                                <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
+                                <HBox alignment="CENTER_LEFT">
+                                    <Label text="系统负载" styleClass="section-header"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label fx:id="systemLoadLabel" text="0.0" styleClass="text-highlight-orange"/>
+                                </HBox>
+                                <ProgressBar fx:id="systemLoadBar" maxWidth="Infinity" styleClass="orange-bar"/>
+                                <HBox spacing="15">
+                                    <Label fx:id="avgMemoryLabel" text="平均: 0%" styleClass="text-small"/>
+                                    <Label fx:id="peakMemoryLabel" text="峰值: 0%" styleClass="text-small"/>
+                                </HBox>
+                            </VBox>
+                        </GridPane>
+
+                        <BorderPane fx:id="performanceChartContainer" styleClass="card" VBox.vgrow="ALWAYS">
+                            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+                        </BorderPane>
+                    </VBox>
+                </AnchorPane>
+            </Tab>
+
         </TabPane>
     </center>
-    
+
     <bottom>
-        <!-- 底部状态栏与命令输入 - 采用现代化设计 -->
-        <HBox alignment="CENTER_LEFT" spacing="15" 
-              styleClass="status-bar">
-            <padding>
-                <Insets top="15" right="20" bottom="15" left="20"/>
-            </padding>
-            <Label text="状态: 系统运行中" styleClass="status-text"/>
-            <Region prefWidth="20"/>
-            <TextField fx:id="commandField" 
-                       promptText="输入命令，如: $mkdir /user/docs 或 $create /user/new.txt" 
-                       prefWidth="500"
-                       styleClass="command-field"/>
-            <Button fx:id="runCommandBtn" text="执行" 
-                    onAction="#onRunCommandClick"/>
+        <HBox styleClass="cmd-area" spacing="15" alignment="CENTER_LEFT">
+            <Label fx:id="systemStatusLabel" text="● 系统就绪" style="-fx-text-fill: #66bb6a; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="CMD" style="-fx-font-family: 'Consolas'; -fx-text-fill: #b0bec5; -fx-font-weight: bold;"/>
+            <TextField fx:id="commandField" promptText="在此输入指令 (如: create process1)..." prefWidth="450" styleClass="modern-input"/>
+            <Button fx:id="runCommandBtn" text="执行" onAction="#onRunCommandClick" styleClass="button, primary"/>
         </HBox>
     </bottom>
+
 </BorderPane>

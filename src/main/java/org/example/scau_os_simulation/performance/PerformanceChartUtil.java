@@ -63,19 +63,23 @@ public class PerformanceChartUtil
                 false
         );
 
-        // 自定义图表外观
-        chart.setBackgroundPaint(Color.WHITE);
+        // 自定义图表外观 [优化配色]
+        chart.setBackgroundPaint(Color.WHITE); // 图表整体背景纯白
 
         // 获取图表区域并自定义
         XYPlot plot = chart.getXYPlot();
-        plot.setBackgroundPaint(Color.WHITE);
-        plot.setDomainGridlinePaint(Color.LIGHT_GRAY);
-        plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
+        plot.setBackgroundPaint(Color.WHITE); // 绘图区背景纯白
+        plot.setDomainGridlinePaint(new Color(230, 230, 230)); // 网格线变淡
+        plot.setRangeGridlinePaint(new Color(230, 230, 230));
+        plot.setOutlineVisible(false); // 去除绘图区边框
 
-        // 自定义渲染器
+        // 自定义渲染器 [Win11 风格配色]
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-        renderer.setSeriesPaint(0, Color.RED);      // CPU使用率 - 红色
-        renderer.setSeriesPaint(1, Color.BLUE);     // 内存使用率 - 蓝色
+        // CPU: 警告红 -> 改为 Win11 蓝 #0067c0
+        renderer.setSeriesPaint(0, new Color(0, 103, 192));
+        // 内存: 蓝色 -> 改为 橙色或紫色以示区分 #d83b01
+        renderer.setSeriesPaint(1, new Color(216, 59, 1));
+
         renderer.setSeriesStroke(0, new BasicStroke(2.0f));
         renderer.setSeriesStroke(1, new BasicStroke(2.0f));
         plot.setRenderer(renderer);

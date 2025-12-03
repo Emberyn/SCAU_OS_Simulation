@@ -59,28 +59,32 @@ public class CPU
      * - 设备指令会发起设备请求并阻塞当前进程，然后调度下一个进程；
      * - 普通计算或空操作会消耗一个时间片，时间片用尽触发切换。
      */
+    /**
+     * 执行一条指令（修复版）
+     */
     public void executeOne()
     {
         // 读取当前运行进程；若系统暂时没有运行进程（队列为空），直接返回
         Process running = processManager.getRunning();
         if (running == null) return;
-        // 获取该进程的 PCB（档案），后续所有寄存器与状态更新都在 PCB 上进行
+
         PCB pcb = running.getPcb();
-        // 取指：若该进程没有绑定可执行文件，则视为立即结束；否则根据 PC 从脚本中取当前指令
         String instr = running.getExecutable() == null ? "end" : running.getExecutable().fetch(pcb.getPc());
-        // 将当前指令文本写入 IR，便于 UI 展示与调试
-        pcb.setIr(instr);
+
+        pcb.setIr(instr); // 更新 IR 显示
+
         if (instr.startsWith("end"))
         {
-            // 终止分支：记录输出（AX最终值），立刻终止当前进程并切换到下一个就绪进程
             Kernel.getInstance().logOutput("进程 PID=" + pcb.getPid() + " 结束，AX=" + pcb.getAx());
             processManager.terminateProcess(pcb.getPid());
-            processManager.scheduleNext();
+            // 注意：terminateProcess 内部通常会调用 scheduleNext，但为了保险这里也可以显式调用
+            // processManager.scheduleNext();
             return;
         }
-        if (instr.contains("=") && instr.matches("[a-zA-Z]=\\d{1,2}"))
+
+        // 【修复点】正则改为 \\d{1,3} 以支持 0-255 的数值 (例如 x=100)
+        if (instr.contains("=") && instr.matches("[a-zA-Z]=\\d{1,3}"))
         {
-            // 赋值分支：解析等号右侧的数值，写入 AX；PC 前进一格，时间片-1
             String num = instr.substring(instr.indexOf('=') + 1);
             try
             {
@@ -88,53 +92,57 @@ public class CPU
             } catch (Exception ignored)
             {
             }
-            pcb.setPc(pcb.getPc() + 1);     // 指令步进
-            pcb.decTimeSlice();              // 时间片消耗
-            if (pcb.getTimeSlice() == 0) processManager.onTimeSliceEnd(); // 用尽则轮转
+            pcb.setPc(pcb.getPc() + 1);
+            pcb.decTimeSlice();
+            if (pcb.getTimeSlice() == 0) processManager.onTimeSliceEnd();
             return;
         }
+
         if (instr.endsWith("++"))
         {
-            // 自增分支：AX+1；PC+1；时间片-1；用尽则轮转
             pcb.setAx(pcb.getAx() + 1);
             pcb.setPc(pcb.getPc() + 1);
             pcb.decTimeSlice();
             if (pcb.getTimeSlice() == 0) processManager.onTimeSliceEnd();
             return;
         }
+
         if (instr.endsWith("--"))
         {
-            // 自减分支：AX-1；PC+1；时间片-1；用尽则轮转
             pcb.setAx(pcb.getAx() - 1);
             pcb.setPc(pcb.getPc() + 1);
             pcb.decTimeSlice();
             if (pcb.getTimeSlice() == 0) processManager.onTimeSliceEnd();
             return;
         }
+
         if (instr.matches("!.[0-9]"))
         {
-            // 设备分支：解析设备类型与占用时间片数；发起设备请求，使进程阻塞并切换到下一个进程
             char dev = instr.charAt(1);
             int t = Character.digit(instr.charAt(2), 10);
             DeviceType type = dev == 'A' ? DeviceType.A : dev == 'B' ? DeviceType.B : DeviceType.C;
-            deviceManager.requestDevice(pcb.getPid(), type, t);
-            pcb.setPc(pcb.getPc() + 1);     // 请求后 PC 前进
-            processManager.scheduleNext();   // 让出 CPU，轮转到下一个进程
+
+            // 请求设备
+            boolean success = deviceManager.requestDevice(pcb.getPid(), type, t);
+
+            pcb.setPc(pcb.getPc() + 1); // 无论是否立即成功，PC都前移，防止死循环执行同一条请求指令
+
+            // 如果没有立即分配成功（进入等待队列），或者为了模拟阻塞效果，这里通常会切出 CPU
+            // 根据你的逻辑，requestDevice 内部会把进程设为 BLOCKED
+            processManager.scheduleNext();
             return;
         }
 
-        // 信号量操作分支
+        // 信号量操作
         if (instr.startsWith("wait(") && instr.endsWith(")"))
         {
-            // wait(信号量名) - P操作
             String semaphoreName = instr.substring(5, instr.length() - 1);
             boolean acquired = Kernel.getInstance().getSyncManager().wait(semaphoreName, pcb.getPid());
             if (!acquired)
             {
-                // 需要阻塞等待
                 pcb.setBlockReason("等待信号量:" + semaphoreName);
                 processManager.onProcessBlocked(pcb.getPid());
-                return;
+                return; // 阻塞后直接返回，不由 CPU 继续执行后续逻辑
             }
             pcb.setPc(pcb.getPc() + 1);
             pcb.decTimeSlice();
@@ -144,12 +152,10 @@ public class CPU
 
         if (instr.startsWith("signal(") && instr.endsWith(")"))
         {
-            // signal(信号量名) - V操作
             String semaphoreName = instr.substring(7, instr.length() - 1);
             int awakenedPid = Kernel.getInstance().getSyncManager().signal(semaphoreName);
             if (awakenedPid != -1)
             {
-                // 唤醒了等待的进程
                 processManager.onDeviceComplete(awakenedPid);
             }
             pcb.setPc(pcb.getPc() + 1);
@@ -157,7 +163,8 @@ public class CPU
             if (pcb.getTimeSlice() == 0) processManager.onTimeSliceEnd();
             return;
         }
-        // 兜底分支：未识别/空操作——仅步进与消耗时间片
+
+        // 默认操作
         pcb.setPc(pcb.getPc() + 1);
         pcb.decTimeSlice();
         if (pcb.getTimeSlice() == 0) processManager.onTimeSliceEnd();

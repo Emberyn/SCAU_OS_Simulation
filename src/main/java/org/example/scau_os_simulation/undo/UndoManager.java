@@ -85,6 +85,7 @@ public class UndoManager
         }
     }
 
+
     /**
      * 创建文件命令
      */
@@ -130,35 +131,56 @@ public class UndoManager
         }
     }
 
+
+
     /**
-     * 删除文件命令
+     * 删除文件命令（修复版 - 支持内容恢复）
      */
     public static class DeleteFileCommand implements UndoableCommand
     {
         private final org.example.scau_os_simulation.kernel.FileSystemManager fileSystemManager;
         private final String fullPath;
         private final int size;
+        private final byte[] backupContent; // 【新增】用于备份内容
 
+        // 【修改】构造函数增加 content 参数
         public DeleteFileCommand(org.example.scau_os_simulation.kernel.FileSystemManager fileSystemManager,
-                                 String fullPath, int size)
+                                 String fullPath, int size, byte[] content)
         {
             this.fileSystemManager = fileSystemManager;
             this.fullPath = fullPath;
             this.size = size;
+            // 深度拷贝，防止引用被外部修改
+            this.backupContent = content != null ? content.clone() : new byte[0];
         }
 
         @Override
         public void execute()
         {
-            // 文件已经在删除时执行了
+            // 文件已经在外部被删除了，这里只负责记录状态
         }
 
         @Override
         public void undo()
         {
             String dirPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
+            // 根目录下特殊处理
+            if (dirPath.isEmpty()) dirPath = "/";
+
             String fileName = fullPath.substring(fullPath.lastIndexOf('/') + 1);
-            fileSystemManager.createFile(dirPath, fileName, size);
+
+            // 1. 恢复文件对象
+            org.example.scau_os_simulation.filesystem.File f =
+                    fileSystemManager.createFile(dirPath, fileName, size);
+
+            // 2. 【新增】恢复文件内容
+            if (f != null && backupContent != null) {
+                try {
+                    f.setContent(backupContent);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         @Override

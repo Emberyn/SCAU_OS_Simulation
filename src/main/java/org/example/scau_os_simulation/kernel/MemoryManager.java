@@ -43,81 +43,52 @@ public class MemoryManager
     }
 
     /**
-     * 分配一块连续内存（首次适应算法）
-     * <p>
-     * 从地址0开始，寻找第一个能容纳size大小的空闲区域。
-     * 若成功，记录该块并返回其起始地址；否则返回-1。
+     * 分配一块连续内存（修复版 - 标准首次适应算法）
      *
      * @param size 申请的大小（KB）
      * @return 起始地址；失败返回-1
      */
     public int allocateMemory(int size)
     {
-        // 首次适应算法
-        int currentAddress = 0;
+        // 1. 对已分配块按起始地址排序，这是正确计算空隙的前提
+        allocatedBlocks.sort((a, b) -> a.getStartAddress() - b.getStartAddress());
 
-        while (currentAddress < memory.getSize())
+        int candidateAddress = 0;
+
+        // 2. 遍历所有已分配块，检查"当前候选地址"到"该块起始地址"之间的空隙
+        for (MemoryBlock block : allocatedBlocks)
         {
-            // 检查当前位置是否已被分配
-            boolean isAllocated = false;
-            int availableSize = 0;
-
-            for (MemoryBlock block : allocatedBlocks)
+            // 如果空隙足够大 (block.start - candidate >= size)
+            if (candidateAddress + size <= block.getStartAddress())
             {
-                if (currentAddress >= block.getStartAddress() &&
-                        currentAddress < block.getStartAddress() + block.getSize())
-                {
-                    // 当前位置已被分配
-                    isAllocated = true;
-                    currentAddress = block.getStartAddress() + block.getSize();
-                    break;
-                }
+                // 找到合适位置，跳出循环进行分配
+                break;
             }
-
-            if (!isAllocated)
-            {
-                // 计算可用空间大小
-                availableSize = memory.getSize() - currentAddress;
-                for (MemoryBlock block : allocatedBlocks)
-                {
-                    if (block.getStartAddress() > currentAddress)
-                    {
-                        int possibleSize = block.getStartAddress() - currentAddress;
-                        if (possibleSize < availableSize)
-                        {
-                            availableSize = possibleSize;
-                        }
-                    }
-                }
-
-                if (availableSize >= size)
-                {
-                    // 找到足够的空间
-                    MemoryBlock newBlock = new MemoryBlock(currentAddress, size);
-                    allocatedBlocks.add(newBlock);
-
-                    // 记录日志
-                    java.util.Map<String, Object> details = new java.util.HashMap<>();
-                    details.put("address", currentAddress);
-                    details.put("size", size);
-                    org.example.scau_os_simulation.kernel.Kernel.getInstance().getOperationLogger().info(
-                            org.example.scau_os_simulation.logging.OperationLogger.OperationType.MEMORY_ALLOCATE,
-                            "内存分配成功",
-                            details
-                    );
-
-                    return currentAddress;
-                } else
-                {
-                    // 继续寻找下一个可用空间
-                    currentAddress += availableSize;
-                }
-            }
+            // 否则，候选地址移动到当前块的末尾之后
+            candidateAddress = block.getStartAddress() + block.getSize();
         }
 
-        // 没有足够的内存
+        // 3. 检查最后一个块之后（或者如果内存全空）是否有足够空间
+        if (candidateAddress + size <= memory.getSize())
+        {
+            // 分配成功
+            MemoryBlock newBlock = new MemoryBlock(candidateAddress, size);
+            allocatedBlocks.add(newBlock);
 
-        // 记录日志
+            // 记录日志
+            java.util.Map<String, Object> details = new java.util.HashMap<>();
+            details.put("address", candidateAddress);
+            details.put("size", size);
+            org.example.scau_os_simulation.kernel.Kernel.getInstance().getOperationLogger().info(
+                    org.example.scau_os_simulation.logging.OperationLogger.OperationType.MEMORY_ALLOCATE,
+                    "内存分配成功",
+                    details
+            );
+
+            return candidateAddress;
+        }
+
+        // 4. 分配失败
         java.util.Map<String, Object> details = new java.util.HashMap<>();
         details.put("requestedSize", size);
         details.put("availableSize", memory.getSize() - getTotalUsedMemory());

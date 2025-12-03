@@ -1,425 +1,331 @@
-/* 全局背景与文字颜色 */
+/* Windows 11 Fluent Design - 精致优化版 (Morandi Theme) */
+
+/* --- 1. 全局变量与基础设置 --- */
 .root {
-  -fx-base: #ffffff;
-  -fx-background-color: #ffffff;
+    /* 背景色：极淡的灰调，比纯白更护眼 */
+    -fx-base: #f8f9fa;
+    -fx-background-color: #f8f9fa;
+
+    /* 字体栈优化：优先使用现代无衬线字体，提升阅读体验 */
+    -fx-font-family: "Microsoft YaHei UI", "Segoe UI", "PingFang SC", "Heiti SC", sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2c3e50; /* 深灰蓝文字，替代纯黑，更具质感 */
+
+    /* 开启 LCD 字体平滑 */
+    -fx-font-smoothing-type: lcd;
 }
 
-/* TabPane 与 Tab 美化 */
-.tab-pane {
-  -fx-background-color: #ffffff;
-}
-.tab-header-area {
-  -fx-background-color: linear-gradient(to bottom, #f7f7f7, #eaeaea);
-}
+/* --- 2. 核心容器样式 --- */
 
-/* ================= 顶部工具栏与控制按钮 (新增) ================= */
-
-/* 启动按钮 (绿色, 大号, 带投影) */
-#startSystemBtn {
-  -fx-background-color: #2ecc71;
-  -fx-text-fill: white;
-  -fx-font-size: 16px;
-  -fx-font-weight: bold;
-  -fx-background-radius: 5;
-  -fx-padding: 8 30 8 30;
-  -fx-cursor: hand;
-  -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
-}
-
-#startSystemBtn:hover {
-  -fx-background-color: #27ae60; /* 悬停变深 */
-  -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 8, 0, 0, 3);
-}
-
-#startSystemBtn:disabled {
-  -fx-opacity: 0.6;
-  -fx-effect: null;
-}
-
-/* 容器卡片化效果 */
-.vbox, .hbox {
-  -fx-background-radius: 8;
-  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 4, 0, 0, 2);
-}
-
-/* 主要容器卡片 */
+/* 卡片 (Card) - 核心层次感来源 */
 .card {
-  -fx-background-color: white;
-  -fx-background-radius: 12;
-  -fx-border-radius: 12;
-  -fx-border-color: #e0e0e0;
-  -fx-border-width: 1;
-  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 8, 0, 0, 4);
-  -fx-padding: 20;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12px; /* 更大的圆角，更现代 */
+    -fx-border-radius: 12px;
+    /* 移除生硬边框，改用双层柔和阴影营造悬浮感 */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 15, 0, 0, 5);
+    -fx-padding: 0;
 }
 
-/* 标题样式 */
-.title {
-  -fx-font-size: 18px;
-  -fx-font-weight: bold;
-  -fx-text-fill: #2c3e50;
+/* 面板内容区域 */
+.tab-content-area {
+    -fx-padding: 20; /* 增加留白，拒绝拥挤 */
 }
 
-/* 标签样式 */
-.label {
-  -fx-font-size: 14px;
-  -fx-text-fill: #34495e;
+/* --- 3. 侧边导航栏 (Sidebar) --- */
+.sidebar-nav {
+    -fx-background-color: transparent;
+    -fx-padding: 15 0 0 10;
+}
+.sidebar-nav .tab-header-area { -fx-padding: 0; }
+.sidebar-nav .tab-header-background { -fx-background-color: transparent; }
+
+.sidebar-nav .tab {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8px;
+    -fx-padding: 10 20;
+    -fx-pref-width: 190;
+    -fx-alignment: CENTER_LEFT;
+    -fx-cursor: hand;
+    -fx-margin: 0 0 4 0;
+    -fx-border-width: 0;
 }
 
-/* 表格与树视图边框与圆角 */
-.table-view, .tree-view, .list-view {
-  -fx-background-color: white;
-  -fx-border-color: #ddd;
-  -fx-background-radius: 6;
-  -fx-border-radius: 6;
+/* 导航项悬停：极淡的灰蓝 */
+.sidebar-nav .tab:hover {
+    -fx-background-color: #eef2f6;
 }
 
-/* ================= 菜单栏样式 (修复版) ================= */
-
-/* 1. 顶部菜单栏条本身的背景（深色） */
-.menu-bar {
-  -fx-background-color: #2c3e50;
-  -fx-padding: 0;
+/* 导航项选中：柔和的莫兰迪蓝背景 */
+.sidebar-nav .tab:selected {
+    -fx-background-color: #e3f2fd;
+    -fx-effect: none;
 }
 
-/* 2. 仅设置【顶部菜单栏】上的文字（文件、帮助）为白色 */
-/* 使用 .menu-bar .menu .label 提高特异性，确保只影响顶栏 */
-.menu-bar > .container > .menu-button > .label,
-.menu-bar > .container > .menu > .label {
-  -fx-text-fill: white;
-  -fx-font-weight: bold;
+/* 选中项文字：深蓝高亮 */
+.sidebar-nav .tab:selected .tab-label {
+    -fx-text-fill: #1976d2;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
 }
 
-/* 顶部菜单被鼠标悬停或点击时的背景色 */
-.menu-bar .menu:hover,
-.menu-bar .menu:showing {
-  -fx-background-color: #34495e;
+/* 选中项左侧指示条 */
+.sidebar-nav .tab:selected:before {
+    -fx-background-color: #1976d2;
+    -fx-scale-y: 0.6;
+    -fx-pref-width: 4;
+    -fx-border-radius: 4;
 }
 
-/* ================= 下拉菜单弹出框样式 (关键修复) ================= */
-
-/* 3. 设置下拉弹出框（Context Menu）的背景为白色 */
-.context-menu {
-  -fx-background-color: white;
-  -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2); /* 加一点投影更好看 */
-  -fx-padding: 5;
-}
-
-/* 4. 强制设置下拉菜单内的【所有选项文字】为黑色 */
-.context-menu .label,
-.menu-item .label {
-  -fx-text-fill: #2c3e50 !important; /* 强制使用深色字体 */
-  -fx-font-weight: normal;
-}
-
-/* 5. 下拉菜单项被选中（鼠标悬停）时的样式 */
-.menu-item:focused {
-  -fx-background-color: #ecf0f1; /* 浅灰色背景高亮 */
-}
-
-.menu-item:focused .label {
-  -fx-text-fill: #2c3e50; /* 保持文字深色 */
-}
-
-/* 按钮通用样式 */
+/* --- 4. 按钮与交互 (Buttons) --- */
 .button {
-  -fx-background-radius: 8;
-  -fx-padding: 10 20;
-  -fx-font-size: 14px;
-  -fx-cursor: hand;
-  -fx-transition: all 0.3s ease;
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 6px;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 6px;
+    -fx-text-fill: #455a64;
+    -fx-padding: 7 16; /* 增加内边距 */
+    -fx-cursor: hand;
+    -fx-font-family: "Segoe UI Semibold", "Microsoft YaHei";
+    -fx-font-weight: bold;
+    /* 默认状态：微弱阴影 */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 3, 0, 0, 1);
+    -fx-transition: all 0.2s ease-in-out;
 }
 
-/* 主要操作按钮 - 绿色 */
-.button:default,
-#createProcessBtn,
-#createFileBtn,
-#createDirectoryBtn {
-  -fx-background-color: #27ae60;
-  -fx-text-fill: white;
+/* Hover 动画：背景变淡蓝 + 上浮 + 阴影加深 */
+.button:hover {
+    -fx-background-color: #f5faff;
+    -fx-border-color: #bbdefb;
+    -fx-text-fill: #1976d2;
+    -fx-translate-y: -2; /* 向上浮动 2px */
+    -fx-effect: dropshadow(three-pass-box, rgba(25, 118, 210, 0.15), 8, 0, 0, 4);
 }
 
-.button:default:hover,
-#createProcessBtn:hover,
-#createFileBtn:hover,
-#createDirectoryBtn:hover {
-  -fx-background-color: #229954;
-  -fx-effect: dropshadow(gaussian, rgba(39, 174, 96, 0.4), 8, 0, 0, 2);
+/* Pressed 动画：下沉 + 阴影消失 */
+.button:pressed {
+    -fx-background-color: #e3f2fd;
+    -fx-translate-y: 1;
+    -fx-effect: none;
 }
 
-/* 危险操作按钮 - 红色 */
-#terminateProcessBtn,
-#deleteFileBtn,
-#deleteDirectoryBtn {
-  -fx-background-color: #e74c3c;
-  -fx-text-fill: white;
+/* 主要操作按钮 (Primary) - 渐变蓝 */
+.button.primary {
+    -fx-background-color: linear-gradient(to bottom right, #42a5f5, #1976d2);
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+}
+.button.primary:hover {
+    -fx-background-color: linear-gradient(to bottom right, #64b5f6, #2196f3);
+    -fx-effect: dropshadow(three-pass-box, rgba(33, 150, 243, 0.35), 12, 0, 0, 5);
 }
 
-#terminateProcessBtn:hover,
-#deleteFileBtn:hover,
-#deleteDirectoryBtn:hover {
-  -fx-background-color: #c0392b;
-  -fx-effect: dropshadow(gaussian, rgba(231, 76, 60, 0.4), 8, 0, 0, 2);
+/* 危险操作按钮 (Danger) */
+.button.danger {
+    -fx-text-fill: #ef5350;
+    -fx-border-color: #ffcdd2;
+    -fx-background-color: #fff;
+}
+.button.danger:hover {
+    -fx-background-color: #ffebee;
+    -fx-border-color: #ef5350;
+    -fx-effect: dropshadow(three-pass-box, rgba(239, 83, 80, 0.2), 8, 0, 0, 4);
 }
 
-/* 次要操作按钮 - 蓝色 */
-#refreshProcessBtn,
-#refreshFileBtn,
-#refreshDirectoryBtn,
-#createFileBtn,
-#runCommandBtn,
-#defragmentBtn,
-#undoBtn,
-#redoBtn {
-  -fx-background-color: #3498db;
-  -fx-text-fill: white;
+/* 成功状态按钮 */
+.button.success {
+    -fx-background-color: #edf7ed;
+    -fx-text-fill: #2e7d32;
+    -fx-border-color: #c8e6c9;
+}
+.button.success:hover {
+    -fx-background-color: #e8f5e9;
+    -fx-border-color: #2e7d32;
 }
 
-#refreshProcessBtn:hover,
-#refreshFileBtn:hover,
-#refreshDirectoryBtn:hover,
-#createFileBtn:hover,
-#runCommandBtn:hover,
-#defragmentBtn:hover,
-#undoBtn:hover,
-#redoBtn:hover {
-  -fx-background-color: #2980b9;
-  -fx-effect: dropshadow(gaussian, rgba(52, 152, 219, 0.4), 8, 0, 0, 2);
+/* --- 5. 目录树 (Tree View) 美化 --- */
+.tree-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.tree-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 8 5; /* 增加行高，避免拥挤 */
+    -fx-font-family: "Segoe UI", "Microsoft YaHei";
+    -fx-font-size: 13.5px;
 }
 
-/* 特殊操作按钮 - 青色 */
-#createDirectoryBtn {
-  -fx-background-color: #1abc9c;
-  -fx-text-fill: white;
+/* 悬停：极浅的薄荷绿 */
+.tree-cell:filled:hover {
+    -fx-background-color: #f1f8e9;
 }
 
-#createDirectoryBtn:hover {
-  -fx-background-color: #16a085;
-  -fx-effect: dropshadow(gaussian, rgba(26, 188, 156, 0.4), 8, 0, 0, 2);
+/* 选中：清新的浅青色背景，柔和护眼 */
+.tree-cell:filled:selected {
+    -fx-background-color: #e0f2f1;
+    -fx-text-fill: #00695c; /* 深青色文字 */
+    /* 左侧细条高亮 */
+    -fx-border-color: transparent transparent transparent #26a69a;
+    -fx-border-width: 0 0 0 3;
 }
 
-/* 进度条宽度自适应 */
-.progress-bar {
-  -fx-accent: #4CAF50;
+/* --- 6. 表格 (Table View) --- */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.table-view .column-header-background {
+    -fx-background-color: #ffffff;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #eee;
+}
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 45px;
+}
+.table-view .column-header .label {
+    -fx-text-fill: #546e7a;
+    -fx-font-weight: 800;
+}
+.table-row-cell {
+    -fx-background-color: #ffffff;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #f5f5f5;
+    -fx-cell-size: 38px;
+}
+.table-row-cell:hover { -fx-background-color: #fafafa; }
+.table-row-cell:selected {
+    -fx-background-color: #e3f2fd;
+    -fx-text-fill: #1565c0;
 }
 
-/* 菜单栏样式 */
-.menu-bar {
-  -fx-background-color: #2c3e50;
-  -fx-text-fill: white;
+/* --- 7. 排版与辅助元素 --- */
+
+/* 通用标题 */
+.section-header {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800; /* Extra Bold */
+    -fx-text-fill: #37474f;
+    -fx-padding: 0 0 10 0;
 }
 
-.menu-bar .menu {
-  -fx-text-fill: white;
+/* 右侧说明区域容器 */
+.instruction-box {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 8px;
+    -fx-padding: 15;
+    -fx-border-color: #eee;
+    -fx-border-width: 1;
+}
+/* 图标标签 (Emoji) */
+.icon-label {
+    -fx-font-size: 18px; /* 放大图标 */
+    -fx-padding: 0 10 0 0;
+}
+/* 说明文字 */
+.text-content {
+    -fx-font-size: 13px;
+    -fx-text-fill: #546e7a;
+    -fx-line-spacing: 3;
 }
 
-.menu-item {
-  -fx-text-fill: #333;
+/* 弱化文本 */
+.text-muted {
+    -fx-text-fill: #90a4ae;
+    -fx-font-size: 12px;
+}
+/* 强调文本 */
+.text-strong {
+    -fx-text-fill: #263238;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
 }
 
-/* 输出区域样式 */
-.output-list {
-  -fx-background-color: #2c3e50;
-  -fx-text-fill: #ecf0f1;
-  -fx-font-family: 'Consolas', 'Monospace';
-  -fx-font-size: 12px;
-  -fx-background-radius: 6;
+/* --- 8. 底部命令行 (CMD Area) --- */
+.cmd-area {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 12 20;
+    -fx-alignment: CENTER_LEFT;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 0, -5, 0, 0); /* 顶部微阴影 */
 }
 
-/* 操作日志样式 */
-.log-list {
-  -fx-background-color: #34495e;
-  -fx-text-fill: #ecf0f1;
-  -fx-font-family: 'Consolas', 'Monospace';
-  -fx-font-size: 11px;
-  -fx-background-radius: 6;
+.modern-input {
+    -fx-background-color: #f1f3f4;
+    -fx-background-radius: 20px; /* 胶囊形状 */
+    -fx-border-color: transparent;
+    -fx-padding: 8 15;
+    -fx-prompt-text-fill: #b0bec5;
+    -fx-font-family: "Consolas", "Monospace";
 }
 
-/* 命令输入框样式 */
-.command-field {
-  -fx-background-color: #2c3e50;
-  -fx-text-fill: #ecf0f1;
-  -fx-border-color: #7f8c8d;
-  -fx-border-radius: 6;
-  -fx-background-radius: 6;
-  -fx-padding: 8 15;
-  -fx-font-size: 14px;
+.modern-input:focused {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #42a5f5; /* 聚焦亮蓝 */
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(three-pass-box, rgba(66, 165, 245, 0.2), 8, 0, 0, 0);
 }
 
-/* 状态信息区域 */
-.status-panel {
-  -fx-background-color: #ecf0f1;
-  -fx-padding: 15;
-  -fx-background-radius: 8;
+/* --- 9. 滚动条 (Scroll Bar) --- */
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 10;
 }
-
-.status-label {
-  -fx-font-weight: bold;
-  -fx-text-fill: #2c3e50;
+.scroll-bar .thumb {
+    -fx-background-color: #cfd8dc;
+    -fx-background-radius: 5;
 }
+.scroll-bar .thumb:hover { -fx-background-color: #b0bec5; }
 
-.status-value {
-  -fx-font-weight: bold;
-}
+/* --- 10. 进度条 --- */
+.progress-bar { -fx-pref-height: 8; }
+.progress-bar .track { -fx-background-color: #eceff1; -fx-background-radius: 4; }
+.progress-bar .bar { -fx-background-color: #42a5f5; -fx-background-radius: 4; }
+.blue-bar .bar { -fx-background-color: #42a5f5; }
+.orange-bar .bar { -fx-background-color: #ff7043; }
 
-.status-clock {
-  -fx-text-fill: #3498db;
-}
 
-.status-pid {
-  -fx-text-fill: #e74c3c;
-}
 
-.status-instruction {
-  -fx-text-fill: #9b59b6;
-}
 
-.status-ax {
-  -fx-text-fill: #f39c12;
-}
-
-.status-timeslice {
-  -fx-text-fill: #27ae60;
-}
-
-/* 表格样式 */
-.data-table {
-  -fx-background-color: white;
-  -fx-border-color: #bdc3c7;
-  -fx-background-radius: 8;
-  -fx-border-radius: 8;
-  -fx-border-width: 2;
-}
-
-/* 队列面板 */
-.queue-panel {
-  -fx-background-color: #ecf0f1;
-  -fx-padding: 15;
-  -fx-background-radius: 8;
-  -fx-pref-width: 200;
-}
-
-.queue-ready {
-  -fx-text-fill: #27ae60;
-}
-
-.queue-blocked {
-  -fx-text-fill: #e74c3c;
-}
-
-.queue-list {
-  -fx-background-color: white;
-  -fx-border-color: #bdc3c7;
-  -fx-background-radius: 6;
-  -fx-border-radius: 6;
-}
-
-/* 内存管理 */
-.memory-usage {
-  -fx-font-size: 18px;
-  -fx-font-weight: bold;
-  -fx-text-fill: #2c3e50;
-}
-
-.memory-progress {
-  -fx-accent: #3498db;
-}
-
-.memory-info {
-  -fx-font-size: 14px;
-  -fx-text-fill: #7f8c8d;
-}
-
-.memory-fragmentation {
-  -fx-font-size: 14px;
-  -fx-text-fill: #e67e22;
-  -fx-font-weight: bold;
-}
-
-.memory-blocks {
-  -fx-font-size: 16px;
-  -fx-font-weight: bold;
-  -fx-text-fill: #2c3e50;
-}
-
-/* 性能监控 */
-.performance-label {
-  -fx-font-size: 12px;
-  -fx-text-fill: #7f8c8d;
-}
-
-.performance-value {
-  -fx-font-size: 14px;
-  -fx-font-weight: bold;
-  -fx-text-fill: #2c3e50;
-}
-
-.cpu-progress {
-  -fx-accent: #e74c3c;
-}
-
-.load-progress {
-  -fx-accent: #f39c12;
-}
-
-/* 文件系统 */
-.disk-usage {
-  -fx-font-size: 16px;
-  -fx-font-weight: bold;
-  -fx-text-fill: #2c3e50;
-}
-
-.disk-progress {
-  -fx-accent: #9b59b6;
-}
-
-.disk-info {
-  -fx-font-size: 14px;
-  -fx-text-fill: #7f8c8d;
-}
-
-/* 设备管理 */
-.device-status {
-  -fx-font-size: 18px;
-  -fx-font-weight: bold;
-  -fx-text-fill: #2c3e50;
-}
-
-.device-queue {
-  -fx-font-size: 18px;
-  -fx-font-weight: bold;
-  -fx-text-fill: #2c3e50;
-}
-
-/* 底部状态栏 */
+/* --- 底部状态栏 --- */
 .status-bar {
-  -fx-background-color: #34495e;
-  -fx-padding: 15;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e5e5e5;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 6 20;
+    -fx-alignment: CENTER_LEFT;
+}
+.status-indicator {
+    -fx-text-fill: #107c10;
+    -fx-font-family: "Segoe UI Semibold";
+    -fx-font-size: 12px;
 }
 
-.status-text {
-  -fx-text-fill: #ecf0f1;
-  -fx-font-weight: bold;
+/* 输入框 */
+.modern-input {
+    -fx-background-color: #f3f3f3;
+    -fx-background-radius: 4;
+    -fx-border-color: transparent;
+    -fx-padding: 5 10;
+}
+.modern-input:focused {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #0067c0;
+    -fx-border-width: 2; /* 聚焦时加粗边框 */
+    -fx-padding: 4 9; /* 补偿边框 */
 }
 
-/* 透明背景 */
-.transparent {
-  -fx-background-color: transparent;
+/* --- 列表视图 (Log/Queue) --- */
+.compact-list, .log-list {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
 }
-
-/* 标签页样式 */
-.tab-pane {
-  -fx-background-color: transparent;
-  -fx-padding: 15;
+.compact-list .list-cell, .log-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 3 5;
 }
-
-.tab {
-  -fx-font-size: 14px;
-  -fx-font-weight: bold;
-}
-
-/* 滚动面板 */
-.scroll-pane {
-  -fx-background-color: transparent;
-  -fx-fit-to-width: true;
+.compact-list .list-cell:filled:selected, .log-list .list-cell:filled:selected {
+    -fx-background-color: #e5f1fb;
+    -fx-text-fill: #000;
 }

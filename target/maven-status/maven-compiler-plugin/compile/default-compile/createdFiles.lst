@@ -12,7 +12,9 @@ org\example\scau_os_simulation\logging\OperationLogger.class
 org\example\scau_os_simulation\kernel\MemoryManager.class
 org\example\scau_os_simulation\logging\OperationLogger$OperationType.class
 org\example\scau_os_simulation\undo\UndoManager$CreateFileCommand.class
+module-info.class
 org\example\scau_os_simulation\device\Device.class
+org\example\scau_os_simulation\filesystem\TextEditorWindow.class
 org\example\scau_os_simulation\OSApplication.class
 org\example\scau_os_simulation\process\Executable.class
 org\example\scau_os_simulation\undo\UndoManager$CreateDirectoryCommand.class

@@ -245,8 +245,18 @@ public class ProcessManager
     {
         Process p = findProcess(pid);
         if (p == null) return;
+
+        // 1. 从就绪队列移除（如果它在那里的话）
         readyQueue.remove(p);
+
+        // 2. 加入阻塞队列
         blockedQueue.addLast(p);
+
+        // [修复点]：如果被阻塞的正是当前运行的进程，必须立刻让出 CPU
+        if (running != null && running.getPcb().getPid() == pid) {
+            running = null; // 清空当前运行指针
+            scheduleNext(); // 立即尝试调度下一个，避免 CPU 空转
+        }
     }
 
     /**
