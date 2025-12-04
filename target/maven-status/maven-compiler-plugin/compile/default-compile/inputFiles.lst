@@ -1,4 +1,10 @@
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\module-info.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\cli\CreateProcessCommand.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\cli\KillProcessCommand.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\cli\ListFilesCommand.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\cli\MakeDirectoryCommand.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\cli\OSShell.java
+D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\cli\RemoveCommand.java
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\controller\MainController.java
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\device\Device.java
 D:\Codes\JavaCode\SCAU_OS_Simulation\src\main\java\org\example\scau_os_simulation\device\DeviceRequest.java

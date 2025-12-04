@@ -420,20 +420,37 @@ public class Kernel
     {
         public void execute(String command)
         {
+            if (command == null || command.trim().isEmpty()) return;
+            
+            // Log input command
+            Kernel.getInstance().logOutput("> " + command);
+
             try
             {
-                String cmd = command.trim().toLowerCase();
-                if (cmd.startsWith("create "))
-                {
-                    String name = cmd.substring(7).trim();
-                    org.example.scau_os_simulation.process.Process p = Kernel.getInstance().getProcessManager().createProcess(name.isEmpty() ? "新进程" : name, 1);
-                    if (p != null)
-                    {
-                        p.setExecutable(Kernel.getInstance().getFileSystemManager().loadExecutable("/system/exec/p1.e"));
+                // Split by whitespace (simple tokenization)
+                String[] args = command.trim().split("\\s+");
+                
+                // Create Picocli CommandLine
+                picocli.CommandLine cmd = new picocli.CommandLine(new org.example.scau_os_simulation.cli.OSShell());
+                
+                // Redirect output to Kernel logs
+                java.io.PrintWriter writer = new java.io.PrintWriter(new java.io.Writer() {
+                    @Override public void write(char[] cbuf, int off, int len) {
+                        String s = new String(cbuf, off, len).trim();
+                        if (!s.isEmpty()) Kernel.getInstance().logOutput(s);
                     }
-                }
-            } catch (Exception ignored)
+                    @Override public void flush() {}
+                    @Override public void close() {}
+                });
+                
+                cmd.setOut(writer);
+                cmd.setErr(writer);
+                
+                cmd.execute(args);
+                
+            } catch (Exception e)
             {
+                Kernel.getInstance().logOutput("Error: " + e.getMessage());
             }
         }
     }
