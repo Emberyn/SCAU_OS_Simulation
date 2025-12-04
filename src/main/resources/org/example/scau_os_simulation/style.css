@@ -1,391 +1,88 @@
-/* Windows 11 Fluent Design - 精致优化版 (Morandi Theme) */
+/* style.css - AtlantaFX 微调版 */
+/* 我们不再手写按钮和颜色，而是复用主题提供的变量 (如 -color-bg-default) */
 
-/* --- 1. 全局变量与基础设置 --- */
+/* 1. 全局变量定义 */
 .root {
-    /* 背景色：极淡的灰调，比纯白更护眼 */
-    -fx-base: #f8f9fa;
-    -fx-background-color: #f8f9fa;
-
-    /* 字体栈优化：优先使用现代无衬线字体，提升阅读体验 */
-    -fx-font-family: "Microsoft YaHei UI", "Segoe UI", "PingFang SC", "Heiti SC", sans-serif;
-    -fx-font-size: 14px;
-    -fx-text-fill: #2c3e50; /* 深灰蓝文字，替代纯黑，更具质感 */
-
-    /* 开启 LCD 字体平滑 */
-    -fx-font-smoothing-type: lcd;
+    /* 定义侧边栏的固定宽度 */
+    -sidebar-width: 220px;
 }
 
-/* --- 2. 核心容器样式 --- */
-
-/* 卡片 (Card) - 核心层次感来源 */
-.card {
-    -fx-background-color: #ffffff;
-    -fx-background-radius: 12px; /* 更大的圆角，更现代 */
-    -fx-border-radius: 12px;
-    /* 移除生硬边框，改用双层柔和阴影营造悬浮感 */
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 15, 0, 0, 5);
-    -fx-padding: 0;
-}
-
-/* 面板内容区域 */
-.tab-content-area {
-    -fx-padding: 20; /* 增加留白，拒绝拥挤 */
-}
-
-/* --- 3. 侧边导航栏 (Sidebar) - 现代扁平化风格 --- */
-
-/* 侧边栏整体容器 */
+/* 2. 侧边栏容器 (Sidebar) */
+/* 对应 main-view.fxml 中的 TabPane */
 .sidebar-nav {
-    -fx-background-color: #ffffff; /* 确保背景纯白 */
-    /* 在右侧添加一条清晰的边界线，分隔内容区域 */
-    -fx-border-color: transparent #e0e0e0 transparent transparent;
+    /* 使用主题默认背景色，确保一致性 */
+    -fx-background-color: -color-bg-default;
+    /* 右侧添加一条极淡的分割线 */
+    -fx-border-color: transparent -color-border-muted transparent transparent;
     -fx-border-width: 1;
-    -fx-padding: 0;
+    /* 固定宽度，防止忽大忽小 */
+    -fx-min-width: -sidebar-width;
+    -fx-pref-width: -sidebar-width;
+    -fx-padding: 10 0 0 0;
 }
 
-/* 调整 TabHeaderArea 位置，使其紧贴边缘 */
+/* 隐藏 TabPane 顶部的丑陋默认头 */
 .sidebar-nav .tab-header-area {
-    -fx-padding: 10 0 0 0; /* 顶部留出一点呼吸感 */
     -fx-background-color: transparent;
 }
+.sidebar-nav .headers-region {
+    -fx-gap: 5px; /* 选项卡之间的间距 */
+}
 
-/* 单个 Tab 的基础样式 (未选中态) */
+/* 3. 侧边栏选项卡 (Tab) - 扁平化风格 */
 .sidebar-nav .tab {
     -fx-background-color: transparent;
-    /* 【核心修改】移除圆角，变为现代的直角矩形 */
     -fx-background-radius: 0;
-    /* 【核心修改】移除间距，让 Tab 紧挨在一起 */
-    -fx-margin: 0;
-    /* 调整内边距：增加垂直高度，减少水平宽度，适应侧边布局 */
-    -fx-padding: 25 10;
-    -fx-alignment: CENTER;
+    -fx-border-width: 0;
+    -fx-padding: 12 20; /* 增加内边距，让点击区域更大 */
+    -fx-alignment: CENTER_LEFT; /* 文字左对齐，显专业 */
+    -fx-font-size: 14px;
     -fx-cursor: hand;
-    /* 预设一个透明的左侧边框，用于选中时的指示条动画效果 */
-    -fx-border-color: transparent transparent transparent transparent;
-    -fx-border-width: 0 0 0 4; /* 左侧预留4px宽度 */
-    -fx-transition: all 0.2s ease-in-out; /* 添加平滑过渡动画 */
+    -fx-transition: -fx-background-color 0.2s;
 }
 
-/* 导航项悬停：干净清爽的浅灰背景 */
+/* 悬停状态：极淡灰色背景 */
 .sidebar-nav .tab:hover {
-    -fx-background-color: #f5f7fa;
+    -fx-background-color: -color-bg-subtle;
 }
 
-/* 导航项选中：极淡蓝背景 + 左侧醒目指示条 */
+/* 选中状态：浅蓝背景 + 左侧指示条 */
 .sidebar-nav .tab:selected {
-    /* 柔和的浅蓝背景，去塑料感 */
-    -fx-background-color: #f0f7ff;
-    /* 移除之前的阴影效果 */
-    -fx-effect: none;
-    /* 【核心修改】将左侧边框变为醒目的深蓝色，形成指示条 */
-    -fx-border-color: transparent transparent transparent #1976d2;
-}
-
-/* 选中项文字：深蓝高亮，加粗，提升层级感 */
-.sidebar-nav .tab:selected .tab-label {
-    -fx-text-fill: #0d47a1;
-    -fx-font-weight: bold;
-    -fx-font-size: 15px;
-}
-
-/* 基础文字样式调整 */
-.sidebar-nav .tab-label {
-    -fx-text-fill: #546e7a; /* 默认使用柔和的灰蓝色 */
-    -fx-font-weight: normal;
-}
-
-/* --- 4. 按钮与交互 (Buttons) --- */
-.button {
-    -fx-background-color: #ffffff;
-    -fx-background-radius: 6px;
-    -fx-border-color: #e0e0e0;
-    -fx-border-radius: 6px;
-    -fx-text-fill: #455a64;
-    -fx-padding: 7 16; /* 增加内边距 */
-    -fx-cursor: hand;
-    -fx-font-family: "Segoe UI Semibold", "Microsoft YaHei";
-    -fx-font-weight: bold;
-    /* 默认状态：微弱阴影 */
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 3, 0, 0, 1);
-    -fx-transition: all 0.2s ease-in-out;
-}
-
-/* Hover 动画：背景变淡蓝 + 上浮 + 阴影加深 */
-.button:hover {
-    -fx-background-color: #f5faff;
-    -fx-border-color: #bbdefb;
-    -fx-text-fill: #1976d2;
-    -fx-translate-y: -2; /* 向上浮动 2px */
-    -fx-effect: dropshadow(three-pass-box, rgba(25, 118, 210, 0.15), 8, 0, 0, 4);
-}
-
-/* Pressed 动画：下沉 + 阴影消失 */
-.button:pressed {
-    -fx-background-color: #e3f2fd;
-    -fx-translate-y: 1;
-    -fx-effect: none;
-}
-
-/* 主要操作按钮 (Primary) - 渐变蓝 */
-.button.primary {
-    -fx-background-color: linear-gradient(to bottom right, #42a5f5, #1976d2);
-    -fx-text-fill: white;
-    -fx-border-color: transparent;
-}
-.button.primary:hover {
-    -fx-background-color: linear-gradient(to bottom right, #64b5f6, #2196f3);
-    -fx-effect: dropshadow(three-pass-box, rgba(33, 150, 243, 0.35), 12, 0, 0, 5);
-}
-
-/* 危险操作按钮 (Danger) */
-.button.danger {
-    -fx-text-fill: #ef5350;
-    -fx-border-color: #ffcdd2;
-    -fx-background-color: #fff;
-}
-.button.danger:hover {
-    -fx-background-color: #ffebee;
-    -fx-border-color: #ef5350;
-    -fx-effect: dropshadow(three-pass-box, rgba(239, 83, 80, 0.2), 8, 0, 0, 4);
-}
-
-/* 成功状态按钮 */
-.button.success {
-    -fx-background-color: #edf7ed;
-    -fx-text-fill: #2e7d32;
-    -fx-border-color: #c8e6c9;
-}
-.button.success:hover {
-    -fx-background-color: #e8f5e9;
-    -fx-border-color: #2e7d32;
-}
-
-/* --- 5. 目录树 (Tree View) 美化 --- */
-/* --- 5. 目录树 (Tree View) 美化 - Windows 11 风格 --- */
-.tree-view {
-    /* 保持背景与卡片一致或纯白 */
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-    -fx-padding: 5;
-}
-
-.tree-cell {
-    -fx-background-color: transparent;
-    -fx-padding: 6px 5px; /* 增加行高，视觉更宽松 */
-    -fx-font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
-    -fx-font-size: 14px;
-    -fx-text-fill: #2c3e50; /* 深灰蓝文字 */
-    -fx-alignment: center-left;
-}
-
-/* 悬停：极浅的灰蓝 */
-.tree-cell:filled:hover {
-    -fx-background-color: #f0f5f9;
-}
-
-/* 选中：Windows 风格的浅蓝色背景 */
-.tree-cell:filled:selected {
-    -fx-background-color: #cce8ff; /* 经典选中蓝 */
-    -fx-text-fill: #000000;         /* 选中后文字变黑，对比更清晰 */
-    /* 移除左侧细条，采用全背景高亮，更像文件管理器 */
-    -fx-border-color: transparent;
-}
-
-/* 移除点击时的默认蓝色聚焦边框 */
-.tree-cell:focused {
+    -fx-background-color: -color-accent-subtle; /* 主题定义的浅高亮色 */
     -fx-background-insets: 0;
+    /* 左侧添加 3px 深蓝色指示条 */
+    -fx-border-color: transparent transparent transparent -color-accent-emphasis;
+    -fx-border-width: 0 0 0 3px;
 }
 
-/* 调整左侧折叠小三角 - 柔和灰色 */
-.tree-cell .tree-disclosure-node .arrow {
-    -fx-background-color: #90a4ae;
-    -fx-padding: 2.5px;
-}
-.tree-cell:expanded .tree-disclosure-node .arrow {
-    -fx-background-color: #78909c;
-}
-
-/* --- 自定义图标样式 (配合 Java 代码使用) --- */
-
-/* 文件夹图标 - 暖黄色 */
-.folder-icon {
-    -fx-text-fill: #ffc107; /* 文件夹经典黄 */
-    -fx-font-size: 16px;
-    -fx-padding: 0 8 0 0;   /* 图标右侧留白 */
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 2, 0, 0, 1); /* 轻微立体感 */
-}
-
-/* 可执行文件图标 - 绿色 */
-.exec-icon {
-    -fx-text-fill: #4caf50;
-    -fx-font-size: 16px;
-    -fx-padding: 0 8 0 0;
-}
-
-/* 文本/普通文件图标 - 蓝灰色 */
-.file-icon {
-    -fx-text-fill: #78909c;
-    -fx-font-size: 16px;
-    -fx-padding: 0 8 0 0;
-}
-
-/* --- 6. 表格 (Table View) --- */
-.table-view {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
-}
-.table-view .column-header-background {
-    -fx-background-color: #ffffff;
-    -fx-border-width: 0 0 1 0;
-    -fx-border-color: #eee;
-}
-.table-view .column-header {
-    -fx-background-color: transparent;
-    -fx-size: 45px;
-}
-.table-view .column-header .label {
-    -fx-text-fill: #546e7a;
-    -fx-font-weight: 800;
-}
-.table-row-cell {
-    -fx-background-color: #ffffff;
-    -fx-border-width: 0 0 1 0;
-    -fx-border-color: #f5f5f5;
-    -fx-cell-size: 38px;
-}
-.table-row-cell:hover { -fx-background-color: #fafafa; }
-.table-row-cell:selected {
-    -fx-background-color: #e3f2fd;
-    -fx-text-fill: #1565c0;
-}
-
-/* --- 7. 排版与辅助元素 --- */
-
-/* 通用标题 */
-.section-header {
-    -fx-font-size: 16px;
-    -fx-font-weight: 800; /* Extra Bold */
-    -fx-text-fill: #37474f;
-    -fx-padding: 0 0 10 0;
-}
-
-/* 右侧说明区域容器 */
-.instruction-box {
-    -fx-background-color: #f8f9fa;
-    -fx-background-radius: 8px;
-    -fx-padding: 15;
-    -fx-border-color: #eee;
-    -fx-border-width: 1;
-}
-/* 图标标签 (Emoji) */
-.icon-label {
-    -fx-font-size: 18px; /* 放大图标 */
-    -fx-padding: 0 10 0 0;
-}
-/* 说明文字 */
-.text-content {
-    -fx-font-size: 13px;
-    -fx-text-fill: #546e7a;
-    -fx-line-spacing: 3;
-}
-
-/* 弱化文本 */
-.text-muted {
-    -fx-text-fill: #90a4ae;
-    -fx-font-size: 12px;
-}
-/* 强调文本 */
-.text-strong {
-    -fx-text-fill: #263238;
+/* 选中状态的文字：深蓝色加粗 */
+.sidebar-nav .tab:selected .tab-label {
+    -fx-text-fill: -color-accent-fg;
     -fx-font-weight: bold;
-    -fx-font-size: 14px;
 }
 
-/* --- 8. 底部命令行 (CMD Area) --- */
-.cmd-area {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #e0e0e0;
-    -fx-border-width: 1 0 0 0;
-    -fx-padding: 12 20;
-    -fx-alignment: CENTER_LEFT;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 0, -5, 0, 0); /* 顶部微阴影 */
+/* 4. 内容区域 - 卡片化背景 */
+.tab-content-area {
+    -fx-padding: 20;
+    /* 使用略深的背景色，从而突显内部白色的 Card */
+    -fx-background-color: -color-bg-inset;
 }
 
-.modern-input {
-    -fx-background-color: #f1f3f4;
-    -fx-background-radius: 20px; /* 胶囊形状 */
-    -fx-border-color: transparent;
-    -fx-padding: 8 15;
-    -fx-prompt-text-fill: #b0bec5;
-    -fx-font-family: "Consolas", "Monospace";
-}
-
-.modern-input:focused {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #42a5f5; /* 聚焦亮蓝 */
-    -fx-border-width: 1.5;
-    -fx-effect: dropshadow(three-pass-box, rgba(66, 165, 245, 0.2), 8, 0, 0, 0);
-}
-
-/* --- 9. 滚动条 (Scroll Bar) --- */
-.scroll-bar:vertical {
-    -fx-background-color: transparent;
-    -fx-pref-width: 10;
-}
-.scroll-bar .thumb {
-    -fx-background-color: #cfd8dc;
-    -fx-background-radius: 5;
-}
-.scroll-bar .thumb:hover { -fx-background-color: #b0bec5; }
-
-/* --- 10. 进度条 --- */
-.progress-bar { -fx-pref-height: 8; }
-.progress-bar .track { -fx-background-color: #eceff1; -fx-background-radius: 4; }
-.progress-bar .bar { -fx-background-color: #42a5f5; -fx-background-radius: 4; }
-.blue-bar .bar { -fx-background-color: #42a5f5; }
-.orange-bar .bar { -fx-background-color: #ff7043; }
-
-
-
-
-/* --- 底部状态栏 --- */
-.status-bar {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #e5e5e5;
-    -fx-border-width: 1 0 0 0;
-    -fx-padding: 6 20;
-    -fx-alignment: CENTER_LEFT;
-}
-.status-indicator {
-    -fx-text-fill: #107c10;
-    -fx-font-family: "Segoe UI Semibold";
-    -fx-font-size: 12px;
-}
-
-/* 输入框 */
-.modern-input {
-    -fx-background-color: #f3f3f3;
-    -fx-background-radius: 4;
-    -fx-border-color: transparent;
-    -fx-padding: 5 10;
-}
-.modern-input:focused {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #0067c0;
-    -fx-border-width: 2; /* 聚焦时加粗边框 */
-    -fx-padding: 4 9; /* 补偿边框 */
-}
-
-/* --- 列表视图 (Log/Queue) --- */
-.compact-list, .log-list {
-    -fx-background-color: transparent;
+/* 卡片容器：纯白背景 + 微弱阴影 */
+.card {
+    -fx-background-color: -color-bg-default;
+    -fx-background-radius: 8px;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 1px;
+    /* AtlantaFX 风格的柔和阴影 */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 8, 0, 0, 2);
     -fx-padding: 0;
 }
-.compact-list .list-cell, .log-list .list-cell {
-    -fx-background-color: transparent;
-    -fx-padding: 3 5;
-}
-.compact-list .list-cell:filled:selected, .log-list .list-cell:filled:selected {
-    -fx-background-color: #e5f1fb;
-    -fx-text-fill: #000;
+
+/* 5. 底部状态栏和 CMD 区域 */
+.cmd-area {
+    -fx-background-color: -color-bg-default;
+    -fx-border-color: -color-border-muted transparent transparent transparent;
+    -fx-border-width: 1;
+    -fx-padding: 10 20;
 }
