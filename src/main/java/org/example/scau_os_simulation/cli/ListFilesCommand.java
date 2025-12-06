@@ -8,77 +8,106 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 @Command(name = "ls", description = "列出目录内容")
-public class ListFilesCommand implements Runnable {
+public class ListFilesCommand implements Runnable
+{
 
-    @Parameters(index = "0", description = "路径", defaultValue = "/")
+    // 默认值改为 "." 表示当前目录
+    @Parameters(index = "0", description = "路径", defaultValue = ".")
     private String path;
 
     @Option(names = {"-l"}, description = "详细信息")
     private boolean detail;
 
     @Override
-    public void run() {
-        Object node = Kernel.getInstance().getFileSystemManager().getFileByPath(path);
-        
-        // 如果 getFileByPath 返回 null，可能是因为它只返回 File，需要检查是不是 Directory
-        // FileSystemManager.getFileByPath 似乎只返回 File (根据之前的 Read)
-        // 让我们检查 FileSystemManager 的 api。
-        // 它有 getFileByPath 返回 File。那 Directory 呢？
-        // 它有一个 findDirectoryByPath 或者是内部方法。
-        // 让我们看看 Kernel 代码。
-        // FileSystemManager.getFileByPath implementation:
-        // Object child = dir.findChild(fileName); if (child instanceof File f) return f; else return null;
-        // 看来它只返回文件。
-        // 我需要一个新的方法或者用更底层的方法来获取 Directory。
-        // 但是 FileSystemManager.rootDirectory 是 public (getter)。
-        // 我可以自己遍历。
-        
-        // 实际上，我应该在 FileSystemManager 中增加一个通用 getNodeByPath 或者在这里实现简单的查找。
-        // 为了不修改 Kernel 太多，我在这里实现简单的查找逻辑。
-        
+    public void run()
+    {
+        // 1. 解析路径 (将 "." 或 "subdir" 转换为绝对路径)
+        String absolutePath = ShellContext.getInstance().resolvePath(path);
+
+        // 2. 手动查找节点 (因为 Kernel 的 getFileByPath 可能只返回 File)
         Directory current = Kernel.getInstance().getFileSystemManager().getRootDirectory();
-        if (path.equals("/")) {
+
+        if (absolutePath.equals("/"))
+        {
             listDir(current);
             return;
         }
-        
-        // 简单解析路径
-        String[] parts = path.split("/");
-        for (String part : parts) {
+
+        String[] parts = absolutePath.split("/");
+        Object targetNode = current;
+        boolean found = true;
+
+        // 遍历查找
+        for (String part : parts)
+        {
             if (part.isEmpty()) continue;
-            Object child = current.findChild(part);
-            if (child instanceof Directory) {
-                current = (Directory) child;
-            } else if (child instanceof File) {
-                 // 如果是文件，显示单个文件信息
-                 printNode(child);
-                 return;
-            } else {
-                Kernel.getInstance().logOutput("错误: 路径不存在 " + path);
-                return;
+            if (targetNode instanceof Directory)
+            {
+                boolean childFound = false;
+                for (Object child : ((Directory) targetNode).getChildren())
+                {
+                    String childName = (child instanceof Directory) ? ((Directory) child).getName() : ((File) child).getName();
+                    if (childName.equals(part))
+                    {
+                        targetNode = child;
+                        childFound = true;
+                        break;
+                    }
+                }
+                if (!childFound)
+                {
+                    found = false;
+                    break;
+                }
+            } else
+            {
+                found = false;
+                break;
             }
         }
-        
-        listDir(current);
+
+        if (!found)
+        {
+            Kernel.getInstance().printToTerminal("ls: cannot access '" + path + "': No such file or directory");
+            return;
+        }
+
+        if (targetNode instanceof Directory)
+        {
+            listDir((Directory) targetNode);
+        } else if (targetNode instanceof File)
+        {
+            printNode(targetNode);
+        }
     }
 
-    private void listDir(Directory dir) {
-        Kernel.getInstance().logOutput("目录 " + dir.getName() + " 的内容:");
-        for (Object child : dir.getChildren()) {
+    private void listDir(Directory dir)
+    {
+        if (dir.getChildren().isEmpty())
+        {
+            return; // 空目录不打印内容
+        }
+        for (Object child : dir.getChildren())
+        {
             printNode(child);
         }
     }
-    
-    private void printNode(Object node) {
-        if (node instanceof Directory) {
-            Kernel.getInstance().logOutput("[DIR]  " + ((Directory) node).getName());
-        } else if (node instanceof File) {
+
+    private void printNode(Object node)
+    {
+        if (node instanceof Directory)
+        {
+            // 蓝色显示目录 (模拟颜色代码在 LogView 中可能无效，这里仅用文本标记)
+            Kernel.getInstance().printToTerminal("[DIR]  " + ((Directory) node).getName());
+        } else if (node instanceof File)
+        {
             File f = (File) node;
-            String info = "[FILE] " + f.getName();
-            if (detail) {
-                info += " (Size: " + f.getSize() + "KB)";
+            String info = f.getName();
+            if (detail)
+            {
+                info += "\t" + f.getSize() + "KB";
             }
-            Kernel.getInstance().logOutput(info);
+            Kernel.getInstance().printToTerminal(info);
         }
     }
 }

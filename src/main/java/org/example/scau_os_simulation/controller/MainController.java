@@ -1,6 +1,7 @@
 package org.example.scau_os_simulation.controller;
 
 // 导入 JavaFX 的核心工具类，用于处理多线程 UI 更新
+
 import javafx.application.Platform;
 // 导入 FXML 注解，用于将界面文件(.fxml)中的组件绑定到代码变量
 import javafx.collections.FXCollections;
@@ -32,6 +33,10 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.scene.Node;
 import javafx.geometry.Insets;
+import javafx.stage.Stage;
+import javafx.scene.Scene;
+import javafx.scene.Parent;
+import javafx.fxml.FXMLLoader;
 
 // 导入后端核心逻辑类（Kernel, MemoryManager 等）
 import org.example.scau_os_simulation.kernel.Kernel;
@@ -92,6 +97,8 @@ public class MainController implements Initializable
     private Button createProcessBtn; // "创建进程" 按钮
     @FXML
     private Button terminateProcessBtn; // "终止进程" 按钮
+    @FXML
+    private Button openTerminalBtn;
 
     // --- 进程管理表格组件 ---
     // TableView<PCB>: 表格，显示 PCB (进程控制块) 对象的数据
@@ -156,11 +163,6 @@ public class MainController implements Initializable
     private TreeView<String> fileSystemTreeView; // 文件目录树视图
 
     private Object clipboardFile; // 剪贴板，用于存储复制的文件/目录对象 (Java对象引用)
-
-    @FXML
-    private TextField commandField; // 底部命令行输入框
-    @FXML
-    private Button runCommandBtn; // 执行命令按钮
 
     // --- 文件/内存操作按钮 ---
     @FXML
@@ -266,9 +268,11 @@ public class MainController implements Initializable
         fileSystemTreeView.setOnMouseClicked(event ->
         {
             // 检查系统是否正在运行，如果未启动则弹出警告
-            if (Kernel.getInstance().getScheduler() == null || !Kernel.getInstance().getScheduler().isRunning()) {
+            if (Kernel.getInstance().getScheduler() == null || !Kernel.getInstance().getScheduler().isRunning())
+            {
                 // 如果是双击操作，提示用户先启动系统
-                if (event.getClickCount() == 2) {
+                if (event.getClickCount() == 2)
+                {
                     showWarning("系统未启动", "请先点击顶部的 [▶ 启动系统] 按钮。");
                 }
                 return;
@@ -296,12 +300,14 @@ public class MainController implements Initializable
         fileSystemTreeView.setContextMenu(contextMenu);
 
         // 设置菜单显示前的逻辑：如果系统没跑，禁用菜单项
-        contextMenu.setOnShowing(e -> {
+        contextMenu.setOnShowing(e ->
+        {
             boolean isRunning = Kernel.getInstance().getScheduler() != null &&
                     Kernel.getInstance().getScheduler().isRunning();
 
             // 遍历所有菜单项并根据运行状态禁用/启用
-            for (javafx.scene.control.MenuItem item : contextMenu.getItems()) {
+            for (javafx.scene.control.MenuItem item : contextMenu.getItems())
+            {
                 item.setDisable(!isRunning);
             }
         });
@@ -346,14 +352,13 @@ public class MainController implements Initializable
         if (undoBtn != null) undoBtn.setDisable(disable);
         if (redoBtn != null) redoBtn.setDisable(disable);
 
-        // 3. 命令行相关组件
-        if (runCommandBtn != null) runCommandBtn.setDisable(disable);
-        if (commandField != null) commandField.setDisable(disable);
-
-        // 4. 文件操作按钮
+        // 3. 文件操作按钮
         if (createFileBtn != null) createFileBtn.setDisable(disable);
         if (createDirectoryBtn != null) createDirectoryBtn.setDisable(disable);
         if (deleteFileBtn != null) deleteFileBtn.setDisable(disable);
+
+        // 4. 打开终端按钮
+        if (openTerminalBtn != null) openTerminalBtn.setDisable(disable);
 
         // 注意：startSystemBtn 和 stopSystemBtn 不需要在这里控制，
         // 它们在自己的点击事件里单独逻辑控制
@@ -659,7 +664,6 @@ public class MainController implements Initializable
     }
 
 
-
     /**
      * [事件处理] 点击 "创建目录" 按钮 (逻辑同创建文件类似)
      */
@@ -876,21 +880,6 @@ public class MainController implements Initializable
         });
     }
 
-    /**
-     * [事件处理] 执行命令行指令
-     */
-    @FXML
-    protected void onRunCommandClick()
-    {
-        String command = commandField.getText();
-        if (command != null && !command.trim().isEmpty())
-        {
-            // 将命令交给内核的命令执行器处理
-            kernel.getCommandExecutor().execute(command);
-            commandField.clear(); // 清空输入框
-            updateAllViews(); // 命令可能改变了任何状态，全量刷新
-        }
-    }
 
     /**
      * 辅助方法：打开当前选中文件的编辑器窗口
@@ -1041,7 +1030,8 @@ public class MainController implements Initializable
     /**
      * 更新文件系统视图
      */
-    private void updateFileSystemView() {
+    private void updateFileSystemView()
+    {
         Directory rootDir = kernel.getFileSystemManager().getRootDirectory();
 
         // 创建树的根节点
@@ -1054,7 +1044,8 @@ public class MainController implements Initializable
         fileSystemTreeView.setRoot(rootItem);
 
         // 更新磁盘信息
-        if (kernel.getFileSystemManager().getFileSystem() != null) {
+        if (kernel.getFileSystemManager().getFileSystem() != null)
+        {
             int total = kernel.getFileSystemManager().getFileSystem().getTotalSize();
             int used = kernel.getFileSystemManager().getFileSystem().getUsedSize();
             double usage = total > 0 ? (double) used / total : 0;
@@ -1067,25 +1058,32 @@ public class MainController implements Initializable
     /**
      * 递归填充文件树 (带图标逻辑)
      */
-    private void populateFileSystemTree(Directory parent, TreeItem<String> parentItem) {
-        for (Object child : parent.getChildren()) {
-            if (child instanceof Directory) {
+    private void populateFileSystemTree(Directory parent, TreeItem<String> parentItem)
+    {
+        for (Object child : parent.getChildren())
+        {
+            if (child instanceof Directory)
+            {
                 // 子目录 -> 文件夹图标
                 Directory dir = (Directory) child;
                 TreeItem<String> dirItem = new TreeItem<>(dir.getName());
                 dirItem.setGraphic(createIcon("folder"));
                 parentItem.getChildren().add(dirItem);
                 populateFileSystemTree(dir, dirItem);
-            } else if (child instanceof File) {
+            } else if (child instanceof File)
+            {
                 // 文件 -> 根据后缀判断图标
                 File f = (File) child;
                 TreeItem<String> fileItem = new TreeItem<>(f.getName());
 
-                if (f.getName().endsWith(".e")) {
+                if (f.getName().endsWith(".e"))
+                {
                     fileItem.setGraphic(createIcon("exec"));
-                } else if (f.getName().endsWith(".txt")) {
+                } else if (f.getName().endsWith(".txt"))
+                {
                     fileItem.setGraphic(createIcon("text"));
-                } else {
+                } else
+                {
                     fileItem.setGraphic(createIcon("file"));
                 }
                 parentItem.getChildren().add(fileItem);
@@ -1096,12 +1094,14 @@ public class MainController implements Initializable
     /**
      * 创建带样式的 Emoji 图标
      */
-    private javafx.scene.control.Label createIcon(String type) {
+    private javafx.scene.control.Label createIcon(String type)
+    {
         javafx.scene.control.Label iconLabel = new javafx.scene.control.Label();
         // 设置字体以确保Emoji显示正常，虽然CSS已设置，这里双重保险
         iconLabel.setStyle("-fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Segoe UI Symbol';");
 
-        switch (type) {
+        switch (type)
+        {
             case "folder":
                 iconLabel.setText("📁");
                 iconLabel.getStyleClass().add("folder-icon");
@@ -1121,7 +1121,6 @@ public class MainController implements Initializable
         }
         return iconLabel;
     }
-
 
 
     /**
@@ -1403,6 +1402,37 @@ public class MainController implements Initializable
             this.device = device;
             this.pid = pid;
             this.time = time;
+        }
+    }
+
+    /**
+     * [事件处理] 点击 "打开终端" 按钮
+     */
+    @FXML
+    protected void onOpenTerminalClick()
+    {
+        try
+        {
+            // 1. 加载 FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/scau_os_simulation/terminal_view.fxml"));
+            Parent root = loader.load();
+
+            // 2. 获取 Controller (以便在窗口关闭时清理)
+            TerminalController controller = loader.getController();
+
+            // 3. 创建新窗口 (Stage)
+            Stage stage = new Stage();
+            stage.setTitle("SCAU OS Terminal");
+            stage.setScene(new Scene(root));
+
+            // 设置窗口关闭时的回调，取消日志监听，防止报错
+            stage.setOnHidden(e -> controller.onClose());
+
+            stage.show();
+        } catch (Exception e)
+        {
+            e.printStackTrace();
+            showError("启动失败", "无法打开终端窗口: " + e.getMessage());
         }
     }
 }

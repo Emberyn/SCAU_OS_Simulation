@@ -21,6 +21,21 @@
     -fx-padding: 10 0 0 0;
 }
 
+/* 给按钮添加一个类名，例如 class="menu-bar-button" */
+.menu-bar-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #333333;
+}
+
+.menu-bar-button:hover {
+    -fx-background-color: #e0e0e0; /* 悬停时的浅灰色背景 */
+    -fx-text-fill: black;
+}
+
+.menu-bar-button:pressed {
+    -fx-background-color: #d0d0d0; /* 点击时的深灰色 */
+}
+
 /* 隐藏 TabPane 顶部的丑陋默认头 */
 .sidebar-nav .tab-header-area {
     -fx-background-color: transparent;

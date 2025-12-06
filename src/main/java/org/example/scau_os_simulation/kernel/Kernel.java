@@ -21,6 +21,7 @@
 // 包声明：这个文件属于kernel包，专门存放内核相关的类
 package org.example.scau_os_simulation.kernel;
 
+import org.example.scau_os_simulation.cli.OSShellCommand;
 import org.example.scau_os_simulation.filesystem.FileSystem;
 import org.example.scau_os_simulation.process.Executable;
 import org.example.scau_os_simulation.memory.Memory;
@@ -29,6 +30,10 @@ import org.example.scau_os_simulation.logging.OperationLogger;
 import org.example.scau_os_simulation.performance.PerformanceMonitor;
 import org.example.scau_os_simulation.undo.UndoManager;
 import org.example.scau_os_simulation.process.ProducerConsumerExecutable;
+
+import java.util.function.Consumer;
+
+import org.example.scau_os_simulation.cli.CommandExecutor;
 
 /**
  * 操作系统内核类
@@ -96,6 +101,10 @@ public class Kernel
      */
     private UndoManager undoManager;
 
+    // 新增：用于终端输出的回调接口
+    private Consumer<String> terminalListener;
+    private CommandExecutor commandExecutor;
+
     /**
      * 执行结果日志：记录进程结束时的 AX 值等信息
      */
@@ -110,6 +119,8 @@ public class Kernel
     public Kernel()
     {
         instance = this;  // 设置单例实例，确保全局访问
+
+        this.commandExecutor = new CommandExecutor();
     }
 
     /**
@@ -246,8 +257,7 @@ public class Kernel
             // 调度器就像排班经理，负责安排进程（员工）的工作时间
             scheduler = new Scheduler(processManager, deviceManager);
             logOutput("内核初始化完成，等待启动...");
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             e.printStackTrace();
             System.err.println("内核初始化失败: " + e.getMessage());
@@ -262,14 +272,14 @@ public class Kernel
         {
             scheduler.start();
             // 可以记录一条日志
-            if (operationLogger != null) {
+            if (operationLogger != null)
+            {
                 operationLogger.info(
                         org.example.scau_os_simulation.logging.OperationLogger.OperationType.SYSTEM,
                         "系统内核已启动调度", null
                 );
             }
-        }
-        else
+        } else
         {
             // 【关键修改】显式报错
             System.err.println("严重错误: 调度器(scheduler)未初始化！请检查 initialize() 是否抛出了异常。");
@@ -295,12 +305,32 @@ public class Kernel
         if (scheduler != null) scheduler.stop();
     }
 
+    public void setTerminalListener(Consumer<String> listener)
+    {
+        this.terminalListener = listener;
+    }
+
     /**
      * 记录一条执行结果日志
      */
     public void logOutput(String s)
     {
         outputLogs.add(s);
+    }
+
+    /**
+     * 用于 CLI 命令（如 ls, pwd, mkdir）向终端窗口输出结果。
+     */
+    public void printToTerminal(String s)
+    {
+        // 1. 可选：终端的输出通常也应该记录在系统总日志里，方便回溯
+        outputLogs.add(s);
+
+        // 2. 发送给终端窗口
+        if (terminalListener != null)
+        {
+            javafx.application.Platform.runLater(() -> terminalListener.accept(s));
+        }
     }
 
     /**
@@ -412,46 +442,5 @@ public class Kernel
     public CommandExecutor getCommandExecutor()
     {
         return commandExecutor;
-    }
-
-    private final CommandExecutor commandExecutor = new CommandExecutor();
-
-    public static class CommandExecutor
-    {
-        public void execute(String command)
-        {
-            if (command == null || command.trim().isEmpty()) return;
-            
-            // Log input command
-            Kernel.getInstance().logOutput("> " + command);
-
-            try
-            {
-                // Split by whitespace (simple tokenization)
-                String[] args = command.trim().split("\\s+");
-                
-                // Create Picocli CommandLine
-                picocli.CommandLine cmd = new picocli.CommandLine(new org.example.scau_os_simulation.cli.OSShell());
-                
-                // Redirect output to Kernel logs
-                java.io.PrintWriter writer = new java.io.PrintWriter(new java.io.Writer() {
-                    @Override public void write(char[] cbuf, int off, int len) {
-                        String s = new String(cbuf, off, len).trim();
-                        if (!s.isEmpty()) Kernel.getInstance().logOutput(s);
-                    }
-                    @Override public void flush() {}
-                    @Override public void close() {}
-                });
-                
-                cmd.setOut(writer);
-                cmd.setErr(writer);
-                
-                cmd.execute(args);
-                
-            } catch (Exception e)
-            {
-                Kernel.getInstance().logOutput("Error: " + e.getMessage());
-            }
-        }
     }
 }

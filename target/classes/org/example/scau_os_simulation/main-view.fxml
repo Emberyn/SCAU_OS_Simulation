@@ -26,6 +26,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Region?>
 
 <?import javafx.scene.layout.StackPane?>
 <BorderPane prefHeight="800.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.scau_os_simulation.controller.MainController">
@@ -35,8 +36,9 @@
     </stylesheets>
 
     <top>
-        <VBox>
-            <MenuBar>
+        <HBox alignment="CENTER_LEFT" spacing="0" style="-fx-background-color: #f4f4f4; -fx-border-color: #dcdcdc; -fx-border-width: 0 0 1 0;">
+
+            <MenuBar style="-fx-background-color: transparent;">
                 <Menu text="文件 (F)">
                     <MenuItem onAction="#onExitAction" text="退出" />
                 </Menu>
@@ -47,7 +49,17 @@
                     <MenuItem onAction="#onAboutAction" text="关于" />
                 </Menu>
             </MenuBar>
-        </VBox>
+
+            <!-- 修改这里：使用简写的 Region，前提是上面已经 import 了 -->
+            <Region HBox.hgrow="ALWAYS" />
+
+            <Button fx:id="openTerminalBtn"
+                    text="打开终端"
+                    onAction="#onOpenTerminalClick"
+                    style="..." >
+            </Button>
+
+        </HBox>
     </top>
 
     <center>
@@ -360,15 +372,5 @@
 
         </TabPane>
     </center>
-
-    <bottom>
-        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="cmd-area">
-            <Label fx:id="systemStatusLabel" style="-fx-text-fill: #2da44e; -fx-font-weight: bold;" text="● 系统就绪" />
-            <Region HBox.hgrow="ALWAYS" />
-            <Label styleClass="text-monospace, text-bold" text="CMD" />
-            <TextField fx:id="commandField" prefWidth="450" promptText="在此输入指令 (如: create process1)..." />
-            <Button fx:id="runCommandBtn" onAction="#onRunCommandClick" styleClass="button, accent" text="执行" />
-        </HBox>
-    </bottom>
 
 </BorderPane>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.TextFlow?>
+
+<!--
+    整体背景设为白色 (或者浅灰)，以适配黑色字体。
+    fitToWidth="true" 确保内容宽度自适应。
+-->
+<ScrollPane fx:id="scrollPane"
+            xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.scau_os_simulation.controller.TerminalController"
+            fitToWidth="true"
+            fitToHeight="true"
+            style="-fx-background: #ffffff; -fx-padding: 5;">
+
+    <!-- 主要容器，点击任意空白处都应该让输入框获得焦点 -->
+    <VBox fx:id="terminalContainer"
+          style="-fx-background-color: #ffffff;"
+          onMouseClicked="#onTerminalClicked"
+          spacing="2">
+
+        <!-- 1. 历史记录区域：用于显示之前的 Prompt、命令和输出结果 -->
+        <TextFlow fx:id="historyFlow"
+                  style="-fx-font-family: 'Consolas', 'Monospaced'; -fx-font-size: 14px;"/>
+
+        <!-- 2. 当前输入行：提示符 + 输入框 -->
+        <HBox alignment="CENTER_LEFT" spacing="0">
+            <!-- 提示符 (绿色) -->
+            <Label fx:id="promptLabel"
+                   text="[root@scau-os /]# "
+                   style="-fx-text-fill: #008000; -fx-font-family: 'Consolas', 'Monospaced'; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+
+            <!-- 输入框 (黑色)
+                 背景透明，无边框，看起来就像直接在后面打字一样
+            -->
+            <TextField fx:id="inputField"
+                       onAction="#onEnterPressed"
+                       HBox.hgrow="ALWAYS"
+                       style="-fx-background-color: transparent;
+                              -fx-background-insets: 0;
+                              -fx-border-width: 0;
+                              -fx-padding: 0 0 0 5;
+                              -fx-text-fill: black;
+                              -fx-font-family: 'Consolas', 'Monospaced';
+                              -fx-font-size: 14px;"/>
+        </HBox>
+
+    </VBox>
+
+</ScrollPane>
