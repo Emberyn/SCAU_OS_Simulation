@@ -3,6 +3,7 @@ package org.example.scau_os_simulation.controller;
 // 导入 JavaFX 的核心工具类，用于处理多线程 UI 更新
 import javafx.application.Platform;
 // 导入 FXML 注解，用于将界面文件(.fxml)中的组件绑定到代码变量
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 // 导入初始化接口，实现该接口的类会在界面加载时自动调用 initialize 方法
 import javafx.fxml.Initializable;
@@ -30,8 +31,6 @@ import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.scene.Node;
-import javafx.beans.value.ChangeListener;
-import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 
 // 导入后端核心逻辑类（Kernel, MemoryManager 等）
@@ -584,11 +583,8 @@ public class MainController implements Initializable
     @FXML
     protected void onAboutAction()
     {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("关于");
-        alert.setHeaderText("操作系统模拟器");
-        alert.setContentText("这是一个基于JavaFX的操作系统模拟框架，用于演示操作系统的基本概念。");
-        alert.showAndWait();
+        // 弹出"关于"信息框
+        showInfo("关于", "SCAU 操作系统模拟器 v1.0\n基于 JavaFX + Picocli 开发");
     }
 
     /**
