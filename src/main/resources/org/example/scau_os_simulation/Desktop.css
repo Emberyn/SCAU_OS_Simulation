@@ -1,0 +1,151 @@
+/* Desktop.css - Windows 风格样式 */
+
+/* 1. 壁纸设置 - 替代 Java 中的 initWallpaperWithCSS */
+.desktop-background {
+    /* 假设 wallpaper.jpg 与 css 文件在同一目录，或者在 classpath 根目录下 */
+    /* 如果图片在 resources/org/example/... 下，且css也在那里，直接写文件名即可 */
+    -fx-background-image: url("wallpaper.jpg");
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+    -fx-background-color: #2b2b2b; /* 图片加载失败时的备用色 */
+}
+
+/* 2. 桌面区域布局 */
+.desktop-area {
+    -fx-padding: 20px;
+    -fx-hgap: 10px;
+    -fx-vgap: 20px;
+}
+
+/* 3. 任务栏 */
+.task-bar {
+    -fx-background-color: rgb(206, 225, 218);
+    -fx-pref-height: 45px;
+    -fx-padding: 0 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, -2);
+    -fx-border-color: #444;
+    -fx-border-width: 1 0 0 0;
+}
+
+.start-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #28c2dc;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-graphic-text-gap: 8;
+}
+.start-button:hover {
+    -fx-background-color: rgba(255,255,255,0.4); /* 稍微亮一点 */
+}
+
+.clock-label {
+    -fx-text-fill: #000000;
+    -fx-font-size: 12px;
+}
+
+/* 4. 桌面图标 */
+.desktop-icon {
+    -fx-background-color: transparent;
+    -fx-padding: 10;
+    -fx-alignment: top-center;
+    -fx-pref-width: 90px;
+    -fx-pref-height: 100px;
+}
+.desktop-icon:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-border-color: rgba(255, 255, 255, 0.4);
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+.desktop-icon:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.3);
+}
+
+.icon-image-view {
+    /* 如果需要在CSS里控制图标图片大小，目前JavaFX CSS对ImageView支持有限，
+       主要还是在Java代码里设置fitWidth/Height，或者使用-fx-image属性 */
+}
+
+.icon-label-fallback {
+    -fx-font-size: 40px;
+}
+
+.icon-label {
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-effect: dropshadow(one-pass-box, black, 2, 0.5, 0, 0);
+    -fx-wrap-text: true;
+    -fx-text-alignment: center;
+}
+
+/* 5. 窗口样式 */
+.window-frame {
+    -fx-background-color: #f4f4f4;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 15, 0, 0, 5);
+    -fx-border-color: #999;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.window-title-bar {
+    -fx-background-color: white;
+    -fx-padding: 5 10;
+    -fx-alignment: center-left;
+    -fx-border-color: #ddd;
+    -fx-border-width: 0 0 1 0;
+    -fx-background-radius: 5 5 0 0;
+}
+
+.window-title {
+    -fx-font-weight: bold;
+    -fx-text-fill: #333;
+}
+
+.window-close-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #666;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+.window-close-btn:hover {
+    -fx-background-color: #e81123;
+    -fx-text-fill: white;
+}
+
+/* 6. 任务栏应用按钮 */
+.task-app-btn {
+    -fx-background-color: rgba(5, 255, 224, 0.2);
+    -fx-text-fill: #000000;
+    -fx-background-radius: 2;
+    -fx-min-width: 100px;
+    -fx-alignment: center-left;
+}
+.task-app-btn:hover {
+    -fx-background-color: rgba(255,255,255,0.4);
+}
+
+/* 7. 开始菜单样式 */
+.start-menu {
+    -fx-min-width: 150px;
+    -fx-padding: 5;
+    -fx-background-color: rgba(240, 240, 240, 0.95);
+    -fx-background-radius: 5;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 2);
+}
+
+/* 8. 关于窗口内容样式 */
+.about-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333;
+}
+.about-version {
+    -fx-text-fill: #666;
+}
+.about-author {
+    -fx-font-size: 10px;
+    -fx-text-fill: #999;
+}
