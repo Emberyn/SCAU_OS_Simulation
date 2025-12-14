@@ -38,7 +38,9 @@ public class TextEditorWindow extends Stage
         // 从模拟文件系统中读取内容（假设存储的是UTF-8文本）
         if (file.getContent() != null)
         {
-            String content = new String(file.getContent(), StandardCharsets.UTF_8);
+            // [修改] 只读取实际长度的字节转换为字符串
+            // 注意：这里调用了我们在 File 中新增的 getActualLength() 方法
+            String content = new String(file.getContent(), 0, file.getActualLength(), StandardCharsets.UTF_8);
             this.textArea.setText(content);
         }
 

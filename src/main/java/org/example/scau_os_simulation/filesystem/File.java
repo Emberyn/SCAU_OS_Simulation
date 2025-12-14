@@ -17,7 +17,8 @@ public class File
     private final String name;
     private final int size;
     private final byte[] content;
-
+    // [新增] 用于记录实际存储的数据长度
+    private int actualLength;
     /**
      * 构造一个文件
      *
@@ -29,6 +30,8 @@ public class File
         this.name = name;
         this.size = size;
         this.content = new byte[size * 1024];
+        // [新增] 初始化长度为0
+        this.actualLength = 0;
     }
 
     /**
@@ -56,6 +59,11 @@ public class File
         return content;
     }
 
+    // [新增] 获取实际数据长度的方法
+    public int getActualLength()
+    {
+        return actualLength;
+    }
     /**
      * 写入文件内容
      *
@@ -69,5 +77,7 @@ public class File
             throw new IllegalArgumentException("内容大小超过文件大小");
         }
         System.arraycopy(content, 0, this.content, 0, content.length);
+        // [新增] 每次写入时更新实际长度
+        this.actualLength = content.length;
     }
 }

@@ -1005,28 +1005,52 @@ public class MainController implements Initializable
 
             // 1. 创建编辑器界面 (TextArea + Save Button)
             TextArea textArea = new TextArea();
-            // 模拟读取文件内容
-            // textArea.setText(file.getContent());
+            textArea.setWrapText(true); // 自动换行
+            
+            // --- [核心修复 1] 读取文件内容 ---
+            if (file.getContent() != null)
+            {
+                // 使用 getActualLength() 只读取有效字符，避免读取到大量的空白 \0
+                String content = new String(
+                    file.getContent(), 
+                    0, 
+                    file.getActualLength(), // 确保 File.java 中有这个方法
+                    java.nio.charset.StandardCharsets.UTF_8
+                );
+                textArea.setText(content);
+            }
 
             Button saveBtn = new Button("保存");
+            // --- [核心修复 2] 保存文件内容 ---
             saveBtn.setOnAction(e ->
             {
-                // file.setContent(textArea.getText());
-                showInfo("保存", "文件已保存");
+                try {
+                    String text = textArea.getText();
+                    // 将字符串转回字节数组
+                    byte[] data = text.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    // 写入文件系统
+                    file.setContent(data);
+                    showInfo("保存成功", "文件已保存至模拟磁盘。");
+                } catch (Exception ex) {
+                    showError("保存失败", "写入文件时出错: " + ex.getMessage());
+                }
             });
 
-            VBox editorRoot = new VBox(5, new ToolBar(saveBtn), textArea);
+            // 布局工具栏
+            ToolBar toolBar = new ToolBar(saveBtn);
+            VBox editorRoot = new VBox(toolBar, textArea);
             VBox.setVgrow(textArea, Priority.ALWAYS);
 
             // 2. 放入内部窗口
-            // 每次打开都创建一个新的 InternalWindow 实例
             InternalWindow editorWin = new InternalWindow("编辑: " + file.getName(), editorRoot, 500, 400);
 
             // 简单的层叠位置计算
-            editorWin.setLayoutX(50 + openWindows.size() * 20);
-            editorWin.setLayoutY(50 + openWindows.size() * 20);
+            double offset = openWindows.size() * 30;
+            editorWin.setLayoutX(100 + offset);
+            editorWin.setLayoutY(50 + offset);
 
             desktopArea.getChildren().add(editorWin);
+            editorWin.toFront();
             addTaskBarItem(editorWin); // 添加到任务栏
             openWindows.put(editorRoot, editorWin); // 记录管理
         }
