@@ -43,6 +43,64 @@ public class FileSystemManager
         systemDir.addChild(execDir);
     }
 
+
+
+
+    /**
+     * 【新增】通用的删除方法（支持文件和递归删除目录）
+     * @param path 绝对路径
+     * @return 是否成功
+     */
+    public boolean deletePath(String path) {
+        // 1. 根目录保护
+        if (path.equals("/") || path.isEmpty()) return false;
+
+        // 2. 解析父目录和目标名称
+        String parentPath = path.substring(0, path.lastIndexOf('/'));
+        String name = path.substring(path.lastIndexOf('/') + 1);
+        if (parentPath.isEmpty()) parentPath = "/";
+
+        Directory parent = findDirectoryByPath(parentPath);
+        if (parent == null) return false;
+
+        Object target = parent.findChild(name);
+        if (target == null) return false;
+
+        // 3. 执行删除
+        if (target instanceof File) {
+            File f = (File) target;
+            parent.removeChild(f);
+            fileSystem.freeSpace(f.getSize());
+            return true;
+        } else if (target instanceof Directory) {
+            // 递归删除目录
+            return deleteDirectoryRecursive(parent, (Directory) target);
+        }
+
+        return false;
+    }
+
+    /**
+     * 【新增】递归删除目录辅助方法
+     */
+    private boolean deleteDirectoryRecursive(Directory parent, Directory target) {
+        // 为了避免并发修改异常，创建一个副本进行遍历
+        java.util.List<Object> children = new java.util.ArrayList<>(target.getChildren());
+
+        for (Object child : children) {
+            if (child instanceof File) {
+                target.removeChild(child);
+                fileSystem.freeSpace(((File) child).getSize());
+            } else if (child instanceof Directory) {
+                deleteDirectoryRecursive(target, (Directory) child);
+            }
+        }
+
+        // 子项清空后，从父目录移除自己
+        return parent.removeChild(target);
+    }
+
+
     /**
      * 在指定路径创建文件
      *

@@ -55,11 +55,20 @@ public class TerminalController implements Initializable
             }
         });
 
-        // 6. 监听 TextArea 点击，把焦点还给输入框
-        // 这样用户复制完文字后，随便点一下就能继续打字
-        if (historyArea != null) {
-            historyArea.setOnMouseClicked(e -> inputField.requestFocus());
+        // 6. 【重要修改】删除 historyArea 的点击监听
+        // 之前的代码：historyArea.setOnMouseClicked(...) 导致了无法复制和滚动条乱跳
+        // 现在直接删掉它。用户复制完想输入命令时，需要自己点一下下面的输入框，或者点空白处。
+
+        // 保留容器的点击监听（点击界面边缘空白处时聚焦）
+        if (terminalContainer != null) {
+            terminalContainer.setOnMouseClicked(e -> {
+                // 只有点的不是 TextArea 时才聚焦，防止抢焦点
+                if (e.getTarget() != historyArea && e.getTarget() != historyArea.lookup(".content")) {
+                    inputField.requestFocus();
+                }
+            });
         }
+
     }
 
     /**

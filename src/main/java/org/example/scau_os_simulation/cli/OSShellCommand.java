@@ -20,7 +20,8 @@ import picocli.CommandLine.HelpCommand;
                 MakeDirectoryCommand.class,  // `mkdir` 命令，用于创建新目录。
                 ChangeDirectoryCommand.class,// `cd` 命令，用于改变当前工作目录。
                 PwdCommand.class,             // `pwd` 命令，用于显示当前工作目录。
-                TreeCommand.class  // 【新增】注册 tree 命令
+                TreeCommand.class,  // 【新增】注册 tree 命令
+                TouchCommand.class // 【新增】注册 touch 命令
         })
 public class OSShellCommand implements Runnable
 {
