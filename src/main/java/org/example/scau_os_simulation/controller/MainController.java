@@ -177,6 +177,30 @@ public class MainController implements Initializable
         }), 0, 500, TimeUnit.MILLISECONDS);
     }
 
+
+    // --- [新增辅助方法] 查找树中第一个以 .e 结尾的节点 ---
+    private TreeItem<String> findFirstExecutable(TreeItem<String> node) {
+        if (node.getValue() != null && node.getValue().endsWith(".e")) {
+            return node;
+        }
+        for (TreeItem<String> child : node.getChildren()) {
+            TreeItem<String> found = findFirstExecutable(child);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    // --- [新增辅助方法] 递归展开节点的所有父节点 ---
+    private void expandPath(TreeItem<String> item) {
+        TreeItem<String> parent = item.getParent();
+        while (parent != null) {
+            parent.setExpanded(true);
+            parent = parent.getParent();
+        }
+    }
+
+
+
     private void initDesktop()
     {
         // 参数2 必须与你在 resources/icons 文件夹里放的文件名完全一致
@@ -783,10 +807,15 @@ public class MainController implements Initializable
     {
         // 1. 准备表单控件
         TextField processNameField = new TextField("新进程");
+        // 让文本框也能横向拉伸
+        processNameField.setMaxWidth(Double.MAX_VALUE);
+
         ComboBox<Integer> priorityBox = new ComboBox<>(FXCollections.observableArrayList(1, 2, 3, 4, 5));
         priorityBox.setValue(1);
+
         TextField execPathField = new TextField();
-        execPathField.setPromptText("/system/exec/p1.e");
+        execPathField.setPromptText("请选择可执行文件...");
+        execPathField.setMaxWidth(Double.MAX_VALUE); // 横向拉伸
 
         // 文件树
         Directory rootDir = kernel.getFileSystemManager().getRootDirectory();
@@ -795,6 +824,12 @@ public class MainController implements Initializable
         populateFileSystemTree(rootDir, rootItem);
         TreeView<String> fileTreeView = new TreeView<>(rootItem);
         fileTreeView.setPrefHeight(150);
+
+        // 【关键修复 1】允许 TreeView 填满所有可用空间
+        fileTreeView.setMaxWidth(Double.MAX_VALUE);
+        fileTreeView.setMaxHeight(Double.MAX_VALUE);
+
+        // 绑定选择事件
         fileTreeView.getSelectionModel().selectedItemProperty().addListener((obs, old, newVal) ->
         {
             if (newVal != null && newVal.getValue().endsWith(".e"))
@@ -805,19 +840,49 @@ public class MainController implements Initializable
             }
         });
 
+        // 自动寻找并选中第一个 .e 文件
+        TreeItem<String> firstExec = findFirstExecutable(rootItem);
+        if (firstExec != null) {
+            expandPath(firstExec);
+            fileTreeView.getSelectionModel().select(firstExec);
+            Platform.runLater(() -> {
+                int row = fileTreeView.getRow(firstExec);
+                if (row >= 0) fileTreeView.scrollTo(row);
+            });
+        }
+
         // 2. 布局 (GridPane)
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20));
+
+        // 添加组件
         grid.add(new Label("进程名称:"), 0, 0);
         grid.add(processNameField, 1, 0);
+
         grid.add(new Label("优先级:"), 0, 1);
         grid.add(priorityBox, 1, 1);
+
         grid.add(new Label("文件路径:"), 0, 2);
         grid.add(execPathField, 1, 2);
-        grid.add(new Label("选择文件:"), 0, 3);
+
+        Label selectLabel = new Label("选择文件:");
+        selectLabel.setAlignment(Pos.TOP_LEFT); // 让标签靠上对齐
+        grid.add(selectLabel, 0, 3);
         grid.add(fileTreeView, 1, 3);
+
+        // 【关键修复 2】设置 GridPane 的列约束，让第2列(索引1)占据剩余宽度
+        ColumnConstraints col1 = new ColumnConstraints(); // 第1列自适应
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setHgrow(Priority.ALWAYS); // 第2列总是抢占水平空间
+        grid.getColumnConstraints().addAll(col1, col2);
+
+        // 【关键修复 3】设置 TreeView 在网格中总是抢占垂直和水平空间
+        GridPane.setHgrow(fileTreeView, Priority.ALWAYS);
+        GridPane.setVgrow(fileTreeView, Priority.ALWAYS);
+        GridPane.setHgrow(processNameField, Priority.ALWAYS);
+        GridPane.setHgrow(execPathField, Priority.ALWAYS);
 
         // 3. 按钮区域
         HBox btnBox = new HBox(10);
@@ -830,10 +895,17 @@ public class MainController implements Initializable
         // 4. 组合内容
         VBox root = new VBox(grid, btnBox);
 
-        // 创建内部窗口 (InternalWindow)
-        InternalWindow win = new InternalWindow("创建新进程", root, 400, 380);
-        win.setLayoutX(150);
-        win.setLayoutY(100);
+        // 【关键修复 4】设置 grid 在 VBox 中抢占垂直空间
+        VBox.setVgrow(grid, Priority.ALWAYS);
+
+        // 创建内部窗口
+        InternalWindow win = new InternalWindow("创建新进程", root, 500, 400); //稍微调大一点默认尺寸
+
+        // 居中显示
+        double x = (desktopArea.getWidth() - 500) / 2;
+        double y = (desktopArea.getHeight() - 400) / 2;
+        win.setLayoutX(x > 0 ? x : 100);
+        win.setLayoutY(y > 0 ? y : 100);
 
         // 5. 事件绑定
         cancelBtn.setOnAction(e -> win.close());
@@ -845,7 +917,6 @@ public class MainController implements Initializable
             String path = execPathField.getText().trim();
             int priority = priorityBox.getValue();
 
-            // 业务逻辑
             org.example.scau_os_simulation.process.Executable exec =
                     kernel.getFileSystemManager().loadExecutable(path);
 
@@ -863,7 +934,7 @@ public class MainController implements Initializable
 
                     updateProcessView();
                     showInfo("成功", "进程已创建");
-                    win.close(); // 成功后关闭窗口
+                    win.close();
                 } else
                 {
                     showError("失败", "无法创建进程");

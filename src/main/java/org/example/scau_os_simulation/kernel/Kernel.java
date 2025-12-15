@@ -189,20 +189,22 @@ public class Kernel
             undoManager = new UndoManager(50); // 保存最近50个操作
 
             // 第五步：创建可执行文件
-            // 为系统创建10个可执行文件，就像准备10种不同的工作任务
-            // 每个文件包含一些简单的指令，模拟真实程序的行为
             for (int i = 1; i <= 10; i++)
             {
                 java.util.List<String> ins = new java.util.ArrayList<>();
-                ins.add("x=" + (i * 3 % 99));  // 设置变量x的值
-                ins.add("x++");                // x自增
-                ins.add("x--");                // x自减
-                ins.add("!A" + (i % 5));       // 使用设备A（根据i的值选择设备）
-                ins.add("x++");                // x自增
-                ins.add("!B" + (i % 4));       // 使用设备B（根据i的值选择设备）
-                ins.add("x++");                // x自增
-                ins.add("!C" + (i % 3));       // 使用设备C（根据i的值选择设备）
-                ins.add("x++");                // x自增
+                ins.add("x=" + (i * 3 % 99));  // 设置初始值
+
+                // --- 【修改点】插入大量“注水”指令，延长运行时间 ---
+                // 插入 50 条自增指令，让它多跑一会儿
+                for (int j = 0; j < 50; j++) {
+                    ins.add("x++");
+                    // 每隔 10 条指令插入一次设备请求，让它偶尔阻塞一下，演示状态切换
+                    if (j % 10 == 0) {
+                        ins.add("!A" + (1 + (j % 5))); // 申请设备A，占用 1~5 个时间片
+                    }
+                }
+                // ---------------------------------------------
+
                 ins.add("end");                // 程序结束
                 fileSystemManager.createExecutable("/system/exec", "p" + i + ".e", ins);
             }
