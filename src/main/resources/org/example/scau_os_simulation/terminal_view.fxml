@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
@@ -12,17 +11,21 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.example.scau_os_simulation.controller.TerminalController"
       style="-fx-background-color: #ffffff; -fx-padding: 5;"
-      onMouseClicked="#onTerminalClicked"
       spacing="2">
 
     <TextArea fx:id="historyArea"
               editable="false"
-              wrapText="true"
-              focusTraversable="false"
+              wrapText="false"
+              focusTraversable="true"
               VBox.vgrow="ALWAYS"
-              style="-fx-font-family: 'Consolas', 'Monospaced'; -fx-font-size: 14px; -fx-control-inner-background: #ffffff; -fx-text-fill: black; -fx-background-insets: 0; -fx-padding: 0;"/>
+              style="-fx-font-family: 'Consolas', 'Monospaced';
+                     -fx-font-size: 14px;
+                     -fx-control-inner-background: #ffffff;
+                     -fx-text-fill: black;
+                     -fx-background-insets: 0;
+                     -fx-padding: 0;"/>
 
-    <HBox alignment="CENTER_LEFT" spacing="0" minHeight="30">
+    <HBox alignment="CENTER_LEFT" spacing="0" minHeight="30" maxHeight="30">
         <Label fx:id="promptLabel"
                text="[root@scau-os /]# "
                style="-fx-text-fill: #008000; -fx-font-family: 'Consolas', 'Monospaced'; -fx-font-size: 14px; -fx-font-weight: bold;"/>
@@ -30,7 +33,13 @@
         <TextField fx:id="inputField"
                    onAction="#onEnterPressed"
                    HBox.hgrow="ALWAYS"
-                   style="-fx-background-color: transparent; -fx-background-insets: 0; -fx-border-width: 0; -fx-padding: 0 0 0 5; -fx-text-fill: black; -fx-font-family: 'Consolas', 'Monospaced'; -fx-font-size: 14px;"/>
+                   style="-fx-background-color: transparent;
+                          -fx-background-insets: 0;
+                          -fx-border-width: 0;
+                          -fx-padding: 0 0 0 5;
+                          -fx-text-fill: black;
+                          -fx-font-family: 'Consolas', 'Monospaced';
+                          -fx-font-size: 14px;"/>
     </HBox>
 
 </VBox>

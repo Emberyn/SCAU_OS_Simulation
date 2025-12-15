@@ -8,6 +8,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Command(name = "tree", description = "以树状图列出目录内容")
 public class TreeCommand implements Runnable {
@@ -15,7 +16,6 @@ public class TreeCommand implements Runnable {
     @Parameters(index = "0", description = "路径", defaultValue = ".")
     private String path;
 
-    // 支持 /f (Windows风格) 和 -f (Linux风格)
     @Option(names = {"-f", "/f"}, description = "显示每个目录中的文件名")
     private boolean showFiles;
 
@@ -23,14 +23,49 @@ public class TreeCommand implements Runnable {
     public void run() {
         String absolutePath = ShellContext.getInstance().resolvePath(path);
 
-        // 手动查找目标目录节点
         Directory rootDir = Kernel.getInstance().getFileSystemManager().getRootDirectory();
         Object targetNode = findNode(rootDir, absolutePath);
 
         if (targetNode instanceof Directory) {
             Directory targetDir = (Directory) targetNode;
-            Kernel.getInstance().printToTerminal(targetDir.getName());
-            printTree(targetDir, "", true);
+
+            // 【优化】使用 StringBuilder 缓冲所有输出
+            // 这样避免了成百上千次调用 printToTerminal 导致的 UI 线程拥堵
+            StringBuilder sb = new StringBuilder();
+            sb.append(targetDir.getName()).append("\n");
+
+            printTree(targetDir, "", true, sb);
+
+            // 【重要修复】分批输出大量数据，避免UI线程阻塞和滚动条问题
+            String fullOutput = sb.toString().trim();
+            String[] lines = fullOutput.split("\n");
+            
+            if (lines.length > 100) {
+                // 如果输出行数超过100行，分批输出，每批50行
+                int batchSize = 50;
+                StringBuilder batchBuilder = new StringBuilder();
+                
+                for (int i = 0; i < lines.length; i++) {
+                    batchBuilder.append(lines[i]).append("\n");
+                    
+                    // 每50行输出一批，或最后一行
+                    if ((i + 1) % batchSize == 0 || i == lines.length - 1) {
+                        Kernel.getInstance().printToTerminal(batchBuilder.toString().trim());
+                        batchBuilder = new StringBuilder();
+                        
+                        // 小延迟，让UI有时间更新滚动条
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            // 忽略中断
+                        }
+                    }
+                }
+            } else {
+                // 一次性推送到终端，性能极快，且滚动条能立即正确计算高度
+                Kernel.getInstance().printToTerminal(fullOutput);
+            }
+
         } else if (targetNode instanceof File) {
             Kernel.getInstance().printToTerminal(path + " [error opening dir]");
         } else {
@@ -39,17 +74,13 @@ public class TreeCommand implements Runnable {
     }
 
     /**
-     * 递归打印树结构
-     * @param dir 当前目录
-     * @param prefix 前缀字符
-     * @param isTail 是否是当前层级的最后一个元素
+     * 递归构建字符串
      */
-    private void printTree(Directory dir, String prefix, boolean isTail) {
+    private void printTree(Directory dir, String prefix, boolean isTail, StringBuilder sb) {
         List<Object> children = dir.getChildren();
 
-        // 如果不显示文件，先过滤一下 children 列表，只保留 Directory
         if (!showFiles) {
-            children = children.stream().filter(c -> c instanceof Directory).toList();
+            children = children.stream().filter(c -> c instanceof Directory).collect(Collectors.toList());
         }
 
         for (int i = 0; i < children.size(); i++) {
@@ -58,19 +89,17 @@ public class TreeCommand implements Runnable {
 
             String childName = (child instanceof Directory) ? ((Directory) child).getName() : ((File) child).getName();
 
-            // 打印当前节点
-            Kernel.getInstance().printToTerminal(prefix + (isLast ? "└── " : "├── ") + childName);
+            // 追加到缓冲区
+            sb.append(prefix).append(isLast ? "└── " : "├── ").append(childName).append("\n");
 
-            // 如果是目录，递归打印
             if (child instanceof Directory) {
-                // 计算下一级的前缀：如果当前是最后一个，下一级前缀就是空格；否则是竖线
                 String nextPrefix = prefix + (isLast ? "    " : "│   ");
-                printTree((Directory) child, nextPrefix, isLast);
+                printTree((Directory) child, nextPrefix, isLast, sb);
             }
         }
     }
 
-    // 辅助方法：查找节点 (复用类似 ListFilesCommand 的逻辑)
+    // 复用之前的查找逻辑
     private Object findNode(Directory root, String absPath) {
         if (absPath.equals("/")) return root;
         String[] parts = absPath.split("/");

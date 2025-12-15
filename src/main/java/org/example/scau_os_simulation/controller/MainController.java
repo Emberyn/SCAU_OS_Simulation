@@ -712,6 +712,7 @@ public class MainController implements Initializable
         showInfo("关于", "SCAU 操作系统模拟器 v1.0\n基于 JavaFX + Picocli 开发");
     }
 
+
     /**
      * [事件处理] 点击 "创建文件" 按钮
      */
@@ -754,6 +755,9 @@ public class MainController implements Initializable
         });
     }
 
+
+
+
     /**
      * [新增] 点击 "暂停系统" 按钮时触发
      */
@@ -781,7 +785,7 @@ public class MainController implements Initializable
 
 
     /**
-     * [事件处理] 点击 "创建目录" 按钮 (逻辑同创建文件类似)
+     * [事件处理] 点击 "创建目录" 按钮
      */
     @FXML
     protected void onCreateDirectoryClick()
@@ -800,14 +804,17 @@ public class MainController implements Initializable
         }
         final String finalPath = path;
 
-        showInternalInput("创建目录", "在路径 '" + finalPath + "' 下创建新目录:", "new.txt", (name) ->
+        // 【修改点 1】 默认名字改为 "NewFolder"
+        showInternalInput("创建目录", "在路径 '" + finalPath + "' 下创建新目录:", "NewFolder", (name) ->
         {
-            // 这里是回调：当用户点击内部窗口的“确定”后执行
             if (name != null && !name.trim().isEmpty())
             {
                 try
                 {
-                    kernel.getFileSystemManager().createFile(finalPath, name, 1);
+                    // 【修改点 2】 关键修复：这里原来写的是 createFile，必须改为 createDirectory
+                    // 注意：createDirectory 不需要 size 参数
+                    kernel.getFileSystemManager().createDirectory(finalPath, name);
+
                     updateFileSystemView();
                     showInfo("目录创建成功", "目录 '" + name + "' 创建成功。");
                 } catch (Exception e)
@@ -817,6 +824,9 @@ public class MainController implements Initializable
             }
         });
     }
+
+
+
 
     /**
      * [事件处理] 点击 "删除" 按钮
@@ -1159,22 +1169,59 @@ public class MainController implements Initializable
     }
 
     /**
-     * 更新文件系统视图
+     * 更新文件系统视图 (修复版：保持选中、展开状态及滚动条位置)
      */
     private void updateFileSystemView()
     {
+        // 1. 【保存状态】
+        Set<String> expandedPaths = new HashSet<>();
+        // 保存当前所有已展开节点的路径
+        if (fileSystemTreeView.getRoot() != null) {
+            saveExpansionState(fileSystemTreeView.getRoot(), expandedPaths);
+        }
+
+        String selectedPath = null;
+        TreeItem<String> selectedItem = fileSystemTreeView.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            selectedPath = buildPathFromTree(selectedItem);
+
+            // 【解决问题 2】：新建文件后，父目录自动展开
+            // 如果当前选中了一个目录（例如要在该目录下新建文件），我们强制将其加入“展开列表”。
+            // 这样刷新后，该目录会自动展开，用户就能立刻看到刚新建的文件了。
+            expandedPaths.add(selectedPath);
+        }
+
+        // 2. 【重建树结构】
         Directory rootDir = kernel.getFileSystemManager().getRootDirectory();
-
-        // 创建树的根节点
         TreeItem<String> rootItem = new TreeItem<>(rootDir.getName());
-        rootItem.setGraphic(createIcon("folder")); // 添加文件夹图标
-        rootItem.setExpanded(true);
+        rootItem.setGraphic(createIcon("folder"));
 
-        // 递归填充树结构
+        // 递归填充树
         populateFileSystemTree(rootDir, rootItem);
         fileSystemTreeView.setRoot(rootItem);
 
-        // 更新磁盘信息
+        // 3. 【恢复状态】
+        // 恢复所有节点的展开状态
+        restoreExpansionState(rootItem, expandedPaths);
+        rootItem.setExpanded(true); // 根目录始终保持展开
+
+        // 4. 【解决问题 1】：恢复选中并滚动到原位置
+        if (selectedPath != null) {
+            // 根据路径找到新树中对应的节点
+            TreeItem<String> targetItem = findItemByPath(rootItem, selectedPath);
+            if (targetItem != null) {
+                // 重新选中该节点
+                fileSystemTreeView.getSelectionModel().select(targetItem);
+
+                // 滚动到该节点所在行
+                int row = fileSystemTreeView.getRow(targetItem);
+                if (row >= 0) {
+                    fileSystemTreeView.scrollTo(row);
+                }
+            }
+        }
+
+        // 5. 更新磁盘信息 (保持不变)
         if (kernel.getFileSystemManager().getFileSystem() != null)
         {
             int total = kernel.getFileSystemManager().getFileSystem().getTotalSize();
@@ -1183,6 +1230,27 @@ public class MainController implements Initializable
 
             if (diskUsageBar != null) diskUsageBar.setProgress(usage);
             if (diskInfoLabel != null) diskInfoLabel.setText(String.format("已用: %d KB / 总量: %d KB", used, total));
+        }
+    }
+
+    // --- 【新增辅助方法 1】递归保存展开状态 ---
+    private void saveExpansionState(TreeItem<String> item, Set<String> expandedPaths) {
+        if (item.isExpanded()) {
+            expandedPaths.add(buildPathFromTree(item));
+        }
+        for (TreeItem<String> child : item.getChildren()) {
+            saveExpansionState(child, expandedPaths);
+        }
+    }
+
+    // --- 【新增辅助方法 2】递归恢复展开状态 ---
+    private void restoreExpansionState(TreeItem<String> item, Set<String> expandedPaths) {
+        String currentPath = buildPathFromTree(item);
+        if (expandedPaths.contains(currentPath)) {
+            item.setExpanded(true);
+        }
+        for (TreeItem<String> child : item.getChildren()) {
+            restoreExpansionState(child, expandedPaths);
         }
     }
 

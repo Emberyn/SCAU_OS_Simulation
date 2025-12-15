@@ -18,10 +18,6 @@ public class FileSystemManager
 
     /**
      * 构造并初始化基本目录结构
-     * <p>
-     * 初始化内容：
-     * - `root` 作为可视化根；下设 `system` 与 `user` 两个直系子目录；
-     * - 在 `system` 下创建 `kernel.sys`（占位文件）与 `exec` 目录（用于存放可执行脚本）。
      */
     public FileSystemManager(FileSystem fileSystem)
     {
@@ -43,66 +39,42 @@ public class FileSystemManager
         systemDir.addChild(execDir);
     }
 
-
-
-
     /**
-     * 【新增】通用的删除方法（支持文件和递归删除目录）
-     * @param path 绝对路径
-     * @return 是否成功
+     * 【新增】处理命名冲突，生成唯一名称
+     * 逻辑：如果 originalName 存在，则尝试 originalName(1), originalName(2)...
+     * @param parent 父目录
+     * @param originalName 原始名称
+     * @return 唯一的名称
      */
-    public boolean deletePath(String path) {
-        // 1. 根目录保护
-        if (path.equals("/") || path.isEmpty()) return false;
-
-        // 2. 解析父目录和目标名称
-        String parentPath = path.substring(0, path.lastIndexOf('/'));
-        String name = path.substring(path.lastIndexOf('/') + 1);
-        if (parentPath.isEmpty()) parentPath = "/";
-
-        Directory parent = findDirectoryByPath(parentPath);
-        if (parent == null) return false;
-
-        Object target = parent.findChild(name);
-        if (target == null) return false;
-
-        // 3. 执行删除
-        if (target instanceof File) {
-            File f = (File) target;
-            parent.removeChild(f);
-            fileSystem.freeSpace(f.getSize());
-            return true;
-        } else if (target instanceof Directory) {
-            // 递归删除目录
-            return deleteDirectoryRecursive(parent, (Directory) target);
+    private String getUniqueName(Directory parent, String originalName) {
+        // 如果当前名字没有冲突，直接返回
+        if (parent.findChild(originalName) == null) {
+            return originalName;
         }
 
-        return false;
+        String baseName = originalName;
+        String extension = "";
+
+        // 分离文件名和扩展名 (例如: new.txt -> base="new", ext=".txt")
+        int dotIndex = originalName.lastIndexOf('.');
+        if (dotIndex > 0) {
+            baseName = originalName.substring(0, dotIndex);
+            extension = originalName.substring(dotIndex);
+        }
+
+        int counter = 1;
+        String newName;
+        // 循环尝试，直到找到一个不存在的名字
+        do {
+            newName = baseName + "(" + counter + ")" + extension;
+            counter++;
+        } while (parent.findChild(newName) != null);
+
+        return newName;
     }
 
     /**
-     * 【新增】递归删除目录辅助方法
-     */
-    private boolean deleteDirectoryRecursive(Directory parent, Directory target) {
-        // 为了避免并发修改异常，创建一个副本进行遍历
-        java.util.List<Object> children = new java.util.ArrayList<>(target.getChildren());
-
-        for (Object child : children) {
-            if (child instanceof File) {
-                target.removeChild(child);
-                fileSystem.freeSpace(((File) child).getSize());
-            } else if (child instanceof Directory) {
-                deleteDirectoryRecursive(target, (Directory) child);
-            }
-        }
-
-        // 子项清空后，从父目录移除自己
-        return parent.removeChild(target);
-    }
-
-
-    /**
-     * 在指定路径创建文件
+     * 在指定路径创建文件 (已修复命名冲突)
      *
      * @param path 目录路径，如 "/user"
      * @param name 文件名
@@ -111,32 +83,32 @@ public class FileSystemManager
      */
     public File createFile(String path, String name, int size)
     {
-        // 1) 根据路径找到父目录（例如 "/user"）
+        // 1) 根据路径找到父目录
         Directory parent = findDirectoryByPath(path);
         if (parent == null)
         {
-            // 路径不存在：返回失败
             return null;
         }
 
-        // 2) 向文件系统申请空间（按KB计量）
+        // 2) 向文件系统申请空间
         if (!fileSystem.allocateSpace(size))
         {
-            // 空间不足：打印提示并返回失败
             System.out.println("磁盘空间不足");
             return null;
         }
 
-        // 3) 创建文件对象并挂到父目录下
-        File newFile = new File(name, size);
+        // 3) 【修复点】获取唯一名称，防止重复
+        String uniqueName = getUniqueName(parent, name);
+
+        // 4) 创建文件对象并挂到父目录下
+        File newFile = new File(uniqueName, size);
         parent.addChild(newFile);
 
-        // 4) 返回新文件句柄，供调用方继续写入内容
         return newFile;
     }
 
     /**
-     * 在指定路径创建子目录
+     * 在指定路径创建子目录 (已修复命名冲突)
      *
      * @param path 父目录路径
      * @param name 子目录名
@@ -150,56 +122,87 @@ public class FileSystemManager
             return null;
         }
 
-        Directory newDir = new Directory(name);
+        // 【修复点】获取唯一名称，防止重复
+        String uniqueName = getUniqueName(parent, name);
+
+        Directory newDir = new Directory(uniqueName);
         parent.addChild(newDir);
         return newDir;
     }
 
     /**
+     * 通用的删除方法（支持文件和递归删除目录）
+     */
+    public boolean deletePath(String path) {
+        if (path.equals("/") || path.isEmpty()) return false;
+
+        String parentPath = path.substring(0, path.lastIndexOf('/'));
+        String name = path.substring(path.lastIndexOf('/') + 1);
+        if (parentPath.isEmpty()) parentPath = "/";
+
+        Directory parent = findDirectoryByPath(parentPath);
+        if (parent == null) return false;
+
+        Object target = parent.findChild(name);
+        if (target == null) return false;
+
+        if (target instanceof File) {
+            File f = (File) target;
+            parent.removeChild(f);
+            fileSystem.freeSpace(f.getSize());
+            return true;
+        } else if (target instanceof Directory) {
+            return deleteDirectoryRecursive(parent, (Directory) target);
+        }
+
+        return false;
+    }
+
+    private boolean deleteDirectoryRecursive(Directory parent, Directory target) {
+        java.util.List<Object> children = new java.util.ArrayList<>(target.getChildren());
+
+        for (Object child : children) {
+            if (child instanceof File) {
+                target.removeChild(child);
+                fileSystem.freeSpace(((File) child).getSize());
+            } else if (child instanceof Directory) {
+                deleteDirectoryRecursive(target, (Directory) child);
+            }
+        }
+
+        return parent.removeChild(target);
+    }
+
+    /**
      * 删除指定路径的文件
-     * <p>
-     * 通过逐级解析路径定位父目录与文件；删除后释放占用空间。
-     *
-     * @param path 文件绝对路径
-     * @return 删除成功与否
      */
     public boolean deleteFile(String path)
     {
-        // 1) 将绝对路径按 "/" 切分为段
         String[] parts = path.split("/");
         if (parts.length == 0) return false;
 
-        // 2) 逐级定位到父目录
         Directory dir = rootDirectory;
         for (int i = 0; i < parts.length - 1; i++)
         {
             String part = parts[i];
-            if (part.isEmpty()) continue;   // 跳过空段（首个""）
+            if (part.isEmpty()) continue;
             Object child = dir.findChild(part);
-            if (!(child instanceof Directory d)) return false; // 中途不是目录：路径非法
+            if (!(child instanceof Directory d)) return false;
             dir = d;
         }
 
-        // 3) 在父目录中查找最后一段名称对应的文件
         String name = parts[parts.length - 1];
         Object child = dir.findChild(name);
-        if (!(child instanceof File file)) return false; // 不是文件：删除失败
+        if (!(child instanceof File file)) return false;
 
-        // 4) 从父目录移除文件节点，并释放占用的磁盘空间
         dir.removeChild(file);
         fileSystem.freeSpace(file.getSize());
 
-        // 5) 返回删除成功
         return true;
     }
 
     /**
      * 删除空目录
-     * <p>
-     * 根目录不可删除；仅当目标目录为空时删除成功。
-     *
-     * @param path 目录绝对路径
-     * @return 删除成功与否
      */
     public boolean deleteDirectory(String path)
     {
@@ -223,11 +226,6 @@ public class FileSystemManager
 
     /**
      * 按路径查找目录
-     * <p>
-     * 简单的逐级名称匹配；不存在任何符号链接或复杂解析。
-     *
-     * @param path 绝对路径（如 "/system/exec"）
-     * @return 对应目录；不存在返回 null
      */
     private Directory findDirectoryByPath(String path)
     {
@@ -236,7 +234,6 @@ public class FileSystemManager
             return rootDirectory;
         }
 
-        // 简单路径解析
         String[] parts = path.split("/");
         Directory current = rootDirectory;
 
@@ -266,13 +263,10 @@ public class FileSystemManager
 
     /**
      * 生成可执行文件
-     * 将指令行集合写入文件内容；文件大小按64KB块向上取整。
-     * 说明：
-     * - 指令文本以 UTF-8 存储，每行一条；
-     * - 目标文件容量只做近似估算（按行数粗略取整），便于演示存储消耗。
      */
     public File createExecutable(String path, String name, java.util.List<String> instructions)
     {
+        // 这里的 createFile 也会自动应用重命名规则
         File f = createFile(path, name, Math.max(1, (instructions.size() + 63) / 64));
         if (f == null) return null;
         StringBuilder sb = new StringBuilder();
@@ -285,9 +279,6 @@ public class FileSystemManager
         return f;
     }
 
-    /**
-     * 生成可执行文件（从 Executable 对象）
-     */
     public File createExecutable(String path, String name, org.example.scau_os_simulation.process.Executable exec)
     {
         java.util.List<String> lines = new java.util.ArrayList<>();
@@ -300,16 +291,9 @@ public class FileSystemManager
 
     /**
      * 加载可执行文件
-     * <p>
-     * 读取文本内容并解析为指令列表，封装为 Executable 对象。
-     * <p>
-     * 路径解析规则：
-     * - 逐级在目录中查找名称匹配的子目录；最后一段名称匹配文件；
-     * - 若任一层不存在或类型不匹配，返回 null。
      */
     public org.example.scau_os_simulation.process.Executable loadExecutable(String path)
     {
-        // 1) 解析路径并逐级定位到目标文件所在的目录
         String[] parts = path.split("/");
         Directory dir = rootDirectory;
         for (int i = 0; i < parts.length - 1; i++)
@@ -318,27 +302,21 @@ public class FileSystemManager
             if (part.isEmpty()) continue;
             Object child = dir.findChild(part);
             if (child instanceof Directory d) dir = d;
-            else return null; // 中途碰到非目录：路径非法
+            else return null;
         }
 
-        // 2) 在该目录下找到文件节点
         String fileName = parts[parts.length - 1];
         Object child = dir.findChild(fileName);
-        if (!(child instanceof File f)) return null; // 目标不是文件：加载失败
+        if (!(child instanceof File f)) return null;
 
-        // 3) 将文件内容按行拆分为指令集合（UTF-8 编码）
         String content = new String(f.getContent(), java.nio.charset.StandardCharsets.UTF_8);
         java.util.List<String> lines = java.util.Arrays.asList(content.split("\n"));
 
-        // 4) 封装为 Executable，交由 CPU 按 PC 取指执行
         return new org.example.scau_os_simulation.process.Executable(lines);
     }
 
     /**
      * 按绝对路径获取普通文件
-     *
-     * @param path 绝对路径（如 "/user/docs/readme.txt"）
-     * @return 文件对象；不存在或类型不匹配时返回 null
      */
     public File getFileByPath(String path)
     {
@@ -358,24 +336,18 @@ public class FileSystemManager
         else return null;
     }
 
-    /**
-     * 获取根目录
-     */
     public Directory getRootDirectory()
     {
         return rootDirectory;
     }
 
-    /**
-     * 获取文件系统存储模型
-     */
     public FileSystem getFileSystem()
     {
         return fileSystem;
     }
 
     /**
-     * 粘贴文件或目录到指定路径
+     * 粘贴文件或目录
      */
     public Object paste(Object source, String targetPath)
     {
