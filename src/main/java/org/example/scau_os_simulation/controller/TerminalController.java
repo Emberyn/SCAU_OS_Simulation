@@ -3,49 +3,87 @@ package org.example.scau_os_simulation.controller;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import org.example.scau_os_simulation.cli.ShellContext;
 import org.example.scau_os_simulation.kernel.Kernel;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class TerminalController implements Initializable
 {
+    @FXML private VBox terminalContainer;
+    @FXML private TextArea historyArea;
+    @FXML private javafx.scene.control.Label promptLabel;
+    @FXML private TextField inputField;
 
-    @FXML
-    private ScrollPane scrollPane;
-    @FXML
-    private VBox terminalContainer;
-    @FXML
-    private TextFlow historyFlow;
-    @FXML
-    private Label promptLabel;
-    @FXML
-    private TextField inputField;
+    // 历史记录存储
+    private final List<String> commandHistory = new ArrayList<>();
+    private int historyIndex = 0;
 
     @Override
     public void initialize(URL location, ResourceBundle resources)
     {
-        // 1. 初始化欢迎语 (黑色)
-        appendTextToHistory("SCAU OS Kernel v1.0 [Simulation Mode]\n", Color.BLACK);
-        appendTextToHistory("Type 'help' for a list of commands.\n\n", Color.BLACK);
+        // 1. 初始化欢迎语
+        appendTextToHistory("SCAU OS Kernel v1.0 [Simulation Mode]\n", null);
+        appendTextToHistory("Type 'help' for a list of commands.\n\n", null);
 
         // 2. 更新提示符
         updatePrompt();
 
         // 3. 注册 Kernel 监听器
-        // 当内核有输出时（例如 ls 的结果），会调用 appendOutput
         Kernel.getInstance().setTerminalListener(this::appendOutput);
 
         // 4. 自动聚焦输入框
         Platform.runLater(() -> inputField.requestFocus());
+
+        // 5. 监听键盘上下键事件 (历史记录切换)
+        inputField.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.UP) {
+                navigateHistory(-1); // 向上翻
+                event.consume();
+            } else if (event.getCode() == KeyCode.DOWN) {
+                navigateHistory(1);  // 向下翻
+                event.consume();
+            }
+        });
+
+        // 6. 监听 TextArea 点击，把焦点还给输入框
+        // 这样用户复制完文字后，随便点一下就能继续打字
+        if (historyArea != null) {
+            historyArea.setOnMouseClicked(e -> inputField.requestFocus());
+        }
+    }
+
+    /**
+     * 历史记录导航逻辑
+     */
+    private void navigateHistory(int direction) {
+        if (commandHistory.isEmpty()) return;
+
+        int newIndex = historyIndex + direction;
+
+        // 边界检查
+        if (newIndex < 0) newIndex = 0;
+        if (newIndex > commandHistory.size()) newIndex = commandHistory.size();
+
+        if (newIndex != historyIndex) {
+            historyIndex = newIndex;
+            if (historyIndex == commandHistory.size()) {
+                inputField.clear();
+            } else {
+                String cmd = commandHistory.get(historyIndex);
+                inputField.setText(cmd);
+                inputField.positionCaret(cmd.length());
+            }
+        }
     }
 
     /**
@@ -56,26 +94,27 @@ public class TerminalController implements Initializable
     {
         String command = inputField.getText();
 
-        // 1. 将 "当前提示符" + "用户输入的命令" 固定到历史记录中
-        // 提示符用绿色
-        appendTextToHistory(promptLabel.getText(), Color.web("#008000")); // Green
-        // 命令用黑色
-        appendTextToHistory(command + "\n", Color.BLACK);
+        // 显示用户输入的命令
+        if (historyArea != null) {
+            historyArea.appendText(promptLabel.getText() + command + "\n");
+        }
 
-        // 2. 清空输入框，准备接收下一条
         inputField.clear();
 
-        // 3. 执行命令
         if (command != null && !command.trim().isEmpty())
         {
-            // Kernel 执行命令，输出结果会通过 listener 回调 appendOutput 方法
+            // 保存到历史记录 (去重：不连续存储相同的命令)
+            if (commandHistory.isEmpty() || !commandHistory.get(commandHistory.size() - 1).equals(command)) {
+                commandHistory.add(command);
+            }
+            // 重置索引到最新
+            historyIndex = commandHistory.size();
+
+            // 执行命令
             Kernel.getInstance().getCommandExecutor().execute(command);
         }
 
-        // 4. 更新提示符 (路径可能改变了，如 cd)
         updatePrompt();
-
-        // 5. 滚动到底部
         scrollToBottom();
     }
 
@@ -86,21 +125,19 @@ public class TerminalController implements Initializable
     {
         Platform.runLater(() ->
         {
-            // 输出结果统一为黑色
-            appendTextToHistory(text + "\n", Color.BLACK);
+            appendTextToHistory(text + "\n", null);
             scrollToBottom();
         });
     }
 
     /**
-     * 辅助方法：向历史记录添加带颜色的文本
+     * 辅助方法：向历史记录添加文本
      */
     private void appendTextToHistory(String content, Color color)
     {
-        Text textNode = new Text(content);
-        textNode.setFill(color);
-        textNode.setStyle("-fx-font-family: 'Consolas', 'Monospaced'; -fx-font-size: 14px;");
-        historyFlow.getChildren().add(textNode);
+        if (historyArea != null) {
+            historyArea.appendText(content);
+        }
     }
 
     /**
@@ -108,27 +145,32 @@ public class TerminalController implements Initializable
      */
     private void updatePrompt()
     {
-        String currentPath = ShellContext.getInstance().getCurrentPath();
-        promptLabel.setText("[root@scau-os " + currentPath + "]# ");
+        if (promptLabel != null) {
+            String currentPath = ShellContext.getInstance().getCurrentPath();
+            promptLabel.setText("[root@scau-os " + currentPath + "]# ");
+        }
     }
 
     /**
-     * 点击窗口任意位置，聚焦输入框
+     * 【修复报错的关键方法】
+     * 点击窗口任意空白处，聚焦输入框
      */
     @FXML
     public void onTerminalClicked()
     {
-        inputField.requestFocus();
+        if (inputField != null) {
+            inputField.requestFocus();
+        }
     }
 
     /**
-     * 滚动条自动滚到底部
+     * 滚动到底部
      */
     private void scrollToBottom()
     {
-        // 简单的自动滚动逻辑
-        // 在 UI 更新后执行，确保滚动到最新位置
-        Platform.runLater(() -> scrollPane.setVvalue(1.0));
+        if (historyArea != null) {
+            Platform.runLater(() -> historyArea.setScrollTop(Double.MAX_VALUE));
+        }
     }
 
     /**

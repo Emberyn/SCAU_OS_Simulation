@@ -187,6 +187,7 @@ public class ProcessManager
         {
             process.getPcb().incrementWaitingTime();
         }
+
         for (Process process : blockedQueue)
         {
             process.getPcb().incrementWaitingTime();

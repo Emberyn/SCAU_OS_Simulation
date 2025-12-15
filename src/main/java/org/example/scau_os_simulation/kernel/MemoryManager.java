@@ -23,7 +23,6 @@ public class MemoryManager
 
     /**
      * 构造函数
-     *
      * @param memory 物理内存模型
      */
     public MemoryManager(Memory memory)
