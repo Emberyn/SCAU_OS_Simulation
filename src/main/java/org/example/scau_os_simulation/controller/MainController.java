@@ -8,6 +8,7 @@ import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
@@ -36,6 +37,9 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 
 public class MainController implements Initializable
 {
@@ -152,6 +156,14 @@ public class MainController implements Initializable
         updateFileSystemView();
         setupFileSystemEvents();
         updateControlButtonsState(false);
+
+        // 【新增】全局快捷键 Ctrl+F 唤起搜索
+        rootStackPane.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (e.isShortcutDown() && e.getCode() == KeyCode.F) {
+                onSearchFileClick(); // 调用搜索方法
+                e.consume(); // 吞掉事件，防止传播
+            }
+        });
 
         // 4. 定时任务
         uiExec.scheduleAtFixedRate(() -> Platform.runLater(() ->
@@ -342,99 +354,309 @@ public class MainController implements Initializable
         taskBarApps.getChildren().add(taskBtn);
     }
 
-    // --- 内部类：自定义窗口 ---
-    class InternalWindow extends VBox
-    {
+
+
+    // --- 内部类：自定义窗口 (旗舰版 Pro：支持最小化、全屏/还原、边缘缩放) ---
+    class InternalWindow extends VBox {
+        // 窗口拖拽/缩放相关的坐标状态
         private double xOffset = 0;
         private double yOffset = 0;
+        private double initX, initY, initW, initH;
+        private boolean isDraggingWindow = false;
+
+        // 全屏/还原相关的状态
+        private boolean isMaximized = false;
+        private double restoreX, restoreY, restoreW, restoreH; // 用于存储还原时的位置和尺寸
+
+        // 常量定义
+        private static final double RESIZE_MARGIN = 10.0;
+        private static final double MIN_WIDTH = 200;
+        private static final double MIN_HEIGHT = 150;
+
         String title;
         Runnable onClosed;
 
-        public InternalWindow(String title, Node content, double w, double h)
-        {
-            this.setManaged(false); // 防止撑大桌面
+        // UI 组件引用 (为了后续修改图标)
+        private final Button maxBtn;
+
+        // 当前的缩放模式
+        private ResizeMode currentResizeMode = ResizeMode.NONE;
+
+        private enum ResizeMode {
+            NONE, TOP, RIGHT, BOTTOM, LEFT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT
+        }
+
+        public InternalWindow(String title, Node content, double w, double h) {
+            this.setManaged(false); // 关键：不受 FlowPane 布局管控，实现绝对定位
             this.title = title;
+
+            // 初始化尺寸
+            this.resize(w, h);
             this.setPrefSize(w, h);
+
             this.getStyleClass().add("window-frame");
 
+            // --- 1. 标题栏构建 ---
             HBox titleBar = new HBox();
             titleBar.getStyleClass().add("window-title-bar");
             titleBar.setAlignment(Pos.CENTER_LEFT);
+            titleBar.setMinHeight(32);
+            titleBar.setPrefHeight(32);
 
             Label titleLbl = new Label(title);
             titleLbl.getStyleClass().add("window-title");
+
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
+            // [按钮组样式]
+            String btnStyle = "-fx-font-size: 10px; -fx-font-weight: bold; -fx-padding: 0; -fx-alignment: center; -fx-background-color: transparent;";
+            String hoverStyle = "-fx-background-color: #e0e0e0;";
+
+            // A. 最小化按钮
+            Button minBtn = new Button("—");
+            minBtn.getStyleClass().add("window-close-btn");
+            minBtn.setStyle(btnStyle + " -fx-alignment: bottom-center; -fx-padding: 0 0 3 0;");
+            minBtn.setPrefSize(30, 20);
+            minBtn.setOnAction(e -> this.setVisible(false));
+            minBtn.setOnMouseEntered(e -> minBtn.setStyle(btnStyle + hoverStyle + " -fx-alignment: bottom-center; -fx-padding: 0 0 3 0;"));
+            minBtn.setOnMouseExited(e -> minBtn.setStyle(btnStyle + " -fx-alignment: bottom-center; -fx-padding: 0 0 3 0;"));
+
+            // B. [新增] 全屏/还原按钮
+            maxBtn = new Button("□"); // 初始为全屏图标
+            maxBtn.getStyleClass().add("window-close-btn");
+            maxBtn.setStyle(btnStyle + "-fx-font-size: 12px;");
+            maxBtn.setPrefSize(30, 20);
+            maxBtn.setOnAction(e -> toggleMaximize());
+            maxBtn.setOnMouseEntered(e -> maxBtn.setStyle(btnStyle + hoverStyle + "-fx-font-size: 12px;"));
+            maxBtn.setOnMouseExited(e -> maxBtn.setStyle(btnStyle + "-fx-font-size: 12px;"));
+
+            // C. 关闭按钮
             Button closeBtn = new Button("✕");
             closeBtn.getStyleClass().add("window-close-btn");
+            closeBtn.setStyle(btnStyle + "-fx-font-size: 12px;");
+            closeBtn.setPrefSize(30, 20);
             closeBtn.setOnAction(e -> close());
+            closeBtn.setOnMouseEntered(e -> closeBtn.setStyle(btnStyle + "-fx-font-size: 12px; -fx-background-color: #e81123; -fx-text-fill: white;"));
+            closeBtn.setOnMouseExited(e -> closeBtn.setStyle(btnStyle + "-fx-font-size: 12px; -fx-text-fill: black;"));
 
-            titleBar.getChildren().addAll(titleLbl, spacer, closeBtn);
+            titleBar.getChildren().addAll(titleLbl, spacer, minBtn, maxBtn, closeBtn);
 
-            // 拖拽
-            titleBar.setOnMousePressed(event ->
-            {
-                this.toFront();
-                xOffset = event.getSceneX() - this.getLayoutX();
-                yOffset = event.getSceneY() - this.getLayoutY();
-            });
-            titleBar.setOnMouseDragged(event ->
-            {
-                double newX = event.getSceneX() - xOffset;
-                double newY = event.getSceneY() - yOffset;
-                if (newY < 0) newY = 0;
-                if (newY > desktopArea.getHeight() - 30) newY = desktopArea.getHeight() - 30;
-                if (newX + this.getWidth() < 30) newX = 30 - this.getWidth();
-                if (newX > desktopArea.getWidth() - 30) newX = desktopArea.getWidth() - 30;
-                this.setLayoutX(newX);
-                this.setLayoutY(newY);
-            });
-
-            this.setOnMousePressed(e -> this.toFront());
-
-            // 内容处理
-            content.setVisible(true);
-            content.setManaged(true); // 确保内容本身是托管的
-
+            // --- 2. 内容区域 ---
             VBox contentContainer = new VBox(content);
-            VBox.setVgrow(content, Priority.ALWAYS);
             contentContainer.setPadding(new Insets(5));
             VBox.setVgrow(contentContainer, Priority.ALWAYS);
 
+            // 确保内容自适应
+            if (content instanceof Region) ((Region) content).setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            if (content instanceof Control) ((Control) content).setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            VBox.setVgrow(content, Priority.ALWAYS);
+
             this.getChildren().addAll(titleBar, contentContainer);
 
-            // 强制调整窗口大小
-            this.resize(w, h);
+            // --- 3. 事件处理 (EventFilter 拦截机制) ---
 
-            // 在下一帧执行，强制引擎重新计算布局
-            Platform.runLater(() ->
-            {
-                // 强制子节点刷新布局
+            // A. 鼠标移动：更新光标
+            this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_MOVED, e -> {
+                // 如果已全屏，不显示缩放光标，始终为默认
+                if (isMaximized) {
+                    this.setCursor(Cursor.DEFAULT);
+                    return;
+                }
+                ResizeMode mode = getResizeMode(e.getX(), e.getY());
+                setCursorBasedOnMode(mode);
+            });
+
+            // B. 鼠标移出：恢复默认
+            this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_EXITED, e -> {
+                if (!e.isPrimaryButtonDown()) this.setCursor(Cursor.DEFAULT);
+            });
+
+            // C. 鼠标按下：判定操作模式
+            this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
+                this.toFront();
+
+                // 1. 双击标题栏 -> 切换全屏
+                boolean isHeader = e.getY() < 32;
+                // 排除按钮区域（假设右侧 90px 是按钮区）
+                boolean isButtonArea = e.getX() > (this.getWidth() - 90) && isHeader;
+
+                if (isHeader && !isButtonArea && e.getClickCount() == 2) {
+                    toggleMaximize();
+                    e.consume(); // 拦截，防止触发其他点击
+                    return;
+                }
+
+                // 如果是全屏模式，禁止移动和缩放，直接返回
+                if (isMaximized) return;
+
+                // 2. 检测边缘缩放
+                ResizeMode mode = getResizeMode(e.getX(), e.getY());
+                if (mode != ResizeMode.NONE) {
+                    currentResizeMode = mode;
+                    initX = this.getLayoutX();
+                    initY = this.getLayoutY();
+                    initW = this.getWidth();
+                    initH = this.getHeight();
+                    xOffset = e.getSceneX();
+                    yOffset = e.getSceneY();
+                    e.consume(); // 拦截事件，防止子组件（如 TextArea）抢夺焦点
+                    return;
+                }
+
+                // 3. 检测标题栏移动
+                if (isHeader && !isButtonArea) {
+                    currentResizeMode = ResizeMode.NONE;
+                    isDraggingWindow = true;
+                    initX = this.getLayoutX();
+                    initY = this.getLayoutY();
+                    xOffset = e.getSceneX();
+                    yOffset = e.getSceneY();
+                    e.consume(); // 拦截拖拽
+                }
+            });
+
+            // D. 鼠标拖拽：执行操作
+            this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_DRAGGED, e -> {
+                // 全屏禁止拖拽
+                if (isMaximized) return;
+
+                if (currentResizeMode != ResizeMode.NONE) {
+                    handleResize(e);
+                    e.consume();
+                } else if (isDraggingWindow) {
+                    double deltaX = e.getSceneX() - xOffset;
+                    double deltaY = e.getSceneY() - yOffset;
+                    this.setLayoutX(initX + deltaX);
+                    this.setLayoutY(initY + deltaY);
+                    e.consume();
+                }
+            });
+
+            // E. 鼠标释放：重置
+            this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED, e -> {
+                isDraggingWindow = false;
+                currentResizeMode = ResizeMode.NONE;
+            });
+
+            // 初始刷新布局
+            Platform.runLater(() -> {
                 this.requestLayout();
                 this.applyCss();
-
-                // 技巧：微调尺寸强制重绘 (Jiggle fix)
-                this.resize(w + 0.1, h + 0.1);
-                this.resize(w, h);
-
-                // 如果内容是 Parent 类型，也强制它刷新
-                if (content instanceof Parent)
-                {
-                    ((Parent) content).requestLayout();
-                    ((Parent) content).layout();
-                }
             });
         }
 
-        public void close()
-        {
+        /**
+         * 切换全屏/还原状态
+         */
+        private void toggleMaximize() {
+            if (getParent() == null) return;
+            // 获取父容器（Desktop Area）的尺寸
+            // 注意：getParent() 返回的是 Node，需转为 Region 获取准确宽高
+            Region parent = (Region) getParent();
+            double parentW = parent.getWidth();
+            double parentH = parent.getHeight();
+
+            if (isMaximized) {
+                // --- 执行还原 ---
+                this.setLayoutX(restoreX);
+                this.setLayoutY(restoreY);
+                this.setPrefSize(restoreW, restoreH);
+                this.resize(restoreW, restoreH); // 强制生效
+
+                maxBtn.setText("□"); // 变回全屏图标
+                isMaximized = false;
+
+                // 还原圆角效果（全屏时通常直角，还原时圆角，可选）
+                this.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
+            } else {
+                // --- 执行全屏 ---
+                // 1. 记录当前状态以便还原
+                restoreX = this.getLayoutX();
+                restoreY = this.getLayoutY();
+                restoreW = this.getWidth();
+                restoreH = this.getHeight();
+
+                // 2. 设置全屏位置和尺寸
+                // 考虑父容器可能有 Padding，这里简单设为 0,0 填满
+                this.setLayoutX(0);
+                this.setLayoutY(0);
+                this.setPrefSize(parentW, parentH);
+                this.resize(parentW, parentH); // 强制生效
+
+                maxBtn.setText("❐"); // 变为还原图标 (Unicode 复制重叠框)
+                isMaximized = true;
+
+                // 全屏时移除圆角，看起来更沉浸
+                this.setStyle("-fx-background-radius: 0; -fx-border-radius: 0;");
+            }
+            // 强制重新布局
+            this.requestLayout();
+        }
+
+        // --- 辅助逻辑 (缩放计算) ---
+        private void handleResize(javafx.scene.input.MouseEvent e) {
+            double deltaX = e.getSceneX() - xOffset;
+            double deltaY = e.getSceneY() - yOffset;
+            double newX = initX, newY = initY, newW = initW, newH = initH;
+
+            if (isLeft(currentResizeMode)) { newW = initW - deltaX; newX = initX + deltaX; }
+            else if (isRight(currentResizeMode)) { newW = initW + deltaX; }
+
+            if (isTop(currentResizeMode)) { newH = initH - deltaY; newY = initY + deltaY; }
+            else if (isBottom(currentResizeMode)) { newH = initH + deltaY; }
+
+            if (newW < MIN_WIDTH) { newW = MIN_WIDTH; if (isLeft(currentResizeMode)) newX = initX + (initW - MIN_WIDTH); }
+            if (newH < MIN_HEIGHT) { newH = MIN_HEIGHT; if (isTop(currentResizeMode)) newY = initY + (initH - MIN_HEIGHT); }
+
+            this.resize(newW, newH);
+            this.setPrefSize(newW, newH);
+            this.setLayoutX(newX);
+            this.setLayoutY(newY);
+            this.layout();
+        }
+
+        private ResizeMode getResizeMode(double mouseX, double mouseY) {
+            boolean left = mouseX < RESIZE_MARGIN;
+            boolean right = mouseX > this.getWidth() - RESIZE_MARGIN;
+            boolean top = mouseY < RESIZE_MARGIN;
+            boolean bottom = mouseY > this.getHeight() - RESIZE_MARGIN;
+
+            if (left && top) return ResizeMode.TOP_LEFT;
+            if (right && top) return ResizeMode.TOP_RIGHT;
+            if (left && bottom) return ResizeMode.BOTTOM_LEFT;
+            if (right && bottom) return ResizeMode.BOTTOM_RIGHT;
+            if (top) return ResizeMode.TOP;
+            if (bottom) return ResizeMode.BOTTOM;
+            if (left) return ResizeMode.LEFT;
+            if (right) return ResizeMode.RIGHT;
+            return ResizeMode.NONE;
+        }
+
+        private boolean isLeft(ResizeMode mode) { return mode == ResizeMode.LEFT || mode == ResizeMode.TOP_LEFT || mode == ResizeMode.BOTTOM_LEFT; }
+        private boolean isRight(ResizeMode mode) { return mode == ResizeMode.RIGHT || mode == ResizeMode.TOP_RIGHT || mode == ResizeMode.BOTTOM_RIGHT; }
+        private boolean isTop(ResizeMode mode) { return mode == ResizeMode.TOP || mode == ResizeMode.TOP_LEFT || mode == ResizeMode.TOP_RIGHT; }
+        private boolean isBottom(ResizeMode mode) { return mode == ResizeMode.BOTTOM || mode == ResizeMode.BOTTOM_LEFT || mode == ResizeMode.BOTTOM_RIGHT; }
+
+        private void setCursorBasedOnMode(ResizeMode mode) {
+            switch (mode) {
+                case TOP: case BOTTOM: this.setCursor(Cursor.V_RESIZE); break;
+                case LEFT: case RIGHT: this.setCursor(Cursor.H_RESIZE); break;
+                case TOP_LEFT: case BOTTOM_RIGHT: this.setCursor(Cursor.NW_RESIZE); break;
+                case TOP_RIGHT: case BOTTOM_LEFT: this.setCursor(Cursor.NE_RESIZE); break;
+                default: this.setCursor(Cursor.DEFAULT);
+            }
+        }
+
+        public void close() {
             this.setVisible(false);
             if (onClosed != null) onClosed.run();
-            desktopArea.getChildren().remove(this);
+            if (getParent() instanceof Pane) ((Pane) getParent()).getChildren().remove(this);
             openWindows.values().remove(this);
         }
     }
+
+
 
     private void initStartMenu()
     {
@@ -974,27 +1196,72 @@ public class MainController implements Initializable
 
     /**
      * [事件处理] 搜索文件
+     * 改进版：支持回车搜索、搜索后不关闭窗口、支持连续搜索
      */
     @FXML
     protected void onSearchFileClick()
     {
-        // 【修改】不再使用 TextInputDialog，改用 showInternalInput
-        showInternalInput("搜索文件", "在整个文件系统中搜索文件" + "请输入文件名", "new.txt", (name) ->
-        {
-            // 这里是回调：当用户点击内部窗口的“确定”后执行
-            if (name != null && !name.trim().isEmpty())
-            {
-                try
-                {
-                    Object result = kernel.getFileSystemManager().getRootDirectory().searchRecursive(name.trim());
-                    selectFileInTree(result);
-                    showInfo("找到文件", "已在文件树中高亮显示 '" + name + "' 。");
-                } catch (Exception e)
-                {
-                    showError("未找到文件", e.getMessage());
+        // 1. 手动构建搜索窗口的内容布局
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(15));
+
+        Label headerLbl = new Label("在整个文件系统中搜索文件\n请输入文件名:");
+        TextField textField = new TextField("new.txt"); // 默认值
+
+        // 按钮区域
+        HBox btnBox = new HBox(10);
+        btnBox.setAlignment(Pos.CENTER_RIGHT);
+        Button searchBtn = new Button("搜索");
+        Button closeBtn = new Button("关闭");
+        btnBox.getChildren().addAll(searchBtn, closeBtn);
+
+        root.getChildren().addAll(headerLbl, textField, btnBox);
+
+        // 2. 创建内部窗口
+        InternalWindow win = new InternalWindow("搜索文件", root, 320, 160);
+        // 设置初始位置 (屏幕居中偏上)
+        win.setLayoutX(desktopArea.getWidth() / 2 - 160);
+        win.setLayoutY(desktopArea.getHeight() / 2 - 160);
+
+        // 3. 定义搜索核心逻辑 (独立出来，供按钮和回车复用)
+        Runnable doSearch = () -> {
+            String name = textField.getText();
+            if (name != null && !name.trim().isEmpty()) {
+                try {
+                    String targetName = name.trim();
+                    // 调用内核递归搜索
+                    Object result = kernel.getFileSystemManager().getRootDirectory().searchRecursive(targetName);
+
+                    if (result != null) {
+                        // 找到：高亮显示，并反馈结果
+                        selectFileInTree(result);
+                        // 使用 label 更新状态比弹窗更轻量，但为了保持风格，这里还是弹窗提示
+                        // 注意：这里弹出的 Info 窗口是独立的，不会关闭当前的搜索窗口
+                        showInfo("搜索结果", "成功找到 '" + targetName + "'\n已在文件树中高亮显示。");
+                    } else {
+                        // 未找到
+                        showWarning("搜索结果", "未找到名为 '" + targetName + "' 的文件或目录。");
+                    }
+                } catch (Exception e) {
+                    showError("搜索错误", e.getMessage());
                 }
             }
-        });
+        };
+
+        // 4. 绑定事件
+        // 点击“搜索”按钮
+        searchBtn.setOnAction(e -> doSearch.run());
+
+        // 【关键】在文本框按回车 -> 触发搜索
+        textField.setOnAction(e -> doSearch.run());
+
+        // 点击“关闭”按钮 -> 关闭窗口
+        closeBtn.setOnAction(e -> win.close());
+
+        // 5. 显示窗口并聚焦输入框
+        desktopArea.getChildren().add(win);
+        win.toFront();
+        Platform.runLater(textField::requestFocus); // 自动聚焦文本框，方便直接打字
     }
 
 
