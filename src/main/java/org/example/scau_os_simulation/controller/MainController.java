@@ -169,6 +169,9 @@ public class MainController implements Initializable {
         }
     }
 
+    /**
+     * 递归查找树形结构中第一个可执行文件（.e后缀）
+     */
     private TreeItem<String> findFirstExecutable(TreeItem<String> node) {
         if (node.getValue() != null && node.getValue().endsWith(".e")) {
             return node;
@@ -180,6 +183,9 @@ public class MainController implements Initializable {
         return null;
     }
 
+    /**
+     * 展开树形节点的父路径（确保选中项可见）
+     */
     private void expandPath(TreeItem<String> item) {
         TreeItem<String> parent = item.getParent();
         while (parent != null) {
@@ -693,6 +699,8 @@ public class MainController implements Initializable {
         showInfo("系统已启动", "CPU 开始运行，调度器已激活。");
     }
 
+
+
     @FXML protected void onCreateProcessClick() {
         TextField processNameField = new TextField("新进程");
         processNameField.setMaxWidth(Double.MAX_VALUE);
@@ -710,17 +718,40 @@ public class MainController implements Initializable {
         fileTreeView.setMaxWidth(Double.MAX_VALUE);
         fileTreeView.setMaxHeight(Double.MAX_VALUE);
 
+        // ---------------------------------------------------------------
+        // 【步骤 1】绑定监听器：包含文件名解析与智能命名逻辑
+        // ---------------------------------------------------------------
         fileTreeView.getSelectionModel().selectedItemProperty().addListener((obs, old, newVal) -> {
             if (newVal != null && newVal.getValue().endsWith(".e")) {
+                // 1. 自动填入路径
                 execPathField.setText(buildPathFromTree(newVal));
-                if (processNameField.getText().equals("新进程"))
-                    processNameField.setText(newVal.getValue().replace(".e", ""));
+
+                // 2. 【核心修改】智能解析文件名，生成人性化的进程名
+                String fileName = newVal.getValue(); // 例如 "p1_A_CPU.e"
+                String suggestedName = fileName.replace(".e", ""); // 默认回退名
+
+                if (fileName.contains("_CPU")) {
+                    if (fileName.contains("_A_")) suggestedName = "计算型_A";
+                    else if (fileName.contains("_B_")) suggestedName = "计算型_B";
+                    else if (fileName.contains("_C_")) suggestedName = "计算型_C";
+                } else if (fileName.contains("_IO")) {
+                    if (fileName.contains("_A_")) suggestedName = "阻塞型_A";
+                    else if (fileName.contains("_B_")) suggestedName = "阻塞型_B";
+                    else if (fileName.contains("_C_")) suggestedName = "阻塞型_C";
+                }
+
+                // 3. 将解析出的名字填入文本框 (用户依然可以修改它)
+                processNameField.setText(suggestedName);
             }
         });
 
+        // ---------------------------------------------------------------
+        // 【步骤 2】自动选中第一个可执行文件
+        // ---------------------------------------------------------------
         TreeItem<String> firstExec = findFirstExecutable(rootItem);
         if (firstExec != null) {
             expandPath(firstExec);
+            // 这一句会触发上面的监听器，自动填好路径和名字
             fileTreeView.getSelectionModel().select(firstExec);
             Platform.runLater(() -> {
                 int row = fileTreeView.getRow(firstExec);
@@ -757,6 +788,7 @@ public class MainController implements Initializable {
             String path = execPathField.getText().trim(); int priority = priorityBox.getValue();
             org.example.scau_os_simulation.process.Executable exec = kernel.getFileSystemManager().loadExecutable(path);
             if (exec != null) {
+                // 使用全限定名，防止 Process 类冲突
                 org.example.scau_os_simulation.process.Process p = kernel.getProcessManager().createProcess(name, priority);
                 if (p != null) {
                     p.setExecutable(exec);
@@ -768,6 +800,9 @@ public class MainController implements Initializable {
         windowLayer.getChildren().add(win);
         win.toFront();
     }
+
+
+
 
     @FXML protected void onTerminateProcessClick() {
         PCB selected = processTableView == null ? null : processTableView.getSelectionModel().getSelectedItem();

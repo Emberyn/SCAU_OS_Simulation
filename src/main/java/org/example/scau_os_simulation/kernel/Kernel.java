@@ -30,6 +30,8 @@ import org.example.scau_os_simulation.logging.OperationLogger;
 import org.example.scau_os_simulation.performance.PerformanceMonitor;
 import org.example.scau_os_simulation.process.ProducerConsumerExecutable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import org.example.scau_os_simulation.cli.CommandExecutor;
@@ -130,6 +132,8 @@ public class Kernel
         return instance;  // 返回单例实例
     }
 
+
+
     /**
      * 初始化操作系统内核
      * <p>
@@ -147,115 +151,108 @@ public class Kernel
     {
         try
         {
-            // 第一步：初始化内存
-            // 创建1024KB的内存，就像租了一个1024KB大小的办公空间
-            Memory memory = new Memory(1024); // 1024KB内存
+            // 1. 初始化基础设施
+            Memory memory = new Memory(2048);
             memoryManager = new MemoryManager(memory);
-
-            // 第二步：初始化文件系统
-            // 创建2048KB的磁盘空间，就像准备了文件柜来存放公司文件
-            FileSystem fileSystem = new FileSystem(2048); // 2048KB磁盘空间
+            FileSystem fileSystem = new FileSystem(4096);
             fileSystemManager = new FileSystemManager(fileSystem);
 
-            // 第三步：初始化进程管理器
-            // 创建进程管理器，并让它使用我们准备好的内存管理器
-            // 就像成立人力资源部门，并告诉他们可以使用公司的办公空间
+            // 2. 初始化核心管理器
             processManager = new ProcessManager(memoryManager);
-
-            // 第四步：初始化设备管理器
-            // 创建设备管理器，并让它与进程管理器协作
-            // 就像成立设备管理部门，并让他们与人力资源部门配合工作
             deviceManager = new DeviceManager(processManager);
-
-            // 第四步补充：初始化同步管理器
-            // 创建同步管理器，用于管理信号量等同步机制
             syncManager = new SyncManager();
-
-            // 第四步补充：初始化操作日志记录器
-            // 创建操作日志记录器，用于记录所有系统操作
             operationLogger = new OperationLogger();
+            performanceMonitor = new PerformanceMonitor(100);
 
-            // 第四步补充：初始化性能监控器
-            // 创建性能监控器，用于监控系统性能指标
-            performanceMonitor = new PerformanceMonitor(100); // 保存最近100个快照
-
-            // 第五步：创建可执行文件
-            for (int i = 1; i <= 10; i++)
-            {
-                java.util.List<String> ins = new java.util.ArrayList<>();
-                ins.add("x=" + (i * 3 % 99));  // 设置初始值
-
-                // --- 【修改点】插入大量“注水”指令，延长运行时间 ---
-                // 插入 50 条自增指令，让它多跑一会儿
-                for (int j = 0; j < 50; j++) {
-                    ins.add("x++");
-                    // 每隔 10 条指令插入一次设备请求，让它偶尔阻塞一下，演示状态切换
-                    if (j % 10 == 0) {
-                        ins.add("!A" + (1 + (j % 5))); // 申请设备A，占用 1~5 个时间片
-                    }
-                }
-                // ---------------------------------------------
-
-                ins.add("end");                // 程序结束
-                fileSystemManager.createExecutable("/system/exec", "p" + i + ".e", ins);
-            }
-
-            // 补充目录与文件：满足“至少5个目录与15个文件”的要求（简化实现）
-            fileSystemManager.createDirectory("/user", "docs");
-            fileSystemManager.createDirectory("/user", "tmp");
-            fileSystemManager.createDirectory("/user", "logs");
-            fileSystemManager.createDirectory("/user", "bin");
+            // 3. 创建目录
+            fileSystemManager.createDirectory("/system", "exec");
             fileSystemManager.createDirectory("/user", "data");
-            fileSystemManager.createDirectory("/system", "config");
 
-            fileSystemManager.createFile("/user/docs", "readme.txt", 1);
-            fileSystemManager.createFile("/user/docs", "notes.txt", 1);
-            fileSystemManager.createFile("/user/docs", "manual.txt", 1);
-            fileSystemManager.createFile("/user/logs", "app.log", 1);
-            fileSystemManager.createFile("/user/logs", "error.log", 1);
-            fileSystemManager.createFile("/user/bin", "run.bat", 1);
-            fileSystemManager.createFile("/system/config", "sys.ini", 1);
-            fileSystemManager.createFile("/user/data", "dataset1.txt", 1);
-            fileSystemManager.createFile("/user/data", "dataset2.txt", 1);
-            fileSystemManager.createFile("/user/data", "dataset3.txt", 1);
-
-            // 第五步补充：创建生产者消费者演示程序
-            // 创建信号量
-            syncManager.createSemaphore("mutex", 1);    // 互斥信号量
-            syncManager.createSemaphore("empty", 5);    // 空位信号量（缓冲区大小为5）
-            syncManager.createSemaphore("full", 0);     // 满位信号量
-
-            // 创建生产者消费者可执行文件
-            ProducerConsumerExecutable producer =
-                    new ProducerConsumerExecutable("producer", 1, 3);
-            ProducerConsumerExecutable consumer =
-                    new ProducerConsumerExecutable("consumer", 1, 3);
-
-            fileSystemManager.createExecutable("/system/exec", "producer1.e", producer);
-            fileSystemManager.createExecutable("/system/exec", "consumer1.e", consumer);
-
-            // 第六步：创建进程并加载可执行文件
-            // 为每个可执行文件创建一个进程，就像为每个工作任务分配一个员工
-            for (int i = 1; i <= 10; i++)
+            // =================================================================
+            // 4. 【核心演示逻辑】创建 3 组对比文件 (共6个文件)
+            // =================================================================
+            // 遍历三种设备类型: 0->A, 1->B, 2->C
+            for (int i = 0; i < 3; i++)
             {
-                // 创建进程，名称为"进程1"到"进程10"
-                org.example.scau_os_simulation.process.Process p = processManager.createProcess("进程" + i, 1);
-                // 加载对应的可执行文件
-                Executable exec = fileSystemManager.loadExecutable("/system/exec/p" + i + ".e");
-                // 如果进程创建成功，就将可执行文件分配给它
-                if (p != null) p.setExecutable(exec);
+                String devCode = (i == 0) ? "A" : (i == 1) ? "B" : "C";
+
+                // --- 文件 1: 计算密集型 (CPU Bound) ---
+                // 特点：计算久，偶尔用一下设备。容易被 IO 型进程卡住。
+                java.util.List<String> insCpu = new java.util.ArrayList<>();
+                insCpu.add("x=0");
+                // 循环 50 次，确保运行时间足够长
+                for (int j = 0; j < 10; j++) {
+                    // 狂算 40 次 (在 CPU 里待很久)
+                    for (int k = 0; k < 40; k++) insCpu.add("x++");
+                    // 稍微用一下设备 (5个时间片，0.5秒)
+                    insCpu.add("!" + devCode + "20");
+                }
+                insCpu.add("end");
+                String nameCpu = "p" + (i * 2 + 1) + "_" + devCode + "_CPU.e";
+                fileSystemManager.createExecutable("/system/exec", nameCpu, insCpu);
+
+                // --- 文件 2: IO 密集型 (IO Bound) ---
+                // 特点：计算少，长期霸占设备。它是制造“堵车”的罪魁祸首。
+                java.util.List<String> insIo = new java.util.ArrayList<>();
+                insIo.add("x=0");
+                // 循环 50 次，确保持续占用设备
+                for (int j = 0; j < 10; j++) {
+                    // 稍微算一下
+                    for (int k = 0; k < 20; k++) insIo.add("x++");
+                    // 长期霸占设备 (60个时间片 = 6秒)
+                    insIo.add("!" + devCode + "40");
+                }
+                insIo.add("end");
+                String nameIo = "p" + (i * 2 + 2) + "_" + devCode + "_IO.e";
+                fileSystemManager.createExecutable("/system/exec", nameIo, insIo);
             }
 
-            // 第七步：启动调度器
+            // 5. 补充同步演示程序 (保留文件在磁盘，但不自动启动进程)
+            syncManager.createSemaphore("mutex", 1);
+            syncManager.createSemaphore("empty", 5);
+            syncManager.createSemaphore("full", 0);
+            fileSystemManager.createExecutable("/system/exec", "producer.e", new ProducerConsumerExecutable("producer", 1, 5));
+            fileSystemManager.createExecutable("/system/exec", "consumer.e", new ProducerConsumerExecutable("consumer", 1, 5));
+
+            // =================================================================
+            // 6. 【启动进程】直接启动上述 6 个文件对应的进程
+            // =================================================================
+            for (int i = 0; i < 3; i++)
+            {
+                String devCode = (i == 0) ? "A" : (i == 1) ? "B" : "C";
+
+                // 1. 启动 CPU 型进程
+                // 文件名必须与上面创建的一致: p1_A_CPU.e, p3_B_CPU.e ...
+                String nameCpu = "p" + (i * 2 + 1) + "_" + devCode + "_CPU.e";
+                // 使用全限定名避免和 java.lang.Process 冲突
+                org.example.scau_os_simulation.process.Process p1 =
+                        processManager.createProcess("计算型_" + devCode, 1); // 优先级 1
+
+                Executable exec1 = fileSystemManager.loadExecutable("/system/exec/" + nameCpu);
+                if (p1 != null) p1.setExecutable(exec1);
+
+                // 2. 启动 IO 型进程
+                // 文件名必须与上面创建的一致: p2_A_IO.e, p4_B_IO.e ...
+                String nameIo = "p" + (i * 2 + 2) + "_" + devCode + "_IO.e";
+                org.example.scau_os_simulation.process.Process p2 =
+                        processManager.createProcess("阻塞型_" + devCode, 2); // 优先级 2 (略高，让它先跑去抢设备)
+
+                Executable exec2 = fileSystemManager.loadExecutable("/system/exec/" + nameIo);
+                if (p2 != null) p2.setExecutable(exec2);
+            }
+
+            // 7. 初始化调度器
             scheduler = new Scheduler(processManager, deviceManager);
-            logOutput("内核初始化完成，等待启动...");
+
+            logOutput("内核初始化完成 (6个演示进程已就绪)");
+
         } catch (Exception e)
         {
             e.printStackTrace();
             System.err.println("内核初始化失败: " + e.getMessage());
-            logOutput("FATAL: 内核初始化失败 - " + e.getMessage());
         }
     }
+
 
     // 新增一个公开方法，由 UI 控制何时启动
     public void start()

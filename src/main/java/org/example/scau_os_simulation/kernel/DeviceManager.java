@@ -32,6 +32,7 @@ public class DeviceManager
      */
     private final ProcessManager processManager;
 
+
     /**
      * 构造函数：初始化设备与等待队列
      */
@@ -46,11 +47,15 @@ public class DeviceManager
         waitQueues.put(DeviceType.A, new ArrayDeque<>());
         waitQueues.put(DeviceType.B, new ArrayDeque<>());
         waitQueues.put(DeviceType.C, new ArrayDeque<>());
-        // 预置设备数量：A 类 2 台，B 类 3 台，C 类 3 台
-        for (int i = 0; i < 2; i++) devices.get(DeviceType.A).add(new Device(DeviceType.A));
-        for (int i = 0; i < 3; i++) devices.get(DeviceType.B).add(new Device(DeviceType.B));
-        for (int i = 0; i < 3; i++) devices.get(DeviceType.C).add(new Device(DeviceType.C));
+
+        // 【修改后】现在全部改为各 1 台！制造最激烈的竞争！
+        devices.get(DeviceType.A).add(new Device(DeviceType.A));
+        devices.get(DeviceType.B).add(new Device(DeviceType.B));
+        devices.get(DeviceType.C).add(new Device(DeviceType.C));
     }
+
+
+
 
     /**
      * 申请设备

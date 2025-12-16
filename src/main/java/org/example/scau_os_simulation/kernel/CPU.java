@@ -118,24 +118,26 @@ public class CPU
             return;
         }
 
-        // 3.5 设备请求指令：!A3、!B2等（格式：!+设备类型+占用时间）
-        // 正则匹配规则：!.[0-9] 匹配!后跟一个字符和一个数字，如!A5、!C9
-        if (instr.matches("!.[0-9]"))
+        // 3.5 设备请求指令：!A30、!B50等（格式：!+设备类型+占用时间）
+        // 【修改】正则匹配规则改为 !.[0-9]+，支持多位数字（例如 !A30 表示占用30个时间片）
+        if (instr.matches("!.[0-9]+"))
         {
-            // 提取设备类型字符（第2个字符）和占用时间（第3个字符）
+            // 提取设备类型字符（第2个字符）
             char dev = instr.charAt(1);
-            int t = Character.digit(instr.charAt(2), 10);
-            // 转换为设备类型枚举（A/B/C对应DeviceType的A/B/C）
+
+            // 【修改】提取占用时间（从第3个字符开始截取到末尾，支持多位数）
+            int t = Integer.parseInt(instr.substring(2));
+
+            // 转换为设备类型枚举
             DeviceType type = dev == 'A' ? DeviceType.A : (dev == 'B' ? DeviceType.B : DeviceType.C);
 
-            // 向设备管理器发起设备请求：传入PID、设备类型、占用时间
+            // 向设备管理器发起设备请求
             boolean success = deviceManager.requestDevice(pcb.getPid(), type, t);
 
-            // 关键：无论设备请求是否立即成功，PC必须+1
-            // 防止进程因设备阻塞后，再次执行该指令导致死循环
+            // 关键：PC+1，防止死循环
             pcb.setPc(pcb.getPc() + 1);
 
-            // 触发进程调度：设备请求后进程进入阻塞态，需切换到下一个就绪进程
+            // 触发进程调度
             processManager.scheduleNext();
             return;
         }
