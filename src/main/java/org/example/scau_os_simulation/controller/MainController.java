@@ -45,11 +45,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class MainController implements Initializable {
     // --- 桌面环境核心组件 ---
-    @FXML private StackPane rootStackPane;          // 根布局容器
-    @FXML private FlowPane desktopArea;             // 桌面区域（承载图标和窗口）
-    @FXML private HBox taskBarApps;                 // 任务栏应用按钮容器
-    @FXML private Label systemClockLabel;           // 系统时钟标签
-    @FXML private Button startMenuBtn;              // 开始菜单按钮
+    @FXML private StackPane rootStackPane;          // 根布局容器（全局最外层）
+    @FXML private FlowPane desktopArea;             // 桌面区域（承载图标和所有内部窗口）
+    @FXML private HBox taskBarApps;                 // 任务栏-应用按钮容器（显示已打开窗口的快捷按钮）
+    @FXML private Label systemClockLabel;           // 系统时钟标签（实时显示日期时间）
+    @FXML private Button startMenuBtn;              // 开始菜单按钮（触发系统菜单弹窗）
 
     // --- 功能视图容器（进程/内存/文件/设备/性能） ---
     @FXML private VBox processViewRoot;             // 进程管理视图根节点
@@ -57,40 +57,55 @@ public class MainController implements Initializable {
     @FXML private VBox fileSystemViewRoot;          // 文件系统视图根节点
     @FXML private AnchorPane deviceViewRoot;        // 设备管理视图根节点
     @FXML private VBox performanceViewRoot;         // 性能监控视图根节点
-    @FXML private StackPane performanceChartContainer; // 性能图表容器
+    @FXML private StackPane performanceChartContainer; // 性能图表容器（承载CPU/内存趋势图）
 
-    // --- 功能按钮 ---
-    @FXML private Button startSystemBtn, stopSystemBtn, createProcessBtn, terminateProcessBtn;
-    @FXML private Button undoBtn, redoBtn, defragmentBtn;
-    @FXML private Button createFileBtn, createDirectoryBtn, deleteFileBtn, copyFileBtn, pasteFileBtn, searchFileBtn;
+    // --- 功能按钮（系统控制/进程/文件/内存操作） ---
+    @FXML private Button startSystemBtn, stopSystemBtn;          // 系统启停
+    @FXML private Button createProcessBtn, terminateProcessBtn;  // 进程创建/终止
+    @FXML private Button undoBtn, redoBtn;                        // 操作撤销/重做
+    @FXML private Button defragmentBtn;                           // 内存碎片整理
+    @FXML private Button createFileBtn, createDirectoryBtn;       // 文件/目录创建
+    @FXML private Button deleteFileBtn, copyFileBtn, pasteFileBtn;// 文件删除/复制/粘贴
+    @FXML private Button searchFileBtn;                           // 文件搜索
 
     // --- 数据展示组件 ---
-    @FXML private TableView<PCB> processTableView;          // 进程列表表格
+    // 进程表格：基础信息列
+    @FXML private TableView<PCB> processTableView;
     @FXML private TableColumn<PCB, Number> pidColumn, priorityColumn, memoryAddressColumn, memorySizeColumn;
     @FXML private TableColumn<PCB, String> nameColumn, stateColumn;
-    @FXML private Label runningPidLabel, irLabel, axLabel, tsLabel; // 进程运行状态标签
+    // 进程运行时状态标签（寄存器/时间片）
+    @FXML private Label runningPidLabel, irLabel, axLabel, tsLabel;
+    // 日志/队列列表：输出日志、就绪队列、阻塞队列、操作日志
     @FXML private ListView<String> outputListView, readyQueueListView, blockedQueueListView, operationLogListView;
-    @FXML private ProgressBar memoryUsageBar, diskUsageBar, cpuUtilizationBar, systemLoadBar; // 资源使用率进度条
-    @FXML private Label memoryInfoLabel, fragmentationLabel, diskInfoLabel; // 内存/磁盘信息标签
+    // 资源使用率进度条：内存、磁盘、CPU、系统负载
+    @FXML private ProgressBar memoryUsageBar, diskUsageBar, cpuUtilizationBar, systemLoadBar;
+    // 内存/磁盘统计标签：已用/总量、碎片率
+    @FXML private Label memoryInfoLabel, fragmentationLabel, diskInfoLabel;
+    // 性能监控标签：实时/平均/峰值CPU/内存使用率、系统负载
     @FXML private Label cpuUtilizationLabel, systemLoadLabel, avgCpuLabel, avgMemoryLabel, peakCpuLabel, peakMemoryLabel;
-    @FXML private TableView<MemoryBlock> memoryBlockTableView; // 内存块列表表格
+    // 内存块表格：地址/大小/所属进程
+    @FXML private TableView<MemoryBlock> memoryBlockTableView;
     @FXML private TableColumn<MemoryBlock, Number> startAddressColumn, blockSizeColumn;
     @FXML private TableColumn<MemoryBlock, String> processColumn;
-    @FXML private TreeView<String> fileSystemTreeView;       // 文件系统树形视图
-    @FXML private TableView<Device> deviceTableView;         // 设备列表表格
+    // 文件系统树形视图（展示目录/文件结构）
+    @FXML private TreeView<String> fileSystemTreeView;
+    // 设备表格：类型/占用状态/占用PID/剩余时间
+    @FXML private TableView<Device> deviceTableView;
     @FXML private TableColumn<Device, String> deviceTypeColumn, deviceInUseColumn;
     @FXML private TableColumn<Device, Number> devicePidColumn, deviceRemainColumn;
-    @FXML private TableView<WaitRow> waitQueueTableView;     // 设备等待队列表格
+    // 设备等待队列：设备类型/等待PID/等待时间
+    @FXML private TableView<WaitRow> waitQueueTableView;
     @FXML private TableColumn<WaitRow, String> waitDeviceColumn;
     @FXML private TableColumn<WaitRow, Number> waitPidColumn, waitTimeColumn;
 
     // --- 后端核心对象引用 ---
-    private Kernel kernel;                              // 内核实例（核心业务逻辑入口）
-    private final ScheduledExecutorService uiExec = Executors.newSingleThreadScheduledExecutor(); // UI刷新线程池
-    private PerformanceChartFX performanceChart;        // 性能图表组件
-    private Object clipboardFile;                       // 文件剪贴板（复制粘贴用）
+    private Kernel kernel;                              // 内核单例（所有核心功能的入口）
+    // UI刷新线程池（单线程，避免多线程UI冲突，定时刷新视图）
+    private final ScheduledExecutorService uiExec = Executors.newSingleThreadScheduledExecutor();
+    private PerformanceChartFX performanceChart;        // 性能趋势图表（CPU/内存使用率曲线）
+    private Object clipboardFile;                       // 文件剪贴板（暂存复制的文件/目录对象）
+    private final Map<Node, InternalWindow> openWindows = new HashMap<>(); // 已打开窗口缓存（Key=内容节点，Value=窗口实例）
 
-    private final Map<Node, InternalWindow> openWindows = new HashMap<>(); // 已打开窗口缓存
 
     /**
      * 初始化方法（FXML加载完成后执行）
@@ -113,11 +128,11 @@ public class MainController implements Initializable {
         initStartMenu();               // 初始化开始菜单
         startClock();                  // 启动系统时钟
 
-        // 初始化视图数据
+        // 3. 初始刷新
         updateAllViews();
-        updateFileSystemView();
-        setupFileSystemEvents();       // 绑定文件系统交互事件
-        updateControlButtonsState(false); // 初始禁用功能按钮（系统未启动）
+        updateFileSystemView(); // 初始化时调用一次即可
+        setupFileSystemEvents();
+        updateControlButtonsState(false);
 
         // 全局快捷键：Ctrl+F 触发文件搜索
         rootStackPane.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
@@ -127,7 +142,8 @@ public class MainController implements Initializable {
             }
         });
 
-        // 定时刷新UI（500ms/次）
+        // 4. 定时任务：每 500ms 刷新一次界面
+        // 【关键修复】从定时任务中移除 updateFileSystemView()
         uiExec.scheduleAtFixedRate(() -> Platform.runLater(() -> {
             updateProcessView();
             updateMemoryView();
@@ -135,6 +151,8 @@ public class MainController implements Initializable {
             updateOperationLogView();
             updatePerformanceChart();
             updatePerformanceMetrics();
+            // ❌ 删除或注释掉下面这行：
+            // updateFileSystemView();
         }), 0, 500, TimeUnit.MILLISECONDS);
     }
 
@@ -958,10 +976,21 @@ public class MainController implements Initializable {
             List<String> matches = new ArrayList<>();
             rootDir.searchByPrefix(newVal.trim(), matches, "");
             Platform.runLater(() -> {
+                // 1. 如果数据有变化，则更新列表（避免无意义的刷新）
                 if (!searchBox.getItems().equals(matches)) {
                     searchBox.getItems().setAll(matches);
-                    if (!matches.isEmpty()) { if (!searchBox.isShowing()) searchBox.show(); }
-                    else searchBox.hide();
+                }
+
+                // 2. 【关键修复】无论数据是否变化，只要有结果且没显示，就强制显示
+                if (!matches.isEmpty()) {
+                    if (!searchBox.isShowing()) {
+                        searchBox.show();
+                    }
+                } else {
+                    // 没有结果则隐藏
+                    if (searchBox.isShowing()) {
+                        searchBox.hide();
+                    }
                 }
             });
         });

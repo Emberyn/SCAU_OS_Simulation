@@ -14,6 +14,8 @@ import java.util.*;
  * - 管理不同类型（A/B/C）的设备集合与其等待队列；同类设备可能有多个。
  * - 提供统一的 `requestDevice/tick` 入口以支撑调度循环。
  * - 与 `ProcessManager` 协作，负责在设备占用/完成时更新进程状态与队列。
+ *
+ * 【线程安全修复】增加 synchronized 和防御性复制
  */
 public class DeviceManager
 {
@@ -59,7 +61,7 @@ public class DeviceManager
      * @param timeUnits 预计使用时间片数量
      * @return 是否成功立即分配
      */
-    public boolean requestDevice(int pid, DeviceType type, int timeUnits)
+    public synchronized boolean requestDevice(int pid, DeviceType type, int timeUnits)
     {
         // 尝试立即分配同类中的空闲设备
         for (Device d : devices.get(type))
@@ -67,6 +69,7 @@ public class DeviceManager
             if (!d.isInUse())
             {
                 d.allocate(pid, timeUnits);                       // 标记设备被该进程占用
+                // processManager.findProcess 现在是线程安全的
                 PCB pcb = processManager.findProcess(pid).getPcb();
                 pcb.setState(org.example.scau_os_simulation.process.ProcessState.BLOCKED); // 进程阻塞，等待设备完成
                 pcb.setBlockReason(type.name());
@@ -88,7 +91,7 @@ public class DeviceManager
      * <p>
      * 所有设备 remainingTime 递减；完成时触发进程解阻并尝试分配等待队列。
      */
-    public void tick()
+    public synchronized void tick()
     {
         // 时间推进：遍历所有设备，递减占用剩余时间；完成后释放并尝试从等待队列分配
         for (DeviceType t : devices.keySet())
@@ -108,7 +111,7 @@ public class DeviceManager
     }
 
     /**
-     * 从等待队列尝试分配空闲设备
+     * 从等待队列尝试分配空闲设备 (内部调用，此时已在 tick 的同步块中)
      */
     private void allocateFromQueue(DeviceType type)
     {
@@ -127,33 +130,40 @@ public class DeviceManager
         }
     }
 
-
     /**
-     * 获取设备清单
+     * 获取设备清单 (原始Map，建议仅内部使用或只读)
      */
     public Map<DeviceType, List<Device>> getDevices()
     {
         return devices;
     }
 
-
     /**
-     * 获取设备等待队列
+     * 获取设备等待队列 (原始Map，建议仅内部使用或只读)
      */
     public Map<DeviceType, Deque<DeviceRequest>> getWaitQueues()
     {
         return waitQueues;
     }
 
-    public java.util.List<Device> getAllDevices()
+    /**
+     * 获取所有设备的扁平化列表（副本）
+     * 【修复】返回新列表，确保 UI 遍历安全
+     */
+    public synchronized java.util.List<Device> getAllDevices()
     {
         java.util.List<Device> list = new java.util.ArrayList<>();
         for (java.util.List<Device> ds : devices.values()) list.addAll(ds);
         return list;
     }
 
-    public java.util.Deque<DeviceRequest> getWaitingQueue(DeviceType type)
+    /**
+     * 获取指定类型的等待队列（副本）
+     * 【修复】返回新队列，确保 UI 遍历安全
+     */
+    public synchronized java.util.Deque<DeviceRequest> getWaitingQueue(DeviceType type)
     {
-        return waitQueues.get(type);
+        Deque<DeviceRequest> original = waitQueues.get(type);
+        return original != null ? new ArrayDeque<>(original) : new ArrayDeque<>();
     }
 }

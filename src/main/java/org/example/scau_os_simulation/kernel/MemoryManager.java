@@ -15,6 +15,8 @@ import java.util.HashMap;
  * - 按“首次适应”策略查找可用连续内存块并分配
  * - 记录所有已分配的内存块，支持精确释放
  * - 提供内存总体信息以供UI展示
+ *
+ * 【线程安全修复】增加 synchronized 和防御性复制
  */
 public class MemoryManager
 {
@@ -36,9 +38,13 @@ public class MemoryManager
         return memory;
     }
 
-    public List<MemoryBlock> getAllocatedBlocks()
+    /**
+     * 获取已分配内存块列表（副本）
+     * 【修复】返回副本
+     */
+    public synchronized List<MemoryBlock> getAllocatedBlocks()
     {
-        return allocatedBlocks;
+        return new ArrayList<>(allocatedBlocks);
     }
 
     /**
@@ -47,12 +53,12 @@ public class MemoryManager
      * @param size 申请的大小（KB）
      * @return 起始地址；失败返回-1
      */
-    public int allocateMemory(int size)
+    public synchronized int allocateMemory(int size)
     {
         // 1. 对已分配块按起始地址排序，这是正确计算空隙的前提
         allocatedBlocks.sort((a, b) -> a.getStartAddress() - b.getStartAddress());
 
-        // 【修改后】模拟系统区保留：假设前 128KB 是系统区，用户只能从 128 开始用
+        // 模拟系统区保留：假设前 128KB 是系统区，用户只能从 128 开始用
         int SYSTEM_RESERVED_SIZE = 128;
         int candidateAddress = SYSTEM_RESERVED_SIZE;
 
@@ -109,7 +115,7 @@ public class MemoryManager
      * @param address 起始地址
      * @param size    大小（KB）
      */
-    public void freeMemory(int address, int size)
+    public synchronized void freeMemory(int address, int size)
     {
         MemoryBlock blockToRemove = null;
 
@@ -145,7 +151,7 @@ public class MemoryManager
      * 将所有已分配的内存块移动到内存前端，消除碎片
      * 同时更新相关进程的内存地址信息
      */
-    public void defragmentMemory()
+    public synchronized void defragmentMemory()
     {
         if (allocatedBlocks.isEmpty()) return;
 
@@ -178,7 +184,7 @@ public class MemoryManager
         );
     }
 
-    public void defragment()
+    public synchronized void defragment()
     {
         defragmentMemory();
     }
@@ -188,7 +194,7 @@ public class MemoryManager
      *
      * @return 碎片率百分比 (0-100)
      */
-    public double getFragmentationRate()
+    public synchronized double getFragmentationRate()
     {
         if (allocatedBlocks.isEmpty()) return 0.0;
 
@@ -227,7 +233,7 @@ public class MemoryManager
      *
      * @return 使用率百分比 (0-100)
      */
-    public double getMemoryUsageRate()
+    public synchronized double getMemoryUsageRate()
     {
         if (memory.getSize() == 0) return 0.0;
 
@@ -245,7 +251,7 @@ public class MemoryManager
      *
      * @return 最大连续空闲内存大小
      */
-    public int getMaxFreeBlockSize()
+    public synchronized int getMaxFreeBlockSize()
     {
         if (allocatedBlocks.isEmpty()) return memory.getSize();
 
@@ -278,7 +284,7 @@ public class MemoryManager
      *
      * @return 包含各种统计信息的映射
      */
-    public Map<String, Object> getMemoryStatistics()
+    public synchronized Map<String, Object> getMemoryStatistics()
     {
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalSize", memory.getSize());
@@ -296,7 +302,7 @@ public class MemoryManager
      *
      * @return 已使用内存大小
      */
-    public int getTotalUsedMemory()
+    public synchronized int getTotalUsedMemory()
     {
         int total = 0;
         for (MemoryBlock block : allocatedBlocks)

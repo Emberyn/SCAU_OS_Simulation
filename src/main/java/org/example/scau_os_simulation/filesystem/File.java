@@ -1,83 +1,94 @@
 package org.example.scau_os_simulation.filesystem;
 
+import java.util.Arrays;
+
 /**
- * 文件 - 固定大小的字节容器
- * <p>
- * 概念解释：
- * - 文件以“KB”为单位定义大小（`size`），底层通过 `byte[] content` 存储具体字节数据。
- * - 这里的 `size` 表示容量的 KB 数；真实字节容量为 `size * 1024`。
- * - 为了简单起见，文件不包含权限/时间戳等元数据，仅聚焦容量与内容。
- * <p>
- * 常见操作：
- * - 通过 `setContent` 写入数据（长度不得超过容量）。
- * - 通过 `getContent` 读取底层字节数组（只读引用）。
+ * 文件类 - 模拟文件系统中的文件节点
+ * 【修复】移除了固定大小限制，支持动态内容扩容
  */
-public class File
-{
-    private final String name;
-    private final int size;
-    private final byte[] content;
-    // [新增] 用于记录实际存储的数据长度
-    private int actualLength;
-    /**
-     * 构造一个文件
-     *
-     * @param name 文件名（不含路径）
-     * @param size 容量（KB）
-     */
-    public File(String name, int size)
-    {
+public class File {
+    private String name;
+    private String type; // 例如 "txt", "exe"
+    private byte[] content;
+    private int size; // 分配的大小 (模拟磁盘占用空间)
+    private int actualLength; // 实际内容长度
+
+    public File(String name, int size) {
         this.name = name;
         this.size = size;
-        this.content = new byte[size * 1024];
-        // [新增] 初始化长度为0
+        // 初始化时根据请求的大小分配，但后续可扩容
+        this.content = new byte[size > 0 ? size : 1024];
         this.actualLength = 0;
+        this.type = extractType(name);
     }
 
-    /**
-     * 获取文件名
-     */
-    public String getName()
-    {
+    public File(String name, byte[] content) {
+        this.name = name;
+        this.content = content;
+        this.size = content.length;
+        this.actualLength = content.length;
+        this.type = extractType(name);
+    }
+
+    private String extractType(String name) {
+        int dotIndex = name.lastIndexOf('.');
+        return (dotIndex > 0 && dotIndex < name.length() - 1) ? name.substring(dotIndex + 1) : "";
+    }
+
+    public String getName() {
         return name;
     }
 
-    /**
-     * 获取容量（KB）
-     */
-    public int getSize()
-    {
-        return size;
+    public void setName(String name) {
+        this.name = name;
+        this.type = extractType(name);
     }
 
-    /**
-     * 获取底层内容缓冲区
-     * 注意：返回的是数组引用，调用方请勿越界写入或泄露机密数据。
-     */
-    public byte[] getContent()
-    {
+    public byte[] getContent() {
         return content;
     }
 
-    // [新增] 获取实际数据长度的方法
-    public int getActualLength()
-    {
+    /**
+     * 【关键修复】设置文件内容，支持动态扩容
+     */
+    public void setContent(byte[] newContent) {
+        if (newContent == null) {
+            this.actualLength = 0;
+            return;
+        }
+
+        // 如果新内容超过当前容量，进行扩容 (策略：取新内容长度 或 原长度的1.5倍，防止频繁分配)
+        if (newContent.length > this.content.length) {
+            int newSize = Math.max(newContent.length, (int)(this.content.length * 1.5));
+            // 模拟重新分配磁盘块
+            this.content = Arrays.copyOf(newContent, newSize);
+            this.size = newSize;
+        } else {
+            // 容量足够，直接覆盖
+            System.arraycopy(newContent, 0, this.content, 0, newContent.length);
+            // 清除尾部旧数据(可选，为了安全)
+            if (newContent.length < this.actualLength) {
+                Arrays.fill(this.content, newContent.length, this.actualLength, (byte)0);
+            }
+        }
+
+        this.actualLength = newContent.length;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public int getActualLength() {
         return actualLength;
     }
-    /**
-     * 写入文件内容
-     *
-     * @param content 字节数组，长度不得超过文件容量（size*1024）
-     * @throws IllegalArgumentException 当内容长度超过容量时抛出
-     */
-    public void setContent(byte[] content)
-    {
-        if (content.length > this.content.length)
-        {
-            throw new IllegalArgumentException("内容大小超过文件大小");
-        }
-        System.arraycopy(content, 0, this.content, 0, content.length);
-        // [新增] 每次写入时更新实际长度
-        this.actualLength = content.length;
+
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public String toString() {
+        return name + (type.isEmpty() ? "" : " (" + type + ")");
     }
 }
