@@ -105,6 +105,9 @@ public class MainController implements Initializable {
     private Object clipboardFile;                       // 文件剪贴板（暂存复制的文件/目录对象）
     private final Map<Node, InternalWindow> openWindows = new HashMap<>(); // 已打开窗口缓存（Key=内容节点，Value=窗口实例）
 
+    // [修改] 剪贴板升级为列表，支持多选复制
+    private final List<Object> clipboardFiles = new ArrayList<>();
+
 
     /**
      * 初始化方法（FXML加载完成后执行）
@@ -115,6 +118,9 @@ public class MainController implements Initializable {
         kernel = Kernel.getInstance();
         initBindings();                // 初始化表格列与数据绑定
         initializePerformanceChart();  // 初始化性能图表
+
+        // [新增] 1. 开启文件树的多选模式 (Shift+点击, Ctrl+点击)
+        fileSystemTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
         // 桌面区域裁剪（防止内容溢出）
         Rectangle clip = new Rectangle();
@@ -643,20 +649,21 @@ public class MainController implements Initializable {
         addTaskBarItem(aboutWin);
     }
 
+
+
+
     /**
-     * 绑定文件系统交互事件（双击打开、右键菜单）
+     * 绑定文件系统交互事件（双击打开、右键菜单、快捷键）
      */
     private void setupFileSystemEvents() {
         fileSystemTreeView.setOnMouseClicked(event -> {
-            // 系统未启动时提示
             if (Kernel.getInstance().getScheduler() == null || !Kernel.getInstance().getScheduler().isRunning()) {
                 if (event.getClickCount() == 2) showWarning("系统未启动", "请先点击 [▶ 启动系统] 按钮。");
                 return;
             }
-            // 双击打开文件
             if (event.getClickCount() == 2 && event.getButton() == MouseButton.PRIMARY) openSelectedFile();
         });
-        // 右键菜单（编辑/删除）
+
         ContextMenu contextMenu = new ContextMenu();
         MenuItem editItem = new MenuItem("编辑 / 查看");
         MenuItem deleteItem = new MenuItem("删除");
@@ -664,12 +671,170 @@ public class MainController implements Initializable {
         deleteItem.setOnAction(e -> onDeleteClick());
         contextMenu.getItems().addAll(editItem, deleteItem);
         fileSystemTreeView.setContextMenu(contextMenu);
-        // 菜单显示时判断系统状态，禁用未启动时的操作
+
         contextMenu.setOnShowing(e -> {
             boolean isRunning = Kernel.getInstance().getScheduler() != null && Kernel.getInstance().getScheduler().isRunning();
             for (MenuItem item : contextMenu.getItems()) item.setDisable(!isRunning);
         });
+
+        // [修改] 添加键盘快捷键监听
+        fileSystemTreeView.setOnKeyPressed(event -> {
+            // 1. 处理 Delete 键 (通常不需要按 Ctrl)
+            if (event.getCode() == KeyCode.DELETE) {
+                onDeleteClick();
+                event.consume();
+                return;
+            }
+
+            // 2. 处理组合键 (Ctrl/Cmd + C/V)
+            if (event.isShortcutDown()) {
+                switch (event.getCode()) {
+                    case C -> {
+                        handleCopyShortcut();
+                        event.consume();
+                    }
+                    case V -> {
+                        handlePasteShortcut();
+                        event.consume();
+                    }
+                }
+            }
+        });
     }
+
+
+
+
+
+    // --- [新增] 快捷键处理逻辑 ---
+
+    /**
+     * 处理 Ctrl+S 保存快捷键
+     */
+    private void handleSaveShortcut() {
+        TreeItem<String> selected = fileSystemTreeView.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            // 这里只是模拟保存动作，因为内存文件系统实时生效
+            // 如果有打开的编辑器，逻辑会更复杂，这里仅响应资源管理器的选中项
+            showInfo("保存成功", "文件 '" + selected.getValue() + "' 已保存。");
+        }
+    }
+
+    /**
+     * 处理 Ctrl+C 复制快捷键
+     */
+    private void handleCopyShortcut() {
+        var selectedItems = fileSystemTreeView.getSelectionModel().getSelectedItems();
+        if (selectedItems.isEmpty()) return;
+
+        clipboardFiles.clear();
+        StringBuilder names = new StringBuilder();
+
+        for (TreeItem<String> item : selectedItems) {
+            String path = buildPathFromTree(item);
+            // 使用之前优化过的 getObjectByPath 获取对象 (支持文件和目录)
+            Object obj = kernel.getFileSystemManager().getObjectByPath(path);
+            if (obj != null) {
+                clipboardFiles.add(obj);
+                names.append(item.getValue()).append(" ");
+            }
+        }
+
+        if (!clipboardFiles.isEmpty()) {
+            showInfo("复制成功", "已复制 " + clipboardFiles.size() + " 个项目:\n" + names);
+        }
+    }
+
+    /**
+     * 处理 Ctrl+V 粘贴快捷键
+     * 规则：目标是文件 -> 粘贴到同级；目标是目录 -> 粘贴到子级
+     */
+    private void handlePasteShortcut() {
+        if (clipboardFiles.isEmpty()) {
+            showWarning("剪贴板为空", "请先复制文件或目录。");
+            return;
+        }
+
+        // 1. 确定粘贴的目标路径
+        TreeItem<String> selectedItem = fileSystemTreeView.getSelectionModel().getSelectedItem();
+        String targetPath;
+
+        if (selectedItem == null) {
+            targetPath = "/"; // 没选中任何东西，默认粘贴到根目录
+        } else {
+            String path = buildPathFromTree(selectedItem);
+            Object targetNode = kernel.getFileSystemManager().getObjectByPath(path);
+
+            if (targetNode instanceof Directory) {
+                // 规则②：若选中(粘贴位置)是目录，放置在该目录的子层级中
+                targetPath = path;
+            } else {
+                // 规则①：若选中(粘贴位置)是文件，放置在该文件的同级目录下 (即父目录)
+                if (path.contains("/")) {
+                    targetPath = path.substring(0, path.lastIndexOf('/'));
+                } else {
+                    targetPath = "/";
+                }
+                if (targetPath.isEmpty()) targetPath = "/";
+            }
+        }
+
+        // 2. 执行批量粘贴
+        int successCount = 0;
+        for (Object source : clipboardFiles) {
+            try {
+                kernel.getFileSystemManager().paste(source, targetPath);
+                successCount++;
+            } catch (Exception e) {
+                String name = (source instanceof Directory d) ? d.getName() : ((File)source).getName();
+                showError("粘贴失败", "无法粘贴 '" + name + "': " + e.getMessage());
+            }
+        }
+
+        if (successCount > 0) {
+            updateFileSystemView();
+            // 展开目标目录以便用户看到粘贴结果
+            expandTreePath(targetPath);
+            showInfo("粘贴成功", "已成功粘贴 " + successCount + " 个项目到 " + targetPath);
+        }
+    }
+
+
+    // --- [辅助方法] 展开指定路径的树节点 ---
+    /**
+     * 展开文件树直到指定路径，确保用户能看到该路径下的内容
+     * @param path 要展开的目标文件夹路径 (例如 "/user/docs")
+     */
+    private void expandTreePath(String path) {
+        if (path == null || path.equals("/") || path.isEmpty()) return;
+
+        TreeItem<String> current = fileSystemTreeView.getRoot();
+        if (current == null) return;
+
+        // 确保根节点展开
+        current.setExpanded(true);
+
+        String[] parts = path.split("/");
+        for (String part : parts) {
+            if (part.isEmpty()) continue;
+
+            boolean found = false;
+            // 在当前节点的子节点中寻找匹配项
+            for (TreeItem<String> child : current.getChildren()) {
+                if (child.getValue().equals(part)) {
+                    current = child;
+                    // 关键：将沿途经过的目录都设置为展开状态
+                    current.setExpanded(true);
+                    found = true;
+                    break;
+                }
+            }
+
+            // 如果路径中的某一段没找到，说明树结构可能还没更新或路径无效，停止展开
+            if (!found) break;
+        }
+    }
+
 
     /**
      * 更新功能按钮状态（系统启动/停止时禁用/启用）
@@ -858,31 +1023,82 @@ public class MainController implements Initializable {
         });
     }
 
-    /**
-     * 删除文件/目录按钮点击事件
-     */
-    @FXML protected void onDeleteClick() {
-        if (fileSystemTreeView == null) return;
-        TreeItem<String> selected = fileSystemTreeView.getSelectionModel().getSelectedItem();
-        // 禁止删除根目录
-        if (selected == null || selected.getParent() == null) {
-            showError("无法删除", "请选择一个文件或目录（根目录不可删除）。"); return;
-        }
-        String path = buildPathFromTree(selected);
-        String itemName = selected.getValue();
-        Object node = kernel.getFileSystemManager().getObjectByPath(path);
-        String itemType = (node instanceof Directory) ? "目录" : "文件";
-        String msg = "您确定要删除 " + itemType + " '" + itemName + "' 吗？\n路径: " + path + "\n\n⚠ 此操作不可撤销！";
 
-        // 确认删除
+
+    /**
+     * [事件处理] 点击 "删除" 按钮 (修复版：支持多选删除)
+     */
+    @FXML
+    protected void onDeleteClick() {
+        if (fileSystemTreeView == null) return;
+
+        // 1. 获取所有选中的节点
+        var selectedItems = fileSystemTreeView.getSelectionModel().getSelectedItems();
+        if (selectedItems.isEmpty()) {
+            showWarning("未选择", "请先选择要删除的文件或目录。");
+            return;
+        }
+
+        // 2. 预处理：过滤掉根目录，并收集所有要删除的路径
+        // 使用 ArrayList 拷贝一份路径，避免在删除过程中因树结构变化导致列表并发修改异常
+        List<String> pathsToDelete = new ArrayList<>();
+        boolean containsRoot = false;
+
+        for (TreeItem<String> item : selectedItems) {
+            if (item == null || item.getParent() == null) {
+                containsRoot = true; // 标记包含了根目录
+                continue;
+            }
+            pathsToDelete.add(buildPathFromTree(item));
+        }
+
+        if (pathsToDelete.isEmpty()) {
+            if (containsRoot) showError("无法删除", "根目录不可删除。");
+            return;
+        }
+
+        // 3. 构建提示信息
+        String msg;
+        if (pathsToDelete.size() == 1) {
+            String path = pathsToDelete.get(0);
+            Object node = kernel.getFileSystemManager().getObjectByPath(path);
+            String itemType = (node instanceof Directory) ? "目录" : "文件";
+            // 从路径中提取文件名
+            String itemName = path.substring(path.lastIndexOf('/') + 1);
+            msg = "您确定要删除 " + itemType + " '" + itemName + "' 吗？\n路径: " + path + "\n\n⚠ 此操作不可撤销！";
+        } else {
+            msg = "您确定要删除选中的 " + pathsToDelete.size() + " 个项目吗？\n\n⚠ 此操作不可撤销！";
+        }
+
+        // 4. 确认删除
         showInternalConfirm("确认删除", msg, () -> {
-            boolean success;
-            try { success = kernel.getFileSystemManager().deletePath(path); }
-            catch (Exception e) { success = false; }
-            if (success) { updateFileSystemView(); showInfo("删除成功", itemType + " '" + itemName + "' 已被移除。"); }
-            else showError("删除失败", "无法删除目标。可能是系统保护文件或路径无效。");
+            int successCount = 0;
+            // 遍历路径执行删除
+            // 建议：如果是一个文件夹和它里面的文件同时被选中，先删文件夹会导致文件路径失效
+            // 虽然 deletePath 有容错，但按路径长度排序（长的先删）或直接忽略错误通常更稳健
+            // 这里采用简单的遍历尝试删除
+            for (String path : pathsToDelete) {
+                try {
+                    // 如果对象已不存在（可能因为父目录刚被删除了），deletePath 会返回 false，无需额外处理
+                    if (kernel.getFileSystemManager().deletePath(path)) {
+                        successCount++;
+                    }
+                } catch (Exception e) {
+                    // 忽略单个删除失败，继续下一个
+                }
+            }
+
+            if (successCount > 0) {
+                updateFileSystemView();
+                showInfo("删除成功", "已成功删除 " + successCount + " 个项目。");
+            } else {
+                showError("删除失败", "未能删除选中目标，可能已被移除或受保护。");
+            }
         });
     }
+
+
+
 
     /**
      * 内存整理按钮点击事件
@@ -905,6 +1121,9 @@ public class MainController implements Initializable {
                 showInfo("复制成功", "'" + name + "' 已复制到剪贴板。");
             } else showError("复制失败", "无法获取选中对象，路径可能无效。");
         } else showWarning("未选择", "请先选择要复制的文件或目录。");
+
+        // 复用键盘快捷键的逻辑，保证行为一致
+        handleCopyShortcut();
     }
 
     /**
@@ -929,6 +1148,9 @@ public class MainController implements Initializable {
                 updateFileSystemView(); showInfo("粘贴成功", "已成功粘贴到 '" + targetPath + "'。");
             } catch (Exception e) { showError("粘贴失败", e.getMessage()); }
         } else showWarning("剪贴板为空", "剪贴板中没有可粘贴的文件或目录。");
+
+        // 复用键盘快捷键的逻辑，保证行为一致
+        handlePasteShortcut();
     }
 
     /**
@@ -988,32 +1210,56 @@ public class MainController implements Initializable {
         Platform.runLater(searchBox::requestFocus);
     }
 
+
+
+
     /**
      * 创建文件编辑节点（文本编辑+保存按钮）
+     * [修改] 新增 Ctrl+S 快捷键支持
      */
     private VBox createEditorNode(File file) {
         TextArea textArea = new TextArea();
         textArea.setWrapText(true);
+
         // 加载文件内容
         if (file.getContent() != null) {
             String content = new String(file.getContent(), 0, file.getActualLength(), java.nio.charset.StandardCharsets.UTF_8);
             textArea.setText(content);
         }
-        // 保存按钮
-        Button saveBtn = new Button("保存");
-        saveBtn.setOnAction(e -> {
+
+        // 定义保存动作（复用逻辑）
+        Runnable doSave = () -> {
             try {
                 String text = textArea.getText();
                 byte[] data = text.getBytes(java.nio.charset.StandardCharsets.UTF_8);
                 file.setContent(data);
-                showInfo("保存成功", "文件已保存至模拟磁盘。");
-            } catch (Exception ex) { showError("保存失败", "写入文件时出错: " + ex.getMessage()); }
+                showInfo("保存成功", "文件 '" + file.getName() + "' 已保存至模拟磁盘。");
+            } catch (Exception ex) {
+                showError("保存失败", "写入文件时出错: " + ex.getMessage());
+            }
+        };
+
+        // 保存按钮
+        Button saveBtn = new Button("保存");
+        saveBtn.setOnAction(e -> doSave.run());
+
+        // [新增] 监听 TextArea 的键盘事件，实现 Ctrl+S 保存
+        textArea.setOnKeyPressed(event -> {
+            if (event.isShortcutDown() && event.getCode() == KeyCode.S) {
+                doSave.run();
+                event.consume(); // 阻止事件冒泡
+            }
         });
+
         ToolBar toolBar = new ToolBar(saveBtn);
         VBox editorRoot = new VBox(toolBar, textArea);
         VBox.setVgrow(textArea, Priority.ALWAYS);
         return editorRoot;
     }
+
+
+
+
 
     /**
      * 打开选中的文件（创建编辑窗口）
