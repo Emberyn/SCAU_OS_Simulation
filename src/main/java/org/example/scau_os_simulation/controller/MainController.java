@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
+
 public class MainController implements Initializable
 {
     // --- 桌面环境组件 ---
@@ -1121,59 +1122,63 @@ public class MainController implements Initializable
 
 
 
+
+
     /**
-     * [事件处理] 点击 "删除" 按钮
+     * [事件处理] 点击 "删除" 按钮 (修复版：使用内部弹窗)
      */
     @FXML
     protected void onDeleteClick()
     {
         if (fileSystemTreeView == null) return;
         TreeItem<String> selected = fileSystemTreeView.getSelectionModel().getSelectedItem();
-        // 如果未选择或选择的是根节点(无法删除根)
+
+        // 校验：不能删除根目录
         if (selected == null || selected.getParent() == null)
         {
-            showError("无法删除", "不能删除根目录。");
+            showError("无法删除", "请选择一个文件或目录（根目录不可删除）。");
             return;
         }
 
         String path = buildPathFromTree(selected);
         String itemName = selected.getValue();
 
-        // 确认对话框
-        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmDialog.setTitle("确认删除");
-        confirmDialog.setHeaderText("确定要删除 '" + itemName + "' 吗？");
-
-        // 判断是文件还是目录，显示不同的提示
-        Object node = kernel.getFileSystemManager().getFileByPath(path);
+        // 获取对象以判断类型（用于提示文案）
+        Object node = kernel.getFileSystemManager().getObjectByPath(path);
         String itemType = (node instanceof Directory) ? "目录" : "文件";
-        confirmDialog.setContentText("您将要删除 " + itemType + ": \n" + path + "\n\n此操作不可撤销。");
 
-        confirmDialog.showAndWait().ifPresent(response ->
-        {
-            if (response == javafx.scene.control.ButtonType.OK)
+        String msg = "您确定要删除 " + itemType + " '" + itemName + "' 吗？\n" +
+                "路径: " + path + "\n\n" +
+                "⚠ 此操作不可撤销！";
+
+        // 【关键修复】使用 showInternalConfirm 替代 Alert
+        showInternalConfirm("确认删除", msg, () -> {
+            // 这是用户点击“确定”后的回调
+            boolean success = false;
+            try
             {
-                boolean success = false;
-                try
-                {
-                    // 尝试删除文件或目录
-                    success = kernel.getFileSystemManager().deleteFile(path) || kernel.getFileSystemManager().deleteDirectory(path);
-                } catch (Exception e)
-                {
-                    success = false;
-                }
+                // 尝试删除（支持递归删除目录）
+                success = kernel.getFileSystemManager().deletePath(path);
+            } catch (Exception e)
+            {
+                success = false;
+            }
 
-                if (success)
-                {
-                    updateFileSystemView();
-                    showInfo("删除成功", itemType + " '" + itemName + "' 已成功删除。");
-                } else
-                {
-                    showError("删除失败", "无法删除 " + itemType + "。可能是目录非空或路径无效。");
-                }
+            if (success)
+            {
+                updateFileSystemView();
+                showInfo("删除成功", itemType + " '" + itemName + "' 已被移除。");
+            } else
+            {
+                showError("删除失败", "无法删除目标。可能是系统保护文件或路径无效。");
             }
         });
     }
+
+
+
+
+
 
     /**
      * [事件处理] 内存整理 (碎片整理)
@@ -1207,8 +1212,11 @@ public class MainController implements Initializable
         updateAllViews();
     }
 
+
+
+
     /**
-     * [事件处理] 复制文件
+     * [事件处理] 复制文件或目录 (修复版)
      */
     @FXML
     protected void onCopyFileClick()
@@ -1217,17 +1225,24 @@ public class MainController implements Initializable
         if (selectedItem != null)
         {
             String path = buildPathFromTree(selectedItem);
-            // 将文件对象引用暂存到 clipboardFile 变量中
-            clipboardFile = kernel.getFileSystemManager().getFileByPath(path);
-            showInfo("复制成功", "'" + selectedItem.getValue() + "' 已复制到剪贴板。");
+            // 【关键修复】使用 getObjectByPath 而不是 getFileByPath
+            // 这样无论是文件还是目录都能被正确存入剪贴板
+            clipboardFile = kernel.getFileSystemManager().getObjectByPath(path);
+
+            if (clipboardFile != null) {
+                String name = (clipboardFile instanceof Directory) ? ((Directory)clipboardFile).getName() : ((File)clipboardFile).getName();
+                showInfo("复制成功", "'" + name + "' 已复制到剪贴板。");
+            } else {
+                showError("复制失败", "无法获取选中对象，路径可能无效。");
+            }
         } else
         {
-            showWarning("未选择文件", "请先选择要复制的文件或目录。");
+            showWarning("未选择", "请先选择要复制的文件或目录。");
         }
     }
 
     /**
-     * [事件处理] 粘贴文件
+     * [事件处理] 粘贴文件 (修复版)
      */
     @FXML
     protected void onPasteFileClick()
@@ -1236,15 +1251,24 @@ public class MainController implements Initializable
         {
             TreeItem<String> selectedItem = fileSystemTreeView.getSelectionModel().getSelectedItem();
             String targetPath = "/";
+
             // 确定粘贴的目标目录
             if (selectedItem != null)
             {
-                targetPath = buildPathFromTree(selectedItem);
-                Object targetNode = kernel.getFileSystemManager().getFileByPath(targetPath);
-                // 如果当前选中的是文件，则粘贴到其父目录
-                if (!(targetNode instanceof Directory))
-                {
-                    targetPath = targetPath.substring(0, targetPath.lastIndexOf('/'));
+                String currentPath = buildPathFromTree(selectedItem);
+                // 【关键修复】获取选中的真实对象（目录或文件）
+                Object targetNode = kernel.getFileSystemManager().getObjectByPath(currentPath);
+
+                // 智能判断粘贴位置：
+                if (targetNode instanceof Directory) {
+                    // 如果选中的是文件夹，就粘贴到这个文件夹【里面】
+                    targetPath = currentPath;
+                } else {
+                    // 如果选中的是文件（或者未选中有效对象），就粘贴到它的【父目录】
+                    // 也就是“同级”粘贴
+                    if (currentPath.contains("/")) {
+                        targetPath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                    }
                     if (targetPath.isEmpty()) targetPath = "/";
                 }
             }
@@ -1265,76 +1289,100 @@ public class MainController implements Initializable
         }
     }
 
+
+
+
     /**
-     * [事件处理] 搜索文件
-     * 改进版：支持回车搜索、搜索后不关闭窗口、支持连续搜索
+     * [事件处理] 搜索文件 (Bug修复版：解决清空后重输不显示下拉框的问题)
      */
     @FXML
     protected void onSearchFileClick()
     {
-        // 1. 手动构建搜索窗口的内容布局
+        // 1. 构建界面
         VBox root = new VBox(10);
         root.setPadding(new Insets(15));
 
-        Label headerLbl = new Label("在整个文件系统中搜索文件\n请输入文件名:");
-        TextField textField = new TextField("new.txt"); // 默认值
+        Label headerLbl = new Label("输入文件名 (支持前缀匹配，不区分大小写):");
 
-        // 按钮区域
+        ComboBox<String> searchBox = new ComboBox<>();
+        searchBox.setEditable(true);
+        searchBox.setPromptText("例如: new...");
+        searchBox.setMaxWidth(Double.MAX_VALUE);
+
         HBox btnBox = new HBox(10);
         btnBox.setAlignment(Pos.CENTER_RIGHT);
-        Button searchBtn = new Button("搜索");
+        Button goBtn = new Button("定位");
         Button closeBtn = new Button("关闭");
-        btnBox.getChildren().addAll(searchBtn, closeBtn);
+        btnBox.getChildren().addAll(goBtn, closeBtn);
 
-        root.getChildren().addAll(headerLbl, textField, btnBox);
+        root.getChildren().addAll(headerLbl, searchBox, btnBox);
 
-        // 2. 创建内部窗口
-        InternalWindow win = new InternalWindow("搜索文件", root, 320, 160);
-        // 设置初始位置 (屏幕居中偏上)
-        win.setLayoutX(desktopArea.getWidth() / 2 - 160);
-        win.setLayoutY(desktopArea.getHeight() / 2 - 160);
+        InternalWindow win = new InternalWindow("智能搜索", root, 350, 180);
+        win.setLayoutX(desktopArea.getWidth() / 2 - 175);
+        win.setLayoutY(desktopArea.getHeight() / 2 - 90);
 
-        // 3. 定义搜索核心逻辑 (独立出来，供按钮和回车复用)
-        Runnable doSearch = () -> {
-            String name = textField.getText();
-            if (name != null && !name.trim().isEmpty()) {
-                try {
-                    String targetName = name.trim();
-                    // 调用内核递归搜索
-                    Object result = kernel.getFileSystemManager().getRootDirectory().searchRecursive(targetName);
+        // 2. 【核心逻辑】监听输入
+        searchBox.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
+            // [优化] 文本为空时，立即清空列表并关闭下拉框
+            if (newVal == null || newVal.trim().isEmpty()) {
+                searchBox.hide();
+                searchBox.getItems().clear(); // 【关键修复】必须清空旧列表，重置状态
+                return;
+            }
 
-                    if (result != null) {
-                        // 找到：高亮显示，并反馈结果
-                        selectFileInTree(result);
-                        // 使用 label 更新状态比弹窗更轻量，但为了保持风格，这里还是弹窗提示
-                        // 注意：这里弹出的 Info 窗口是独立的，不会关闭当前的搜索窗口
-                        showInfo("搜索结果", "成功找到 '" + targetName + "'\n已在文件树中高亮显示。");
-                    } else {
-                        // 未找到
-                        showWarning("搜索结果", "未找到名为 '" + targetName + "' 的文件或目录。");
+            // 避免在选择下拉项时触发重搜
+            if (newVal.equals(searchBox.getSelectionModel().getSelectedItem())) {
+                return;
+            }
+
+            // 执行搜索
+            Directory rootDir = kernel.getFileSystemManager().getRootDirectory();
+            List<String> matches = new ArrayList<>();
+            rootDir.searchByPrefix(newVal.trim(), matches, "");
+
+            // 更新 UI
+            Platform.runLater(() -> {
+                // 1. 如果数据变了，更新列表
+                if (!searchBox.getItems().equals(matches)) {
+                    searchBox.getItems().setAll(matches);
+                }
+
+                // 2. 只要有结果，且未显示，就弹出来 (逻辑解耦，更稳健)
+                if (!matches.isEmpty()) {
+                    if (!searchBox.isShowing()) {
+                        searchBox.show();
                     }
-                } catch (Exception e) {
-                    showError("搜索错误", e.getMessage());
+                } else {
+                    if (searchBox.isShowing()) {
+                        searchBox.hide();
+                    }
+                }
+            });
+        });
+
+        // 3. 定位逻辑
+        Runnable doLocate = () -> {
+            String path = searchBox.getEditor().getText();
+            if (path != null && !path.trim().isEmpty()) {
+                Object target = kernel.getFileSystemManager().getObjectByPath(path);
+                if (target != null) {
+                    selectFileInTree(target);
+                } else {
+                    showWarning("未找到", "路径无效或文件不存在。");
                 }
             }
         };
 
-        // 4. 绑定事件
-        // 点击“搜索”按钮
-        searchBtn.setOnAction(e -> doSearch.run());
-
-        // 【关键】在文本框按回车 -> 触发搜索
-        textField.setOnAction(e -> doSearch.run());
-
-        // 点击“关闭”按钮 -> 关闭窗口
+        // 绑定事件
+        goBtn.setOnAction(e -> doLocate.run());
+        searchBox.setOnAction(e -> doLocate.run());
         closeBtn.setOnAction(e -> win.close());
 
-        // 5. 显示窗口并聚焦输入框
+        // 4. 显示窗口
         desktopArea.getChildren().add(win);
         win.toFront();
-        Platform.runLater(textField::requestFocus); // 自动聚焦文本框，方便直接打字
+        Platform.runLater(searchBox::requestFocus);
     }
-
 
     /**
      * 辅助方法：打开当前选中文件的编辑器窗口
@@ -2021,6 +2069,52 @@ public class MainController implements Initializable
         desktopArea.getChildren().add(win);
         // (可选) 这里可以添加一个全屏的透明遮罩层来模拟“模态”禁止点击背景
     }
+
+
+    /**
+     * 【新增】内部确认对话框（替代原生 Alert，防止全屏下窗口消失/闪烁）
+     */
+    private void showInternalConfirm(String title, String content, Runnable onConfirm) {
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(20));
+        root.setAlignment(Pos.CENTER);
+
+        Label msgLabel = new Label(content);
+        msgLabel.setWrapText(true);
+        msgLabel.setMaxWidth(300);
+        msgLabel.setStyle("-fx-font-size: 14px;");
+
+        HBox btnBox = new HBox(15);
+        btnBox.setAlignment(Pos.CENTER);
+
+        Button yesBtn = new Button("确定");
+        yesBtn.getStyleClass().add("button"); // 或者用 button-danger
+        yesBtn.setStyle("-fx-background-color: #da1e28; -fx-text-fill: white;"); // 红色警示
+
+        Button noBtn = new Button("取消");
+
+        btnBox.getChildren().addAll(yesBtn, noBtn);
+        root.getChildren().addAll(msgLabel, btnBox);
+
+        InternalWindow win = new InternalWindow(title, root, 350, 180);
+
+        // 居中显示
+        win.setLayoutX((desktopArea.getWidth() - 350) / 2);
+        win.setLayoutY((desktopArea.getHeight() - 180) / 2);
+
+        yesBtn.setOnAction(e -> {
+            win.close();
+            if (onConfirm != null) onConfirm.run();
+        });
+
+        noBtn.setOnAction(e -> win.close());
+
+        desktopArea.getChildren().add(win);
+        win.toFront();
+    }
+
+
+
 
     /**
      * 模拟 TextInputDialog 输入弹窗

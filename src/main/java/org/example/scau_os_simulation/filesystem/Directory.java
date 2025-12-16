@@ -67,6 +67,34 @@ public class Directory
         }
     }
 
+
+    /**
+     * 【新增】递归搜索所有匹配前缀的文件/目录（不区分大小写）
+     *
+     * @param prefix 搜索前缀
+     * @param resultList 用于收集结果的列表 (路径字符串)
+     * @param currentPath 当前递归到的路径 (用于构建完整路径)
+     */
+    public void searchByPrefix(String prefix, java.util.List<String> resultList, String currentPath) {
+        String lowerPrefix = prefix.toLowerCase();
+
+        for (Object child : children) {
+            String name = (child instanceof File) ? ((File) child).getName() : ((Directory) child).getName();
+            String fullPath = currentPath + "/" + name;
+
+            // 匹配前缀 (不区分大小写)
+            if (name.toLowerCase().startsWith(lowerPrefix)) {
+                resultList.add(fullPath);
+            }
+
+            // 如果是目录，继续递归
+            if (child instanceof Directory) {
+                ((Directory) child).searchByPrefix(prefix, resultList, fullPath);
+            }
+        }
+    }
+
+
     /**
      * 移除子节点
      *
@@ -99,31 +127,53 @@ public class Directory
         return null;
     }
 
+
+
+
     /**
      * 复制文件或目录到当前目录
+     * 修复：智能命名策略
+     * 1. 如果目标路径下没有同名文件，直接保留原名 (如复制到其他文件夹)
+     * 2. 只有发生冲突时，才自动生成 "xxx_副本N" 的名称
      *
      * @param source  要复制的文件或目录
-     * @param newName 新名称（如果为null则自动生成）
+     * @param newName 新名称（如果为null则自动判断）
      * @return 复制后的新对象
      */
     public Object copyChild(Object source, String newName)
     {
+        // 1. 获取源文件的原始名称
+        String originalName = (source instanceof File) ? ((File) source).getName() : ((Directory) source).getName();
+
+        // 2. 确定最终名称
+        String finalName = newName;
+        if (finalName == null) {
+            // 【关键修复】先检查当前目录下是否存在同名文件
+            if (findChild(originalName) == null) {
+                // 没有冲突，直接用原名
+                finalName = originalName;
+            } else {
+                // 有冲突，生成副本名称
+                finalName = generateCopyName(originalName);
+            }
+        }
+
+        // 3. 执行复制逻辑
         if (source instanceof File)
         {
             File sourceFile = (File) source;
-            String name = newName != null ? newName : generateCopyName(sourceFile.getName());
-            File copiedFile = new File(name, sourceFile.getSize());
-            copiedFile.setContent(sourceFile.getContent());
+            File copiedFile = new File(finalName, sourceFile.getSize());
+            copiedFile.setContent(sourceFile.getContent()); // 复制内容
             addChild(copiedFile);
             return copiedFile;
         } else if (source instanceof Directory)
         {
             Directory sourceDir = (Directory) source;
-            String name = newName != null ? newName : generateCopyName(sourceDir.getName());
-            Directory copiedDir = new Directory(name);
+            Directory copiedDir = new Directory(finalName);
             // 递归复制子目录和文件
             for (Object child : sourceDir.getChildren())
             {
+                // 子项复制时传 null，让它们在新的子目录里自己判断（通常子目录是空的，所以会保持原名）
                 copiedDir.copyChild(child, null);
             }
             addChild(copiedDir);
@@ -131,6 +181,8 @@ public class Directory
         }
         throw new IllegalArgumentException("只能复制File或Directory类型的对象");
     }
+
+
 
     /**
      * 生成复制文件的名称（在原名称后添加副本标识）

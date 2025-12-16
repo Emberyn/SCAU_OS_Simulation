@@ -336,6 +336,27 @@ public class FileSystemManager
         else return null;
     }
 
+
+
+    /**
+     * 【新增】通用获取方法（根据路径获取对象，支持文件或目录）
+     * 解决复制/粘贴时无法识别目录的问题
+     */
+    public Object getObjectByPath(String path) {
+        if (path == null || path.isEmpty()) return null;
+        if (path.equals("/")) return rootDirectory;
+
+        // 1. 先尝试作为目录查找
+        Directory dir = findDirectoryByPath(path);
+        if (dir != null) return dir;
+
+        // 2. 再尝试作为文件查找
+        return getFileByPath(path);
+    }
+
+
+
+
     public Directory getRootDirectory()
     {
         return rootDirectory;
