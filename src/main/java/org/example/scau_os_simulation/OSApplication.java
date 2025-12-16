@@ -57,8 +57,8 @@ public class OSApplication extends Application
             }
         });
 
-        // --- 窗口与全屏设置 ---
 
+        // --- 窗口与全屏设置 ---
         // 1. 初始设为全屏
         stage.setFullScreen(true);
 
