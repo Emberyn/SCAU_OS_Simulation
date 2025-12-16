@@ -52,7 +52,9 @@ public class MemoryManager
         // 1. 对已分配块按起始地址排序，这是正确计算空隙的前提
         allocatedBlocks.sort((a, b) -> a.getStartAddress() - b.getStartAddress());
 
-        int candidateAddress = 0;
+        // 【修改后】模拟系统区保留：假设前 128KB 是系统区，用户只能从 128 开始用
+        int SYSTEM_RESERVED_SIZE = 128;
+        int candidateAddress = SYSTEM_RESERVED_SIZE;
 
         // 2. 遍历所有已分配块，检查"当前候选地址"到"该块起始地址"之间的空隙
         for (MemoryBlock block : allocatedBlocks)

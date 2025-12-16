@@ -2,6 +2,7 @@ package org.example.scau_os_simulation.kernel;
 
 import org.example.scau_os_simulation.process.PCB;
 import org.example.scau_os_simulation.process.Process;
+import org.example.scau_os_simulation.process.ProcessState; // 【修复】添加导包
 
 import java.util.*;
 
@@ -29,8 +30,6 @@ public class ProcessManager
 
     /**
      * 就绪队列：等待CPU调度的进程列表
-     * 【修改点】从PriorityQueue改为List，原因：
-     * PriorityQueue无法感知元素内部priority属性的动态变化（Aging机制会修改优先级），
      * 使用List可在每次调度时重新计算优先级，保证Aging机制生效
      */
     private final List<Process> readyQueue = new ArrayList<>();
@@ -46,6 +45,12 @@ public class ProcessManager
     private Process running;
 
     /**
+     * 【新增】闲逛进程 (Idle Process)
+     * 当就绪队列为空时，CPU 运行此进程，避免“停转”
+     */
+    private final Process idleProcess;
+
+    /**
      * 构造函数 - 初始化进程管理器
      * @param memoryManager 内存管理器实例，用于进程内存分配/释放
      */
@@ -53,6 +58,11 @@ public class ProcessManager
     {
         this.memoryManager = memoryManager;
         this.processes = new ArrayList<>();
+
+        // 【新增】初始化闲逛进程
+        // PID=-1, 优先级=0, 内存=0
+        PCB idlePcb = new PCB(-1, "IDLE (闲逛)", 0, 0, 0);
+        this.idleProcess = new Process(idlePcb);
     }
 
     /**
@@ -66,7 +76,6 @@ public class ProcessManager
 
     /**
      * 获取就绪队列（只读）
-     * 【修改点】返回类型从PriorityQueue改为List
      * @return 就绪进程的List集合
      */
     public List<Process> getReadyQueue()
@@ -132,7 +141,6 @@ public class ProcessManager
 
         // 4. 设置进程状态为就绪，并加入就绪队列
         process.ready();
-        // 【修改点】PriorityQueue的offer改为List的add
         readyQueue.add(process);
 
         System.out.println("创建进程: " + name + ", PID: " + pcb.getPid());
@@ -255,31 +263,39 @@ public class ProcessManager
     /**
      * 进程调度核心方法 - 选择并切换到下一个运行的进程
      * 调度规则：
-     * 1. 执行Aging机制，更新所有等待进程的等待时间
-     * 2. 若当前有运行进程，将其放回就绪队列
-     * 3. 从就绪队列中选择优先级最高的进程（优先级值大优先，同优先级则PID小优先）
-     * 4. 切换到选中的进程，初始化其时间片和等待时间
+     * 1. 执行Aging机制
+     * 2. 若当前有运行进程，将其放回就绪队列（除非它是闲逛进程）
+     * 3. 优先调度就绪队列中的高优先级进程
+     * 4. 若就绪队列为空，调度闲逛进程
      */
     public void scheduleNext()
     {
         // 1) 执行Aging：更新所有等待进程的等待时间
         updateWaitingTimes();
 
-        // 2) 若当前有运行中的进程，将其恢复为就绪态并放回就绪队列
+        // 2) 若当前有运行中的进程
         if (running != null)
         {
-            running.ready();
-            // 【修改点】PriorityQueue的offer改为List的add
-            readyQueue.add(running);
+            // 【关键修改】如果当前运行的是闲逛进程，直接丢弃，不放入就绪队列
+            if (running == idleProcess) {
+                running = null;
+            } else {
+                // 正常进程：恢复为就绪态并放回就绪队列
+                running.ready();
+                readyQueue.add(running);
+            }
         }
 
-        // 就绪队列为空则直接返回（无进程可调度）
-        if (readyQueue.isEmpty()) return;
+        // 3) 检查就绪队列是否为空
+        if (readyQueue.isEmpty()) {
+            // 【关键修改】队列为空，运行闲逛进程
+            running = idleProcess;
+            running.getPcb().setState(ProcessState.RUNNING);
+            // 注意：闲逛进程不需要 resetTimeSlice，它永远跑不完
+            return;
+        }
 
-        // 3) 【修改点】手动查找就绪队列中优先级最高的进程
-        // 调度规则：
-        // - 优先级数值越大，优先级越高
-        // - 优先级相同时，PID越小越优先（先创建的进程优先）
+        // 4) 手动查找就绪队列中优先级最高的进程
         Process next = readyQueue.stream()
                 .max((p1, p2) ->
                 {
@@ -291,17 +307,16 @@ public class ProcessManager
                 })
                 .orElse(null);
 
-        // 无可用进程则返回
         if (next == null) return;
 
-        // 4) 从就绪队列中移除选中的进程（避免重复调度）
+        // 5) 从就绪队列中移除选中的进程
         readyQueue.remove(next);
 
-        // 5) 切换运行指针，设置进程为运行态
+        // 6) 切换运行指针，设置进程为运行态
         running = next;
         running.run();
 
-        // 6) 初始化进程的时间片和等待时间（重置为初始状态）
+        // 7) 初始化进程的时间片和等待时间
         running.getPcb().resetTimeSlice();
         running.getPcb().resetWaitingTime();
     }
@@ -331,7 +346,7 @@ public class ProcessManager
         blockedQueue.addLast(p);
         p.block();
 
-        // 【修复点】如果被阻塞的是当前运行的进程，必须立即让出CPU
+        // 如果被阻塞的是当前运行的进程，必须立即让出CPU
         if (running != null && running.getPcb().getPid() == pid) {
             running = null; // 清空运行指针
             scheduleNext(); // 立即调度下一个进程，避免CPU空转
@@ -352,7 +367,6 @@ public class ProcessManager
         blockedQueue.remove(p);
         // 2. 设置进程为就绪态，并加入就绪队列
         p.ready();
-        // 【修改点】PriorityQueue的offer改为List的add
         readyQueue.add(p);
     }
 }

@@ -954,6 +954,7 @@ public class MainController implements Initializable
 
     /**
      * [事件处理] 点击 "终止进程" 按钮时触发
+     * 修复版：使用内部确认框，防止大窗口消失
      */
     @FXML
     protected void onTerminateProcessClick()
@@ -963,22 +964,30 @@ public class MainController implements Initializable
 
         if (selected != null)
         {
-            // 弹出确认对话框
-            Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-            confirmDialog.setTitle("确认终止进程");
-            confirmDialog.setHeaderText("确定要终止进程吗？");
-            confirmDialog.setContentText("进程 PID: " + selected.getPid() + "\n进程名称: " + selected.getName() + "\n\n此操作不可撤销。");
+            // 保护 IDLE 进程
+            if (selected.getPid() == -1) {
+                showError("非法操作", "无法结束系统闲逛进程 (IDLE)。");
+                return;
+            }
 
-            // 等待用户确认
-            confirmDialog.showAndWait().ifPresent(response ->
-            {
-                if (response == javafx.scene.control.ButtonType.OK)
-                {
-                    // 调用内核：终止进程
-                    kernel.getProcessManager().terminateProcess(selected.getPid());
-                    updateProcessView(); // 刷新视图
-                    showInfo("进程终止成功", "进程 '" + selected.getName() + "' (PID: " + selected.getPid() + ") 已被终止。");
-                }
+            // 构建提示信息
+            String msg = "确定要强制结束进程 [" + selected.getName() + "] (PID=" + selected.getPid() + ") 吗？\n" +
+                    "此操作不可撤销。";
+
+            // 【核心修复】使用 showInternalConfirm 替代 Alert
+            // 这样确认框会浮在“任务管理器”上方，而任务管理器依然保持显示
+            showInternalConfirm("确认终止进程", msg, () -> {
+                // 用户点击“确定”后的回调：
+
+                // 1. 调用内核终止进程
+                kernel.getProcessManager().terminateProcess(selected.getPid());
+
+                // 2. 刷新视图
+                updateProcessView();
+                updateMemoryView(); // 顺便刷新内存，因为进程释放了内存
+
+                // 3. (可选) 提示成功
+                // showInfo("进程终止成功", "进程 '" + selected.getName() + "' 已被终止。");
             });
         } else
         {
@@ -986,6 +995,10 @@ public class MainController implements Initializable
             showWarning("未选择进程", "请先选择要终止的进程。");
         }
     }
+
+
+
+
 
     /**
      * [事件处理] 退出程序
@@ -1293,7 +1306,7 @@ public class MainController implements Initializable
 
 
     /**
-     * [事件处理] 搜索文件 (Bug修复版：解决清空后重输不显示下拉框的问题)
+     * [事件处理] 搜索文件 (旗舰版：支持模糊搜索 + 下拉联想 + 空文本自动关闭)
      */
     @FXML
     protected void onSearchFileClick()
@@ -1326,7 +1339,6 @@ public class MainController implements Initializable
             // [优化] 文本为空时，立即清空列表并关闭下拉框
             if (newVal == null || newVal.trim().isEmpty()) {
                 searchBox.hide();
-                searchBox.getItems().clear(); // 【关键修复】必须清空旧列表，重置状态
                 return;
             }
 
@@ -1342,18 +1354,16 @@ public class MainController implements Initializable
 
             // 更新 UI
             Platform.runLater(() -> {
-                // 1. 如果数据变了，更新列表
+                // 只有当结果集变化时才更新，防止 UI 闪烁
                 if (!searchBox.getItems().equals(matches)) {
                     searchBox.getItems().setAll(matches);
-                }
 
-                // 2. 只要有结果，且未显示，就弹出来 (逻辑解耦，更稳健)
-                if (!matches.isEmpty()) {
-                    if (!searchBox.isShowing()) {
-                        searchBox.show();
-                    }
-                } else {
-                    if (searchBox.isShowing()) {
+                    // 有匹配结果 -> 展开；无结果 -> 关闭
+                    if (!matches.isEmpty()) {
+                        if (!searchBox.isShowing()) {
+                            searchBox.show();
+                        }
+                    } else {
                         searchBox.hide();
                     }
                 }
@@ -1383,6 +1393,7 @@ public class MainController implements Initializable
         win.toFront();
         Platform.runLater(searchBox::requestFocus);
     }
+
 
     /**
      * 辅助方法：打开当前选中文件的编辑器窗口
