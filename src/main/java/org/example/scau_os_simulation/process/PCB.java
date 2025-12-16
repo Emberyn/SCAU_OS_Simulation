@@ -248,4 +248,10 @@ public class PCB
     {
         return new javafx.beans.property.SimpleIntegerProperty(memorySize);
     }
+
+    // 【新增】时间片属性访问器
+    public javafx.beans.property.IntegerProperty timeSliceProperty()
+    {
+        return new javafx.beans.property.SimpleIntegerProperty(timeSlice);
+    }
 }

@@ -38,6 +38,14 @@ public class Process
     }
 
     /**
+     * 判断进程是否已结束
+     */
+    public boolean isFinished()
+    {
+        return pcb.getState() == ProcessState.TERMINATED;
+    }
+
+    /**
      * 置为运行态
      */
     public void run()

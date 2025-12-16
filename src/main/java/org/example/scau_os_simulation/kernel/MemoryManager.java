@@ -190,43 +190,34 @@ public class MemoryManager
     }
 
     /**
-     * 获取内存碎片率
-     *
-     * @return 碎片率百分比 (0-100)
+     * 【修复】获取内存碎片率
+     * 算法：1 - (最大连续空闲块 / 总空闲内存)
+     * 只有这样计算，内存整理前后这个数值才会发生剧烈变化。
      */
-    public synchronized double getFragmentationRate()
-    {
-        if (allocatedBlocks.isEmpty()) return 0.0;
+    public synchronized double getFragmentationRate() {
+        int totalMemory = memory.getSize();
+        int usedMemory = getTotalUsedMemory();
+        int freeMemory = totalMemory - usedMemory;
 
-        int totalUsed = 0;
-
-        for (MemoryBlock block : allocatedBlocks)
-        {
-            totalUsed += block.getSize();
+        // 如果没有空闲内存，或者全是空闲内存(没有被切割)，则认为没有碎片
+        if (freeMemory == 0) {
+            return 0.0;
         }
 
-        // 计算外部碎片
-        int externalFragment = 0;
-        int currentAddress = 0;
-
-        allocatedBlocks.sort((a, b) -> a.getStartAddress() - b.getStartAddress());
-
-        for (MemoryBlock block : allocatedBlocks)
-        {
-            if (block.getStartAddress() > currentAddress)
-            {
-                externalFragment += block.getStartAddress() - currentAddress;
-            }
-            currentAddress = block.getStartAddress() + block.getSize();
+        // 如果完全没有分配内存，最大空闲块就是总内存，碎片率也应为0
+        if (allocatedBlocks.isEmpty()) {
+            return 0.0;
         }
 
-        if (currentAddress < memory.getSize())
-        {
-            externalFragment += memory.getSize() - currentAddress;
-        }
+        // 获取最大的连续空闲块
+        int maxFreeBlock = getMaxFreeBlockSize();
 
-        return totalUsed == 0 ? 0.0 : (double) externalFragment / (totalUsed + externalFragment);
+        // 计算碎片率
+        return 1.0 - ((double) maxFreeBlock / freeMemory);
     }
+
+
+
 
     /**
      * 获取内存使用率
@@ -246,38 +237,49 @@ public class MemoryManager
         return (double) totalUsed / memory.getSize();
     }
 
+
+
+
     /**
-     * 获取最大可用连续内存块大小
-     *
-     * @return 最大连续空闲内存大小
+     * 【新增辅助方法】计算当前最大的连续空闲块大小
      */
-    public synchronized int getMaxFreeBlockSize()
-    {
-        if (allocatedBlocks.isEmpty()) return memory.getSize();
+    public synchronized int getMaxFreeBlockSize() {
+        if (allocatedBlocks.isEmpty()) {
+            return memory.getSize();
+        }
 
-        int maxFreeBlock = 0;
-        int currentAddress = 0;
-
+        // 1. 必须先按地址排序，这是计算缝隙的前提
         allocatedBlocks.sort((a, b) -> a.getStartAddress() - b.getStartAddress());
 
-        for (MemoryBlock block : allocatedBlocks)
-        {
-            if (block.getStartAddress() > currentAddress)
-            {
-                int freeSize = block.getStartAddress() - currentAddress;
-                maxFreeBlock = Math.max(maxFreeBlock, freeSize);
+        int maxFree = 0;
+        int currentAddr = 0; // 假设内存从0开始
+
+        // 2. 扫描块与块之间的缝隙
+        for (MemoryBlock block : allocatedBlocks) {
+            // 如果当前块的起始地址 > 指针地址，说明中间有空隙
+            if (block.getStartAddress() > currentAddr) {
+                int gap = block.getStartAddress() - currentAddr;
+                if (gap > maxFree) {
+                    maxFree = gap;
+                }
             }
-            currentAddress = block.getStartAddress() + block.getSize();
+            // 移动指针到当前块的末尾
+            currentAddr = block.getStartAddress() + block.getSize();
         }
 
-        if (currentAddress < memory.getSize())
-        {
-            int freeSize = memory.getSize() - currentAddress;
-            maxFreeBlock = Math.max(maxFreeBlock, freeSize);
+        // 3. 扫描最后一个块到内存末尾的缝隙
+        if (currentAddr < memory.getSize()) {
+            int tailGap = memory.getSize() - currentAddr;
+            if (tailGap > maxFree) {
+                maxFree = tailGap;
+            }
         }
 
-        return maxFreeBlock;
+        return maxFree;
     }
+
+
+
 
     /**
      * 获取内存统计信息

@@ -1,139 +1,58 @@
 package org.example.scau_os_simulation.kernel;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import org.example.scau_os_simulation.process.Process;
 
 /**
- * 操作系统调度器 - 多任务处理的心脏
- * <p>
- * 职责：统一推进“时间片”，协调 CPU 与设备更新，并维护系统时钟。
- * - 周期任务（每 200ms）：systemClock++、CPU 执行一步、设备 tick。
- * - 提供 `start/stop` 控制系统的运行与暂停。
+ * 处理器调度器 - 负责 CPU 时间片的分配与流转
+ * 【修正版】整合了 DeviceManager，支持 wait/notify 机制，解决新建进程无反应问题
  */
-public class Scheduler
-{
-    /**
-     * 进程管理器：用于时间片轮转与获取当前运行进程
-     */
+public class Scheduler implements Runnable {
     private final ProcessManager processManager;
-    /**
-     * 设备管理器：用于周期性推进设备计时与完成处理
-     */
     private final DeviceManager deviceManager;
-    /**
-     * CPU 执行器：每个时间片执行一条指令
-     */
-    private final CPU cpu;
-    /**
-     * 调度线程池：单线程定时器，周期性推进系统时钟
-     */
-    private ScheduledExecutorService exec;
-    /**
-     * 系统时钟（毫秒片计数，不是真实时间）
-     */
+    private final int timeSlice = 100; // 默认时间片 100ms
+    private volatile boolean running = false;
+    private Thread thread;
+
+    // 锁对象，用于线程的 wait/notify
+    private final Object lock = new Object();
+
+    // 系统时钟（逻辑时钟）
     private long systemClock = 0;
-    /**
-     * 是否处于运行状态
-     */
-    private boolean running = false;
+
+    // 内部维护 CPU 实例
+    private CPU cpu;
 
     /**
-     * 调度器的构造函数
-     *
-     * @param pm 进程管理器，调度器需要通过它来了解和控制所有进程。
-     * @param dm 设备管理器，调度器需要通过它来更新设备状态。
+     * 构造函数
+     * @param pm 进程管理器
+     * @param dm 设备管理器（用于推进设备时间）
      */
-    public Scheduler(ProcessManager pm, DeviceManager dm)
-    {
+    public Scheduler(ProcessManager pm, DeviceManager dm) {
         this.processManager = pm;
         this.deviceManager = dm;
+        // 在内部初始化 CPU，确保依赖关系正确
         this.cpu = new CPU(pm, dm);
     }
 
-    /**
-     * 启动调度器
-     * <p>
-     * 这个方法会启动一个无限循环的定时任务，模拟操作系统的运行。
-     * 它就像按下了一个“开始工作”的按钮，整个调度中心开始运作。
-     * <p>
-     * `scheduleAtFixedRate` 方法会创建一个周期性任务：
-     * - `() -\u003e { ... }`：这是要执行的任务，代表一个“时间片”内发生的事情。
-     * - `systemClock++`：系统时钟前进一格。
-     * - `cpu.executeOne()`：CPU执行一条指令。
-     * - `deviceManager.tick()`：所有设备更新状态。
-     * - `0`：初始延迟为0，即立即开始。
-     * - `200`：每隔200毫秒执行一次任务。
-     * - `TimeUnit.MILLISECONDS`：时间单位为毫秒。
-     */
-    public void start()
-    {
-        if (running) return;              // 避免重复启动
+    public void start() {
+        if (running) return;
         running = true;
+        thread = new Thread(this, "Scheduler-Thread");
+        thread.start();
+    }
 
-        // 每次启动时创建一个新的线程池
-        exec = Executors.newSingleThreadScheduledExecutor();
-
-        // processManager.scheduleNext();    // 启动前先挑选一个运行进程
-        // 每 200ms 推进一次系统：执行一条指令并推进设备
-        exec.scheduleAtFixedRate(() ->
-        {
-            try
-            {
-                systemClock++;            // 系统时钟步进（逻辑时钟）
-                // 如果当前没有进程在运行（CPU 空闲），尝试从就绪队列调度一个
-                if (processManager.getRunning() == null)
-                {
-                    processManager.scheduleNext();
-                }
-
-                // 3. 如果现在有进程在运行了，才让 CPU 执行
-                if (processManager.getRunning() != null)
-                {
-                    cpu.executeOne();
-                }
-                // cpu.executeOne();         // CPU 执行一条指令（可能导致终止/阻塞/轮转）
-                deviceManager.tick();     // 推进设备时间片并处理完成事件
-
-                // 计算 CPU 利用率 (有进程运行就是 1.0，否则是 0.0)
-                double cpuUtil = processManager.getRunning() == null ? 0.0 : 1.0;
-
-                // 获取内存使用率 (0.0 到 1.0)
-                double memUsage = Kernel.getInstance().getMemoryManager().getMemoryUsageRate();
-                // 如果控制台疯狂输出 "CPU: 0.0 | Mem: 0.0"，说明源头数据就是 0
-                // System.out.println("DEBUG -> Clock:" + systemClock + " | CPU: " + cpuUtil + " | Mem: " + memUsage +
-                //        " | Running: " );
-
-                // 记录快照到 PerformanceMonitor
-                Kernel.getInstance().getPerformanceMonitor().recordSnapshot(
-                        cpuUtil,
-                        memUsage,
-                        processManager.getProcesses().size(),
-                        processManager.getReadyQueue().size(),
-                        processManager.getBlockedQueue().size()
-                );
-            } catch (Exception e)
-            {
-                e.printStackTrace();
-                System.err.println("调度器发生严重错误: " + e.getMessage());
-            }
-        }, 0, 200, TimeUnit.MILLISECONDS);
+    public void stop() {
+        running = false;
+        wakeUp(); // 停止时唤醒，防止卡死在 wait
     }
 
     /**
-     * 停止调度器
-     * <p>
-     * 这个方法会立即停止调度循环，让整个系统暂停。
-     * 就像按下了“紧急停止”按钮。
+     * 唤醒调度器 (供 ProcessManager 创建新进程时调用)
+     * 解决 ProcessManager 中的 "无法解析方法 wakeUp" 报错
      */
-    public void stop()
-    {
-        if (!running) return;
-        running = false;
-
-        // 安全关闭线程池
-        if (exec != null && !exec.isShutdown()) {
-            exec.shutdownNow();
+    public void wakeUp() {
+        synchronized (lock) {
+            lock.notifyAll();
         }
     }
 
@@ -141,14 +60,76 @@ public class Scheduler
         return running;
     }
 
-
-    /**
-     * 获取当前系统时钟
-     *
-     * @return 系统时钟的当前值
-     */
-    public long getSystemClock()
-    {
+    public long getSystemClock() {
         return systemClock;
+    }
+
+    // 获取 CPU 实例（供 Kernel 使用）
+    public CPU getCPU() {
+        return cpu;
+    }
+
+
+    @Override
+    public void run() {
+        while (running) {
+            try {
+                // 1. 检查是否需要休眠 (无进程且无 IDLE)
+                // 如果就绪队列空，且没在运行，且没 IDLE 进程，则等待新进程创建
+                synchronized (lock) {
+                    while (processManager.getReadyQueue().isEmpty()
+                            && processManager.getRunning() == null
+                            && !processManager.hasIdleProcess()
+                            && running) {
+                        // 真的没事干了，进入休眠，等待 createProcess 调用 wakeUp()
+                        lock.wait();
+                    }
+                }
+
+                if (!running) break;
+
+                // 2. 推进系统与设备时间
+                systemClock++;
+                if (deviceManager != null) {
+                    deviceManager.tick();
+                }
+
+                // 3. 执行调度逻辑
+                Process current = processManager.getRunning();
+                boolean hasNewProcess = !processManager.getReadyQueue().isEmpty();
+
+                // 判断当前运行的是否是 IDLE 进程
+                boolean isIdleRunning = (current != null && current.getPcb().getPid() == -1);
+
+                // 调度决策：如果没进程跑，或者跑完了，或者跑的是 IDLE 且有新进程来了 -> 切换
+                if (current == null || current.isFinished() || (isIdleRunning && hasNewProcess)) {
+                    if (hasNewProcess) {
+                        // 有新进程，进行调度（ProcessManager.scheduleNext 会处理）
+                        processManager.scheduleNext();
+                    } else if (current == null || current.isFinished()) {
+                        // 没新进程，跑 IDLE
+                        if (processManager.hasIdleProcess()) {
+                            processManager.contextSwitch(processManager.getIdleProcess());
+                            // 让 CPU 执行 IDLE 的指令，避免空转
+                            cpu.executeOne();
+                        }
+                    }
+                } else {
+                    // 正常运行当前进程
+                    // 注意：这里调用 CPU 执行指令
+                    if (cpu != null) {
+                        cpu.executeOne();
+                    }
+                }
+
+                // 4. 模拟时间流逝
+                Thread.sleep(timeSlice);
+
+            } catch (InterruptedException e) {
+                break;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

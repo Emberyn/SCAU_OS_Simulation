@@ -247,7 +247,6 @@ public class Kernel
             }
 
             // 第七步：启动调度器
-            // 调度器就像排班经理，负责安排进程（员工）的工作时间
             scheduler = new Scheduler(processManager, deviceManager);
             logOutput("内核初始化完成，等待启动...");
         } catch (Exception e)

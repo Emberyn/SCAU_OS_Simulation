@@ -87,6 +87,8 @@ public class MainController implements Initializable {
     @FXML private TableView<WaitRow> waitQueueTableView;
     @FXML private TableColumn<WaitRow, String> waitDeviceColumn;
     @FXML private TableColumn<WaitRow, Number> waitPidColumn, waitTimeColumn;
+    // 【修改】在最后添加 timeSliceColumn
+    @FXML private TableColumn<PCB, Number> timeSliceColumn;
 
     // --- 后端核心对象引用 ---
     private Kernel kernel;
@@ -1133,6 +1135,8 @@ public class MainController implements Initializable {
         waitDeviceColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().device()));
         waitPidColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().pid()));
         waitTimeColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().time()));
+        // 【新增】绑定剩余时间片列
+        timeSliceColumn.setCellValueFactory(cellData -> cellData.getValue().timeSliceProperty());
     }
 
     private int findProcessIdForMemoryBlock(MemoryBlock block) {

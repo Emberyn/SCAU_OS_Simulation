@@ -89,6 +89,7 @@
                             <TableColumn fx:id="priorityColumn" prefWidth="70" text="优先级" />
                             <TableColumn fx:id="memoryAddressColumn" prefWidth="90" text="内存基址" />
                             <TableColumn fx:id="memorySizeColumn" prefWidth="90" text="占用内存" />
+                            <TableColumn fx:id="timeSliceColumn" prefWidth="90" text="剩余时间片" />
                         </columns>
                         <columnResizePolicy>
                             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
