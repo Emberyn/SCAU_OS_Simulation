@@ -28,7 +28,6 @@ import org.example.scau_os_simulation.memory.Memory;
 import org.example.scau_os_simulation.sync.SyncManager;
 import org.example.scau_os_simulation.logging.OperationLogger;
 import org.example.scau_os_simulation.performance.PerformanceMonitor;
-import org.example.scau_os_simulation.undo.UndoManager;
 import org.example.scau_os_simulation.process.ProducerConsumerExecutable;
 
 import java.util.function.Consumer;
@@ -96,10 +95,6 @@ public class Kernel
      */
     private PerformanceMonitor performanceMonitor;
 
-    /**
-     * 撤销管理器：管理可撤销操作
-     */
-    private UndoManager undoManager;
 
     // 新增：用于终端输出的回调接口
     private Consumer<String> terminalListener;
@@ -183,10 +178,6 @@ public class Kernel
             // 第四步补充：初始化性能监控器
             // 创建性能监控器，用于监控系统性能指标
             performanceMonitor = new PerformanceMonitor(100); // 保存最近100个快照
-
-            // 第四步补充：初始化撤销管理器
-            // 创建撤销管理器，用于管理可撤销操作
-            undoManager = new UndoManager(50); // 保存最近50个操作
 
             // 第五步：创建可执行文件
             for (int i = 1; i <= 10; i++)
@@ -405,14 +396,6 @@ public class Kernel
     public PerformanceMonitor getPerformanceMonitor()
     {
         return performanceMonitor;  // 返回性能监控器
-    }
-
-    /**
-     * @return 撤销管理器实例，用于管理可撤销操作
-     */
-    public UndoManager getUndoManager()
-    {
-        return undoManager;  // 返回撤销管理器
     }
 
     public long getSystemClock()

@@ -2,40 +2,30 @@ package org.example.scau_os_simulation.logging;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 操作日志记录器
  * <p>
- * 记录所有系统操作，包括：
- * - 进程创建/终止
- * - 内存分配/释放
- * - 文件系统操作
- * - 设备请求
- * - 信号量操作
- * <p>
- * 支持日志级别、时间戳、操作类型分类
+ * 优化点：
+ * 1. 使用 synchronized 保证线程安全（关键，防止 UI 读取时内核正在写入导致崩溃）。
+ * 2. 使用 Java Record 简化 LogEntry。
+ * 3. 优化了字符串格式化性能。
  */
-public class OperationLogger
-{
+public class OperationLogger {
+    // 使用线程安全的列表，或者在操作方法上加 synchronized
     private final List<LogEntry> logs;
+    private static final int MAX_LOG_SIZE = 1000;
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
 
-    /**
-     * 日志级别枚举
-     */
-    public enum LogLevel
-    {
+    public enum LogLevel {
         DEBUG, INFO, WARNING, ERROR
     }
 
-    /**
-     * 操作类型枚举
-     */
-    public enum OperationType
-    {
+    public enum OperationType {
         SYSTEM,
         PROCESS_CREATE, PROCESS_TERMINATE, PROCESS_SCHEDULE,
         MEMORY_ALLOCATE, MEMORY_FREE, MEMORY_DEFRAGMENT,
@@ -46,248 +36,119 @@ public class OperationLogger
     }
 
     /**
-     * 日志条目内部类
+     * [优化] 使用 Java Record 替代传统 Class
+     * Record 自动提供构造函数、equals、hashCode 和 getter (访问器名为 .message() 而非 .getMessage())
      */
-    public static class LogEntry
-    {
-        private final LocalDateTime timestamp;
-        private final LogLevel level;
-        private final OperationType type;
-        private final String message;
-        private final Map<String, Object> details;
-
-        public LogEntry(LocalDateTime timestamp, LogLevel level, OperationType type, String message, Map<String, Object> details)
-        {
-            this.timestamp = timestamp;
-            this.level = level;
-            this.type = type;
-            this.message = message;
-            this.details = details != null ? new HashMap<>(details) : new HashMap<>();
-        }
-
-        public LocalDateTime getTimestamp()
-        {
-            return timestamp;
-        }
-
-        public LogLevel getLevel()
-        {
-            return level;
-        }
-
-        public OperationType getType()
-        {
-            return type;
-        }
-
-        public String getMessage()
-        {
-            return message;
-        }
-
-        public Map<String, Object> getDetails()
-        {
-            return new HashMap<>(details);
+    public record LogEntry(LocalDateTime timestamp, LogLevel level, OperationType type, String message, Map<String, Object> details) {
+        // 紧凑构造函数：处理 defensive copy
+        public LogEntry {
+            details = details != null ? Map.copyOf(details) : Map.of();
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(String.format("[%s] %s %s: %s",
-                    timestamp.format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS")),
-                    level.name(),
-                    type.name(),
+                    timestamp.format(TIME_FORMATTER),
+                    level,
+                    type,
                     message));
 
-            if (!details.isEmpty())
-            {
+            if (!details.isEmpty()) {
                 sb.append(" | 详情:");
-                for (Map.Entry<String, Object> entry : details.entrySet())
-                {
-                    sb.append(" ").append(entry.getKey()).append("=").append(entry.getValue());
-                }
+                details.forEach((k, v) -> sb.append(" ").append(k).append("=").append(v));
             }
-
             return sb.toString();
         }
     }
 
-    /**
-     * 构造函数
-     */
-    public OperationLogger()
-    {
+    public OperationLogger() {
         this.logs = new ArrayList<>();
     }
 
     /**
-     * 记录日志
-     *
-     * @param level   日志级别
-     * @param type    操作类型
-     * @param message 日志消息
-     * @param details 详细信息
+     * 核心记录方法
+     * [优化] 添加 synchronized 关键字，确保原子性（添加+删除队首）
      */
-    public void log(LogLevel level, OperationType type, String message, Map<String, Object> details)
-    {
+    public synchronized void log(LogLevel level, OperationType type, String message, Map<String, Object> details) {
         LogEntry entry = new LogEntry(LocalDateTime.now(), level, type, message, details);
         logs.add(entry);
 
         // 限制日志数量，防止内存溢出
-        if (logs.size() > 1000)
-        {
+        if (logs.size() > MAX_LOG_SIZE) {
             logs.remove(0);
         }
     }
 
-    /**
-     * 记录信息日志
-     */
-    public void info(OperationType type, String message)
-    {
+    // --- 便捷方法 (保留以备后续扩展，IDE 警告"未使用"可忽略，因为这是工具类 API) ---
+
+    public void info(OperationType type, String message) {
         log(LogLevel.INFO, type, message, null);
     }
 
-    /**
-     * 记录信息日志（带详情）
-     */
-    public void info(OperationType type, String message, Map<String, Object> details)
-    {
+    public void info(OperationType type, String message, Map<String, Object> details) {
         log(LogLevel.INFO, type, message, details);
     }
 
-    /**
-     * 记录警告日志
-     */
-    public void warning(OperationType type, String message)
-    {
+    public void warning(OperationType type, String message) {
         log(LogLevel.WARNING, type, message, null);
     }
 
-    /**
-     * 记录错误日志
-     */
-    public void error(OperationType type, String message)
-    {
+    public void error(OperationType type, String message) {
         log(LogLevel.ERROR, type, message, null);
     }
 
-    /**
-     * 记录错误日志（带详情）
-     */
-    public void error(OperationType type, String message, Map<String, Object> details)
-    {
+    public void error(OperationType type, String message, Map<String, Object> details) {
         log(LogLevel.ERROR, type, message, details);
     }
 
-    /**
-     * 记录调试日志
-     */
-    public void debug(OperationType type, String message)
-    {
+    public void debug(OperationType type, String message) {
         log(LogLevel.DEBUG, type, message, null);
     }
 
     /**
-     * 获取所有日志
-     *
-     * @return 日志列表
+     * 获取日志字符串列表 (供 UI ListView 使用)
+     * [优化] synchronized 确保遍历时不会被修改
      */
-    public List<LogEntry> getAllLogs()
-    {
-        return new ArrayList<>(logs);
-    }
-
-    public java.util.List<String> getLogs()
-    {
-        java.util.List<String> out = new java.util.ArrayList<>();
-        for (LogEntry e : logs) out.add(e.toString());
+    public synchronized List<String> getLogs() {
+        List<String> out = new ArrayList<>(logs.size());
+        for (LogEntry e : logs) {
+            out.add(e.toString());
+        }
         return out;
     }
 
     /**
-     * 获取指定级别的日志
-     *
-     * @param level 日志级别
-     * @return 指定级别的日志列表
+     * 获取所有日志对象 (供高级分析使用)
      */
-    public List<LogEntry> getLogsByLevel(LogLevel level)
-    {
-        List<LogEntry> result = new ArrayList<>();
-        for (LogEntry entry : logs)
-        {
-            if (entry.getLevel() == level)
-            {
-                result.add(entry);
-            }
-        }
-        return result;
+    public synchronized List<LogEntry> getAllLogs() {
+        return new ArrayList<>(logs);
     }
 
-    /**
-     * 获取指定类型的日志
-     *
-     * @param type 操作类型
-     * @return 指定类型的日志列表
-     */
-    public List<LogEntry> getLogsByType(OperationType type)
-    {
-        List<LogEntry> result = new ArrayList<>();
-        for (LogEntry entry : logs)
-        {
-            if (entry.getType() == type)
-            {
-                result.add(entry);
-            }
-        }
-        return result;
-    }
+    // --- 统计与清理方法 ---
 
-    /**
-     * 获取最近N条日志
-     *
-     * @param n 数量
-     * @return 最近N条日志
-     */
-    public List<LogEntry> getRecentLogs(int n)
-    {
-        int start = Math.max(0, logs.size() - n);
-        return new ArrayList<>(logs.subList(start, logs.size()));
-    }
-
-    /**
-     * 清空日志
-     */
-    public void clearLogs()
-    {
+    public synchronized void clearLogs() {
         logs.clear();
     }
 
     /**
-     * 获取日志统计信息
-     *
-     * @return 统计信息映射
+     * [优化] 统计逻辑
      */
-    public Map<String, Object> getStatistics()
-    {
+    public synchronized Map<String, Object> getStatistics() {
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalLogs", logs.size());
 
-        // 按级别统计
+        // 使用 Stream API 简化统计 (虽然在同步块中循环稍微快一点，但 Stream 更易读)
+        // 这里为了性能保持循环统计
         Map<String, Integer> levelCounts = new HashMap<>();
-        for (LogLevel level : LogLevel.values())
-        {
-            levelCounts.put(level.name(), getLogsByLevel(level).size());
-        }
-        stats.put("levelCounts", levelCounts);
-
-        // 按类型统计
         Map<String, Integer> typeCounts = new HashMap<>();
-        for (OperationType type : OperationType.values())
-        {
-            typeCounts.put(type.name(), getLogsByType(type).size());
+
+        for (LogEntry entry : logs) {
+            levelCounts.merge(entry.level().name(), 1, Integer::sum);
+            typeCounts.merge(entry.type().name(), 1, Integer::sum);
         }
+
+        stats.put("levelCounts", levelCounts);
         stats.put("typeCounts", typeCounts);
 
         return stats;

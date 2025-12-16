@@ -2,7 +2,6 @@ package org.example.scau_os_simulation.cli;
 
 import org.example.scau_os_simulation.kernel.Kernel;
 import org.example.scau_os_simulation.process.Executable;
-import org.example.scau_os_simulation.undo.UndoManager;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -69,13 +68,6 @@ public class CreateProcessCommand implements Runnable
         {
             // 6. 将加载的代码绑定到进程
             p.setExecutable(exec);
-
-            // 7. (可选) 记录到撤销管理器，保持与 GUI 行为一致
-            kernel.getUndoManager().executeCommand(
-                    new UndoManager.CreateProcessCommand(
-                            kernel.getProcessManager(), p.getPcb().getPid(), name, priority
-                    )
-            );
 
             kernel.printToTerminal("进程创建成功: " + name +
                     " (PID: " + p.getPcb().getPid() +

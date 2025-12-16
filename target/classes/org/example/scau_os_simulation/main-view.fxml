@@ -78,8 +78,6 @@
                 <Button fx:id="startSystemBtn" onAction="#onStartSystemClick" styleClass="button, success" text="▶ 启动调度" />
                 <Button fx:id="stopSystemBtn" onAction="#onStopSystemClick" styleClass="button, flat" text="⏸ 暂停" />
                 <Region HBox.hgrow="ALWAYS" />
-                <Button fx:id="undoBtn" onAction="#onUndoClick" styleClass="button, flat" text="↩ 撤销" />
-                <Button fx:id="redoBtn" onAction="#onRedoClick" styleClass="button, flat" text="↪ 重做" />
             </HBox>
             <SplitPane dividerPositions="0.75" style="-fx-background-color:transparent;" VBox.vgrow="ALWAYS">
                 <VBox styleClass="card" VBox.vgrow="ALWAYS">

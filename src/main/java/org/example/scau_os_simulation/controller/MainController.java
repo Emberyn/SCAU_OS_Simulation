@@ -63,7 +63,6 @@ public class MainController implements Initializable {
     @FXML private Button startSystemBtn, stopSystemBtn;          // 系统启停
     @FXML private Button createProcessBtn, terminateProcessBtn;  // 进程创建/终止
     @FXML private Button undoBtn, redoBtn;                        // 操作撤销/重做
-    @FXML private Button defragmentBtn;                           // 内存碎片整理
     @FXML private Button createFileBtn, createDirectoryBtn;       // 文件/目录创建
     @FXML private Button deleteFileBtn, copyFileBtn, pasteFileBtn;// 文件删除/复制/粘贴
     @FXML private Button searchFileBtn;                           // 文件搜索
@@ -679,9 +678,6 @@ public class MainController implements Initializable {
         boolean disable = !isRunning;
         if (createProcessBtn != null) createProcessBtn.setDisable(disable);
         if (terminateProcessBtn != null) terminateProcessBtn.setDisable(disable);
-        if (defragmentBtn != null) defragmentBtn.setDisable(disable);
-        if (undoBtn != null) undoBtn.setDisable(disable);
-        if (redoBtn != null) redoBtn.setDisable(disable);
         if (createFileBtn != null) createFileBtn.setDisable(disable);
         if (createDirectoryBtn != null) createDirectoryBtn.setDisable(disable);
         if (deleteFileBtn != null) deleteFileBtn.setDisable(disable);
@@ -775,7 +771,6 @@ public class MainController implements Initializable {
                 org.example.scau_os_simulation.process.Process p = kernel.getProcessManager().createProcess(name, priority);
                 if (p != null) {
                     p.setExecutable(exec);
-                    kernel.getUndoManager().executeCommand(new org.example.scau_os_simulation.undo.UndoManager.CreateProcessCommand(kernel.getProcessManager(), p.getPcb().getPid(), name, priority));
                     updateProcessView(); showInfo("成功", "进程已创建"); win.close();
                 } else showError("失败", "无法创建进程");
             } else showError("文件错误", "无法加载可执行文件");
@@ -895,22 +890,6 @@ public class MainController implements Initializable {
     @FXML protected void onDefragmentClick() {
         kernel.getMemoryManager().defragment();
         updateMemoryView(); showInfo("内存整理完成", "内存碎片整理已完成。");
-    }
-
-    /**
-     * 撤销按钮点击事件
-     */
-    @FXML protected void onUndoClick() {
-        kernel.getUndoManager().undo();
-        updateAllViews();
-    }
-
-    /**
-     * 重做按钮点击事件
-     */
-    @FXML protected void onRedoClick() {
-        kernel.getUndoManager().redo();
-        updateAllViews();
     }
 
     /**
