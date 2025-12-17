@@ -113,6 +113,16 @@ public class MainController implements Initializable {
         // 初始化窗口层
         initWindowLayer();
 
+        // 【新增】注册文件系统监听器
+        // 当文件系统发生变化时，在 JavaFX Application 线程中刷新视图
+        kernel.getFileSystemManager().addListener(() -> {
+            Platform.runLater(() -> {
+                updateFileSystemView();
+                // 如果你希望磁盘进度条也实时更新，也加上:
+                // updateDiskUsage(); (如果你把这部分逻辑抽离出来了)
+            });
+        });
+
         // 桌面区域自适应
         desktopArea.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
 
