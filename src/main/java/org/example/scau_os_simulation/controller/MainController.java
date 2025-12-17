@@ -89,6 +89,7 @@ public class MainController implements Initializable {
     @FXML private TableColumn<WaitRow, Number> waitPidColumn, waitTimeColumn;
     // 【修改】在最后添加 timeSliceColumn
     @FXML private TableColumn<PCB, Number> timeSliceColumn;
+    @FXML private TableColumn<PCB, Number> totalRemainingTimeColumn; // 新增的列
 
     // --- 后端核心对象引用 ---
     private Kernel kernel;
@@ -997,6 +998,14 @@ public class MainController implements Initializable {
     }
 
     private void updateProcessView() {
+        // 【核心修改】在刷新表格前，先计算每个进程的总剩余时间
+        for (org.example.scau_os_simulation.process.Process p : kernel.getProcessManager().getProcesses()) {
+            // 调用您在 Process.java 中写好的 getRemainingTime()
+            int remaining = p.getRemainingTime();
+            // 存入 PCB
+            p.getPcb().setTotalRemainingTime(remaining);
+        }
+
         processTableView.getItems().setAll(kernel.getProcessManager().getProcesses().stream().map(org.example.scau_os_simulation.process.Process::getPcb).toList());
         readyQueueListView.getItems().setAll(kernel.getProcessManager().getReadyQueue().stream().map(p -> "PID: " + p.getPcb().getPid() + " (优先级: " + p.getPcb().getPriority() + ")").toList());
         blockedQueueListView.getItems().setAll(kernel.getProcessManager().getBlockedQueue().stream().map(p -> "PID: " + p.getPcb().getPid()).toList());
@@ -1172,6 +1181,10 @@ public class MainController implements Initializable {
         waitTimeColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().time()));
         // 【新增】绑定剩余时间片列
         timeSliceColumn.setCellValueFactory(cellData -> cellData.getValue().timeSliceProperty());
+        // 【新增】绑定“总剩余时间”列
+        if (totalRemainingTimeColumn != null) {
+            totalRemainingTimeColumn.setCellValueFactory(cellData -> cellData.getValue().totalRemainingTimeProperty());
+        }
     }
 
     private int findProcessIdForMemoryBlock(MemoryBlock block) {

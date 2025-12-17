@@ -44,6 +44,9 @@ public class Kernel
         return instance;
     }
 
+
+
+
     public void initialize()
     {
         try
@@ -51,32 +54,67 @@ public class Kernel
             // 1. 初始化基础设施
             Memory memory = new Memory(2048);
             memoryManager = new MemoryManager(memory);
-            FileSystem fileSystem = new FileSystem(4096);
+            // 稍微把磁盘改大一点点，防止塞了这么多文件后爆满 (或者保持 64 也可以，只要这些文件很小)
+            FileSystem fileSystem = new FileSystem(256);
             fileSystemManager = new FileSystemManager(fileSystem);
 
-            // 2. 初始化核心管理器 (注意顺序！)
+            // 2. 初始化核心管理器
             processManager = new ProcessManager(memoryManager);
             deviceManager = new DeviceManager(processManager);
 
-            // 【修复 1】CPU 初始化移到这里，并传入正确的参数
-            // 根据报错，CPU 需要 ProcessManager 和 DeviceManager
+            // CPU 初始化
             cpu = new CPU(processManager, deviceManager);
 
             syncManager = new SyncManager();
             operationLogger = new OperationLogger();
             performanceMonitor = new PerformanceMonitor(100);
 
-            // 3. 创建目录
-            fileSystemManager.createDirectory("/system", "exec");
-            fileSystemManager.createDirectory("/user", "data");
+            // =================================================================
+            // 3. 创建目录结构 (包含演示搜索用的 docs)
+            // =================================================================
 
-            // 4. 创建演示文件
+            // 【修复 Turn 15 问题】先检查是否存在，避免重复创建 exec(1)
+            if (fileSystemManager.getDirectory("/system/exec") == null) {
+                fileSystemManager.createDirectory("/system", "exec");
+            }
+            if (fileSystemManager.getDirectory("/user/data") == null) {
+                fileSystemManager.createDirectory("/user", "data");
+            }
+
+            // 【新增】创建 docs 目录及子目录
+            if (fileSystemManager.getDirectory("/docs") == null) {
+                fileSystemManager.createDirectory("/", "docs");          // /docs
+                fileSystemManager.createDirectory("/docs", "work");     // /docs/work
+                fileSystemManager.createDirectory("/docs", "personal"); // /docs/personal
+            }
+
+            // 【新增】在 docs 下创建各种“假”文件用于搜索演示
+            // 我们利用 createExecutable 写入简单的文本内容
+            java.util.List<String> dummyContent = new java.util.ArrayList<>();
+            dummyContent.add("This is a test file.");
+
+            // 根文档
+            fileSystemManager.createExecutable("/docs", "readme.txt", dummyContent);
+            fileSystemManager.createExecutable("/docs", "secret.log", dummyContent);
+
+            // 工作文档
+            fileSystemManager.createExecutable("/docs/work", "plan.doc", dummyContent);
+            fileSystemManager.createExecutable("/docs/work", "budget.xls", dummyContent);
+
+            // 个人文档
+            fileSystemManager.createExecutable("/docs/personal", "photo.jpg", dummyContent);
+            fileSystemManager.createExecutable("/docs/personal", "diary.txt", dummyContent);
+
+
+            // =================================================================
+            // 4. 创建演示文件 (CPU/IO 对比)
+            // =================================================================
             for (int i = 0; i < 3; i++)
             {
                 String devCode = (i == 0) ? "A" : (i == 1) ? "B" : "C";
 
                 // CPU 密集型
-                List<String> insCpu = new ArrayList<>();
+                java.util.List<String> insCpu = new java.util.ArrayList<>();
                 insCpu.add("x=0");
                 for (int j = 0; j < 10; j++) {
                     for (int k = 0; k < 40; k++) insCpu.add("x++");
@@ -86,7 +124,7 @@ public class Kernel
                 fileSystemManager.createExecutable("/system/exec", "p" + (i * 2 + 1) + "_" + devCode + "_CPU.e", insCpu);
 
                 // IO 密集型
-                List<String> insIo = new ArrayList<>();
+                java.util.List<String> insIo = new java.util.ArrayList<>();
                 insIo.add("x=0");
                 for (int j = 0; j < 10; j++) {
                     for (int k = 0; k < 20; k++) insIo.add("x++");
@@ -96,30 +134,27 @@ public class Kernel
                 fileSystemManager.createExecutable("/system/exec", "p" + (i * 2 + 2) + "_" + devCode + "_IO.e", insIo);
             }
 
-            // 5. 补充同步演示
+            // 5. 补充同步演示 (生产者消费者)
             syncManager.createSemaphore("mutex", 1);
             syncManager.createSemaphore("empty", 5);
             syncManager.createSemaphore("full", 0);
             fileSystemManager.createExecutable("/system/exec", "producer.e", new ProducerConsumerExecutable("producer", 1, 50));
             fileSystemManager.createExecutable("/system/exec", "consumer.e", new ProducerConsumerExecutable("consumer", 1, 50));
 
-            // 6. 启动进程 (使用全限定名解决报错)
+            // 6. 启动初始进程
             for (int i = 0; i < 3; i++)
             {
                 String devCode = (i == 0) ? "A" : (i == 1) ? "B" : "C";
 
-                // 【修复 2】强制使用全限定名 org.example...Process
                 String nameCpu = "p" + (i * 2 + 1) + "_" + devCode + "_CPU.e";
                 org.example.scau_os_simulation.process.Process p1 =
                         processManager.createProcess("计算型_" + devCode, 1);
-
                 Executable exec1 = fileSystemManager.loadExecutable("/system/exec/" + nameCpu);
                 if (p1 != null) p1.setExecutable(exec1);
 
                 String nameIo = "p" + (i * 2 + 2) + "_" + devCode + "_IO.e";
                 org.example.scau_os_simulation.process.Process p2 =
                         processManager.createProcess("阻塞型_" + devCode, 2);
-
                 Executable exec2 = fileSystemManager.loadExecutable("/system/exec/" + nameIo);
                 if (p2 != null) p2.setExecutable(exec2);
             }
@@ -127,7 +162,7 @@ public class Kernel
             // 7. 初始化调度器
             scheduler = new Scheduler(processManager, deviceManager);
 
-            logOutput("内核初始化完成 (6个演示进程已就绪)");
+            logOutput("内核初始化完成 (已创建 docs 目录供搜索演示)");
 
         } catch (Exception e)
         {
@@ -135,6 +170,9 @@ public class Kernel
             System.err.println("内核初始化失败: " + e.getMessage());
         }
     }
+
+
+
 
     public void start()
     {

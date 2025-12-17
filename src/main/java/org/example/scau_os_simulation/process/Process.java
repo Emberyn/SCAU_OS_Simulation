@@ -46,6 +46,67 @@ public class Process
     }
 
     /**
+     * 计算进程剩余需要的总时间片（估算值）
+     * 逻辑：遍历 PC 之后的所有指令
+     * - 普通指令 (x++)：算 1 个时间片
+     * - IO 指令 (!A10)：算 IO 持续时间 (10)
+     */
+    public int getRemainingTime() {
+        // 如果没有加载可执行文件，或者已经结束
+        if (executable == null || pcb == null) {
+            return 0;
+        }
+
+        int currentPC = pcb.getPc();
+        int totalInstructions = executable.length();
+
+        // 如果已经执行完了
+        if (currentPC >= totalInstructions) {
+            return 0;
+        }
+
+        int estimatedTime = 0;
+
+        // 预判未来：从当前指令开始扫描到最后
+        for (int i = currentPC; i < totalInstructions; i++) {
+            String instruction = executable.fetch(i);
+
+            if (instruction == null) continue;
+
+            // 检查是否是 IO 指令 (以 '!' 开头，例如 "!A20")
+            if (instruction.startsWith("!")) {
+                try {
+                    // 解析设备指令后面的数字
+                    // 假设格式是 !<设备号><时间>，如 !A20
+                    // 去掉 '!' 和 设备标识符(1位)，截取后面的数字
+                    if (instruction.length() > 2) {
+                        String durationStr = instruction.substring(2);
+                        int duration = Integer.parseInt(durationStr);
+                        estimatedTime += duration;
+                    } else {
+                        estimatedTime += 1; // 格式不对当作普通指令
+                    }
+                } catch (NumberFormatException e) {
+                    estimatedTime += 1; // 解析失败当作普通指令
+                }
+            }
+            else if (instruction.equals("end")) {
+                break; // 遇到 end 就不算了
+            }
+            else {
+                // 普通 CPU 指令，消耗 1 个时间片
+                estimatedTime += 1;
+            }
+        }
+
+        return estimatedTime;
+    }
+
+
+
+
+
+    /**
      * 置为运行态
      */
     public void run()
