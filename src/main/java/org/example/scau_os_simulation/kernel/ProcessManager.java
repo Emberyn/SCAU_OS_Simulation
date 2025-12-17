@@ -1,5 +1,6 @@
 package org.example.scau_os_simulation.kernel;
 
+import org.example.scau_os_simulation.memory.MemoryBlock;
 import org.example.scau_os_simulation.process.Executable;
 import org.example.scau_os_simulation.process.PCB;
 import org.example.scau_os_simulation.process.Process;
@@ -60,7 +61,7 @@ public class ProcessManager
         // 2. 创建闲逛进程对象
         this.idleProcess = new Process(idlePcb);
         // 3. 为闲逛进程设置空指令序列：模拟CPU空转（死循环执行x=0、x++、x--）
-        org.example.scau_os_simulation.process.Executable idleExec = new org.example.scau_os_simulation.process.Executable(Arrays.asList("x=0", "x++", "x--"));
+        Executable idleExec = new Executable(Arrays.asList("x=0", "x++", "x--"));
         this.idleProcess.setExecutable(idleExec);
     }
 
@@ -97,11 +98,13 @@ public class ProcessManager
      */
     public boolean hasIdleProcess() { return idleProcess != null; }
 
+
     /**
      * 获取闲逛进程实例
      * @return 闲逛进程对象
      */
     public Process getIdleProcess() { return idleProcess; }
+
 
     /**
      * 创建新用户进程（核心方法）
@@ -116,7 +119,7 @@ public class ProcessManager
         int memorySize = 64;
 
         // 步骤2：调用内存管理器分配64KB内存块
-        org.example.scau_os_simulation.memory.MemoryBlock block = memoryManager.allocateMemory(memorySize);
+        MemoryBlock block = memoryManager.allocateMemory(memorySize);
 
         // 步骤3：内存分配失败处理
         if (block == null)
@@ -247,6 +250,8 @@ public class ProcessManager
             running.getPcb().resetTimeSlice();
         }
     }
+
+
 
     /**
      * 调度核心逻辑（选择下一个要运行的进程）

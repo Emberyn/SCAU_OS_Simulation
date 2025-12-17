@@ -2,16 +2,8 @@ package org.example.scau_os_simulation.device;
 
 /**
  * 设备 - 可被进程占用的有限资源
- * <p>
- * 概念解释：
  * - 设备是系统中的共享硬件资源（如打印机、磁盘），同一时间只能被一个进程占用。
  * - 当设备被占用后，会在若干时间片内保持“忙碌”，时间片消耗为 0 时表示完成。
- * <p>
- * 主要方法：
- * - `allocate(pid, time)`：进程申请设备并开始计时。
- * - `tick()`：时间推进一格（通常由调度器统一调用）。
- * - `isComplete()`：判定设备是否完成当前占用任务。
- * - `release()`：释放设备，使其可供其他进程使用。
  */
 public class Device
 {
@@ -22,7 +14,6 @@ public class Device
 
     /**
      * 构造一个设备实例
-     *
      * @param type 设备类型（A/B/C）
      */
     public Device(DeviceType type)
@@ -77,7 +68,6 @@ public class Device
 
     /**
      * 占用设备
-     *
      * @param pid  占用进程PID
      * @param time 预计占用时间片数
      * @return 是否成功占用（若设备已在使用中则返回 false）
@@ -93,8 +83,6 @@ public class Device
 
     /**
      * 时间推进（剩余时间片递减）
-     * <p>
-     * 通常由调度器的周期任务统一调用，用于模拟设备处理过程的推进。
      */
     public void tick()
     {

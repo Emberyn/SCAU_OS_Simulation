@@ -8,7 +8,6 @@ import org.example.scau_os_simulation.logging.OperationLogger;
 import org.example.scau_os_simulation.performance.PerformanceMonitor;
 import org.example.scau_os_simulation.process.ProducerConsumerExecutable;
 import org.example.scau_os_simulation.cli.CommandExecutor;
-// 在 package 语句下面，添加这两个导入
 import org.example.scau_os_simulation.process.Process;
 import org.example.scau_os_simulation.process.Executable;
 
@@ -120,7 +119,7 @@ public class Kernel
                 fileSystemManager.createDirectory("/docs", "personal"); // 个人文档子目录
             }
 
-            // 【新增】在docs目录下创建测试文件（用于搜索演示）
+            // 在docs目录下创建测试文件（用于搜索演示）
             // 构造简单的测试内容（一行文本）
             java.util.List<String> dummyContent = new java.util.ArrayList<>();
             dummyContent.add("This is a test file.");
@@ -136,6 +135,8 @@ public class Kernel
             // 个人文档子目录下的测试文件
             fileSystemManager.createExecutable("/docs/personal", "photo.jpg", dummyContent);
             fileSystemManager.createExecutable("/docs/personal", "diary.txt", dummyContent);
+
+
 
             // =================================================================
             // 4. 创建演示用可执行文件 (CPU密集型/IO密集型对比)
@@ -342,10 +343,9 @@ public class Kernel
     /**
      * 获取当前运行进程的时间片大小
      * @return 时间片大小，无运行进程返回0
-     * 【修复】使用全限定名引用Process类，避免类名歧义
      */
     public int getTimeSlice() {
-        org.example.scau_os_simulation.process.Process p = processManager == null ? null : processManager.getRunning();
+        Process p = processManager == null ? null : processManager.getRunning();
         return p == null ? 0 : p.getPcb().getTimeSlice();
     }
 

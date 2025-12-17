@@ -24,6 +24,8 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.Pane?>
 
+
+
 <!-- 根容器：使用StackPane实现壁纸底层 + 桌面内容上层的布局结构 -->
 <StackPane fx:id="rootStackPane" styleClass="desktop-background"
            prefHeight="800.0" prefWidth="1200.0"
@@ -35,6 +37,7 @@
         <URL value="@style.css" />
         <URL value="@Desktop.css" /> <!-- 桌面样式（图标、任务栏等） -->
     </stylesheets>
+
 
     <!-- 桌面主体布局：BorderPane实现 中心图标区 + 底部任务栏 结构 -->
     <BorderPane pickOnBounds="false">
@@ -50,6 +53,7 @@
             </FlowPane>
         </center>
 
+
         <!-- 底部区域：系统任务栏 -->
         <bottom>
             <HBox fx:id="taskBar" alignment="CENTER_LEFT" spacing="10" styleClass="task-bar">
@@ -64,6 +68,8 @@
             </HBox>
         </bottom>
     </BorderPane>
+
+
 
     <!-- 隐藏视图资源池：存放所有功能模块视图，初始不可见，代码动态加载到窗口中 -->
     <StackPane fx:id="hiddenViewPool" visible="false" managed="false">
@@ -117,23 +123,31 @@
                                 <rowConstraints><RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints /></rowConstraints>
                             </GridPane>
                         </VBox>
+
+
                         <Separator />
+
+
                         <!-- 就绪队列 -->
                         <VBox spacing="10">
                             <Label styleClass="title-4" text="就绪队列 (Ready)" />
                             <ListView fx:id="readyQueueListView" prefHeight="100" styleClass="list-view, dense" />
                         </VBox>
+
                         <!-- 阻塞队列 -->
                         <VBox spacing="10">
                             <Label styleClass="title-4" text="阻塞队列 (Blocked)" />
                             <ListView fx:id="blockedQueueListView" prefHeight="100" styleClass="list-view, dense" />
                         </VBox>
+
                         <Separator />
+
                         <!-- 内核日志 -->
                         <VBox spacing="10">
                             <Label styleClass="title-4" text="内核日志" />
                             <ListView fx:id="operationLogListView" prefHeight="150" styleClass="list-view, dense" />
                         </VBox>
+
                         <!-- 程序控制台输出 -->
                         <VBox spacing="10">
                             <Label styleClass="title-4" text="程序控制台输出" />
@@ -165,6 +179,8 @@
                     <Label fx:id="fragmentationLabel" styleClass="title-4, warning" text="0%" />
                 </HBox>
             </HBox>
+
+
             <!-- 内存可视化区域 -->
             <VBox styleClass="card" spacing="10">
                 <padding><Insets top="15" right="15" bottom="15" left="15"/></padding>
@@ -192,6 +208,8 @@
                     </HBox>
                 </FlowPane>
             </VBox>
+
+
             <!-- 内存分配表 -->
             <VBox styleClass="card" VBox.vgrow="ALWAYS">
                 <Label styleClass="title-4" text="物理内存分配表">
@@ -208,6 +226,8 @@
             </VBox>
         </VBox>
 
+
+
         <!-- 3. 文件系统视图：文件/目录操作、磁盘使用率、资源管理器 -->
         <VBox fx:id="fileSystemViewRoot" spacing="15" styleClass="window-content">
             <!-- 文件操作按钮区 -->
@@ -222,6 +242,8 @@
                 <Region HBox.hgrow="ALWAYS" />
                 <Button fx:id="searchFileBtn" onAction="#onSearchFileClick" styleClass="button, accent" text="🔍 搜索" />
             </HBox>
+
+
             <!-- 磁盘信息展示 -->
             <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 15 25;" styleClass="card">
                 <Label style="-fx-font-size: 28px;" text="💾" />
@@ -237,12 +259,15 @@
                     <ProgressBar fx:id="diskUsageBar" maxWidth="Infinity" progress="0.0" />
                 </VBox>
             </HBox>
+
+
             <!-- 资源管理器（树形结构） -->
             <VBox styleClass="card" VBox.vgrow="ALWAYS">
                 <Label styleClass="title-4" text="资源管理器"><padding><Insets bottom="10" left="10" top="10"/></padding></Label>
                 <TreeView fx:id="fileSystemTreeView" showRoot="true" styleClass="dense" VBox.vgrow="ALWAYS" />
             </VBox>
         </VBox>
+
 
         <!-- 4. 设备管理视图：设备状态、等待队列 -->
         <AnchorPane fx:id="deviceViewRoot" styleClass="window-content">
@@ -260,6 +285,8 @@
                         <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
                     </TableView>
                 </VBox>
+
+
                 <!-- 设备等待队列 -->
                 <VBox styleClass="card">
                     <Label styleClass="title-4" text="设备等待队列"><padding><Insets bottom="5" left="15" top="10" /></padding></Label>
@@ -280,6 +307,7 @@
             <!-- CPU利用率 + 系统负载 -->
             <GridPane hgap="15" vgap="15">
                 <columnConstraints><ColumnConstraints percentWidth="50" /><ColumnConstraints percentWidth="50" /></columnConstraints>
+
                 <!-- CPU利用率 -->
                 <VBox spacing="10" styleClass="card" GridPane.columnIndex="0">
                     <padding><Insets bottom="15" left="15" right="15" top="15" /></padding>
@@ -294,6 +322,7 @@
                         <Label fx:id="peakCpuLabel" styleClass="text-caption" text="峰值: 0%" />
                     </HBox>
                 </VBox>
+
                 <!-- 系统负载 -->
                 <VBox spacing="10" styleClass="card" GridPane.columnIndex="1">
                     <padding><Insets bottom="15" left="15" right="15" top="15" /></padding>
@@ -310,6 +339,7 @@
                 </VBox>
                 <rowConstraints><RowConstraints /></rowConstraints>
             </GridPane>
+
             <!-- 性能图表容器（代码动态生成折线图/柱状图） -->
             <StackPane fx:id="performanceChartContainer" styleClass="card" VBox.vgrow="ALWAYS">
                 <padding><Insets bottom="10" left="10" right="10" top="10" /></padding>

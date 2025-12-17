@@ -4,6 +4,7 @@ import org.example.scau_os_simulation.device.Device;
 import org.example.scau_os_simulation.device.DeviceRequest;
 import org.example.scau_os_simulation.device.DeviceType;
 import org.example.scau_os_simulation.process.PCB;
+import org.example.scau_os_simulation.process.ProcessState;
 
 import java.util.*;
 
@@ -76,16 +77,17 @@ public class DeviceManager
                 d.allocate(pid, timeUnits);                       // 标记设备被该进程占用
                 // processManager.findProcess 现在是线程安全的
                 PCB pcb = processManager.findProcess(pid).getPcb();
-                pcb.setState(org.example.scau_os_simulation.process.ProcessState.BLOCKED); // 进程阻塞，等待设备完成
+                pcb.setState(ProcessState.BLOCKED); // 进程阻塞，等待设备完成
                 pcb.setBlockReason(type.name());
                 processManager.onProcessBlocked(pid);             // 从就绪队列移至阻塞队列
                 return true;                                      // 立即分配成功
             }
         }
+
         // 无空闲设备：入队等待
         waitQueues.get(type).addLast(new DeviceRequest(pid, type, timeUnits));
         PCB pcb = processManager.findProcess(pid).getPcb();
-        pcb.setState(org.example.scau_os_simulation.process.ProcessState.BLOCKED);
+        pcb.setState(ProcessState.BLOCKED);
         pcb.setBlockReason(type.name());
         processManager.onProcessBlocked(pid);
         return false;                                             // 暂未分配（进入等待队列）
@@ -93,7 +95,6 @@ public class DeviceManager
 
     /**
      * 时间推进
-     * <p>
      * 所有设备 remainingTime 递减；完成时触发进程解阻并尝试分配等待队列。
      */
     public synchronized void tick()
@@ -153,7 +154,7 @@ public class DeviceManager
 
     /**
      * 获取所有设备的扁平化列表（副本）
-     * 【修复】返回新列表，确保 UI 遍历安全
+     * 返回新列表，确保 UI 遍历安全
      */
     public synchronized java.util.List<Device> getAllDevices()
     {
@@ -164,7 +165,7 @@ public class DeviceManager
 
     /**
      * 获取指定类型的等待队列（副本）
-     * 【修复】返回新队列，确保 UI 遍历安全
+     * 返回新队列，确保 UI 遍历安全
      */
     public synchronized java.util.Deque<DeviceRequest> getWaitingQueue(DeviceType type)
     {

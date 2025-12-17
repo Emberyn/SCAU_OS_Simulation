@@ -8,7 +8,7 @@ import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
-import javafx.scene.CacheHint; // 【修复 1】导入正确的 CacheHint
+import javafx.scene.CacheHint;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -20,6 +20,8 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.paint.Color;
+import javafx.scene.control.Tooltip;
 import org.example.scau_os_simulation.device.Device;
 import org.example.scau_os_simulation.device.DeviceRequest;
 import org.example.scau_os_simulation.device.DeviceType;
@@ -31,6 +33,7 @@ import org.example.scau_os_simulation.memory.MemoryBlock;
 import org.example.scau_os_simulation.performance.PerformanceChartFX;
 import org.example.scau_os_simulation.performance.PerformanceMonitor;
 import org.example.scau_os_simulation.process.PCB;
+// 【关键】使用精准导入，避免与 java.lang.Process 冲突
 import org.example.scau_os_simulation.process.Process;
 import org.example.scau_os_simulation.process.Executable;
 
@@ -41,162 +44,266 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import javafx.scene.layout.Pane;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.paint.Color;
-import javafx.scene.control.Tooltip;
 
 /**
- * 操作系统模拟器主控制器
- * 
- * 该类是整个操作系统模拟器的核心控制器，负责：
- * 1. 管理整个GUI界面的生命周期和状态
- * 2. 协调各个子系统（进程、内存、文件系统、设备、性能监控）的显示和交互
- * 3. 处理桌面环境、窗口管理、系统时钟等基础功能
- * 4. 提供用户操作的入口点（按钮点击、菜单选择等）
- * 
- * 主要设计特点：
- * - 使用JavaFX框架构建GUI界面
- * - 采用MVC架构模式，将业务逻辑委托给Kernel类处理
- * - 通过ScheduledExecutorService定时刷新UI，避免阻塞JavaFX应用线程
- * - 实现了内部窗口系统，模拟真实操作系统的多窗口环境
- * - 使用FXML注解实现视图和控制的分离
- * 
- * 性能优化：
- * - UI更新操作都通过Platform.runLater()在JavaFX线程中执行
- * - 定时任务使用单线程调度器，避免资源竞争
- * - 内存可视化采用增量更新策略
- * 
- * @author 操作系统模拟器开发团队
- * @version 1.0
- * @since 2024
+ * 操作系统模拟器 - 主界面控制器 (MainController)
+ * * 核心职责 (MVC - Controller):
+ * 1. 【视图管理】负责加载和管理所有 GUI 组件（桌面、任务栏、窗口、图表）。
+ * 2. 【数据桥接】作为 Model (Kernel) 和 View (FXML) 的中间人，定期从内核拉取数据刷新界面。
+ * 3. 【交互响应】处理用户的所有点击、拖拽、快捷键事件，并调用内核对应的方法执行操作。
+ * 4. 【窗口系统】实现了一套轻量级的内部窗口管理器 (InternalWindow)，模拟真实 OS 的多窗口体验。
+ * * 技术架构特点：
+ * - 线程安全：使用 Platform.runLater() 确保所有 UI 更新都在 JavaFX 应用程序线程执行。
+ * - 定时刷新：使用 ScheduledExecutorService 每 500ms 轮询内核状态，实现动态监控。
+ * - 虚拟桌面：通过 StackPane 和 Pane 的组合，实现了图标层、窗口层、任务栏的分层渲染。
+ * * @author SCAU OS Team
+ * @version 1.0 (Refactored)
  */
 public class MainController implements Initializable {
-    // ========================= 桌面环境核心组件 =========================
-    // 这些组件构成了操作系统模拟器的主界面框架
-    
-    /** 根容器，所有界面元素的最顶层容器，用于承载整个桌面环境 */
+    // =================================================================================
+    // 1. FXML 组件注入
+    // =================================================================================
+
+    // --- 基础容器 ---
+    /** 根容器：最底层，用于层叠背景、桌面图标、窗口层 */
     @FXML private StackPane rootStackPane;
-    
-    /** 桌面区域，用于放置桌面图标（如进程管理、内存管理等快捷方式） */
+    /** 桌面图标区域：流式布局，放置"我的电脑"等图标 */
     @FXML private FlowPane desktopArea;
-    
-    /** 任务栏应用区域，显示当前打开的窗口对应的任务按钮 */
+    /** 底部任务栏：存放开始按钮、时间、已打开窗口的标签 */
     @FXML private HBox taskBarApps;
-    
-    /** 系统时钟标签，显示当前系统时间（格式：yyyy-MM-dd HH:mm） */
+    /** 系统时间显示标签 */
     @FXML private Label systemClockLabel;
-    
-    /** 开始菜单按钮，点击可打开系统功能菜单 */
+    /** "开始"菜单按钮 */
     @FXML private Button startMenuBtn;
 
-    // --- 功能视图容器 ---
-    @FXML private VBox processViewRoot;
-    @FXML private VBox memoryViewRoot;
-    @FXML private VBox fileSystemViewRoot;
-    @FXML private AnchorPane deviceViewRoot;
-    @FXML private VBox performanceViewRoot;
-    @FXML private StackPane performanceChartContainer;
 
-    // --- 功能按钮 ---
-    // 【修复 2】移除了未使用的 undoBtn, redoBtn
-    @FXML private Button startSystemBtn, stopSystemBtn;
-    @FXML private Button createProcessBtn, terminateProcessBtn;
-    @FXML private Button defragmentBtn;
-    @FXML private Button createFileBtn, createDirectoryBtn;
-    @FXML private Button deleteFileBtn, copyFileBtn, pasteFileBtn;
-    @FXML private Button searchFileBtn;
+    // --- 各个功能模块的视图容器 (预加载在 FXML 中，点击图标时放入窗口显示) ---
+    @FXML private VBox processViewRoot;      // 进程管理界面
+    @FXML private VBox memoryViewRoot;       // 内存管理界面
+    @FXML private VBox fileSystemViewRoot;   // 文件资源管理器界面
+    @FXML private AnchorPane deviceViewRoot; // 设备管理界面
+    @FXML private VBox performanceViewRoot;  // 性能监视器界面
+    @FXML private StackPane performanceChartContainer; // 性能折线图容器
 
-    // --- 数据展示组件 ---
+    // --- 工具栏控制按钮 (功能区) ---
+    @FXML private Button startSystemBtn, stopSystemBtn;          // 系统启停
+    @FXML private Button createProcessBtn, terminateProcessBtn;  // 进程控制
+    @FXML private Button defragmentBtn;                          // 内存整理
+    @FXML private Button createFileBtn, createDirectoryBtn;      // 文件创建
+    @FXML private Button deleteFileBtn, copyFileBtn, pasteFileBtn; // 文件操作
+    @FXML private Button searchFileBtn;                          // 文件搜索
+
+
+
+
+
+// =================================================================================
+    // 3. 数据绑定组件 (Data Binding Targets)
+    // 这些组件通过 JavaFX 的 Property 绑定机制，实时显示内核状态
+    // =================================================================================
+
+
+
+    // ---------------------------------------------------------
+    // [A] 进程管理视图 (Process Management View)
+    // 用于展示系统中的所有进程状态、CPU 寄存器值以及调度队列
+    // ---------------------------------------------------------
+
+    /** * 进程控制块 (PCB) 表格
+     * 数据源：kernel.getProcessManager().getProcesses()
+     * 作用：展示系统中所有进程的详细信息列表
+     */
     @FXML private TableView<PCB> processTableView;
-    @FXML private TableColumn<PCB, Number> pidColumn, priorityColumn, memoryAddressColumn, memorySizeColumn;
-    @FXML private TableColumn<PCB, String> nameColumn, stateColumn;
+
+    /** PID 列：显示进程唯一标识符 */
+    @FXML private TableColumn<PCB, Number> pidColumn;
+    /** 优先级列：显示进程调度优先级 (1-5) */
+    @FXML private TableColumn<PCB, Number> priorityColumn;
+    /** 内存基址列：显示进程在物理内存中的起始地址 */
+    @FXML private TableColumn<PCB, Number> memoryAddressColumn;
+    /** 内存大小列：显示进程占用的内存块大小 (KB) */
+    @FXML private TableColumn<PCB, Number> memorySizeColumn;
+
+    /** 进程名称列：显示用户定义的进程名 (如 "计算型_A") */
+    @FXML private TableColumn<PCB, String> nameColumn;
+    /** 状态列：显示进程当前状态 (NEW, READY, RUNNING, BLOCKED, TERMINATED) */
+    @FXML private TableColumn<PCB, String> stateColumn;
+
+    /** * [核心调度指标]
+     * timeSliceColumn: 显示当前时间片剩余值 (RR调度算法核心)
+     * totalRemainingTimeColumn: 显示进程总剩余运行时间 (用于估算完成进度)
+     */
+    @FXML private TableColumn<PCB, Number> timeSliceColumn, totalRemainingTimeColumn;
+
+
+    /** * CPU 状态显示面板
+     * runningPidLabel: 当前占用 CPU 的进程 ID
+     * irLabel: 指令寄存器 (IR)，显示当前正在执行的指令内容
+     * axLabel: 通用寄存器 (AX)，显示运算结果或临时变量
+     * tsLabel: 全局时间片计数器状态
+     */
     @FXML private Label runningPidLabel, irLabel, axLabel, tsLabel;
-    @FXML private ListView<String> outputListView, readyQueueListView, blockedQueueListView, operationLogListView;
-    @FXML private ProgressBar memoryUsageBar, diskUsageBar, cpuUtilizationBar, systemLoadBar;
-    @FXML private Label memoryInfoLabel, fragmentationLabel, diskInfoLabel;
-    @FXML private Label cpuUtilizationLabel, systemLoadLabel, avgCpuLabel, avgMemoryLabel, peakCpuLabel, peakMemoryLabel;
+
+    /** * 调度队列视图
+     * readyQueueListView: 就绪队列，显示等待 CPU 的进程 (PID + 优先级)
+     * blockedQueueListView: 阻塞队列，显示因 IO 等待挂起的进程
+     */
+    @FXML private ListView<String> readyQueueListView, blockedQueueListView;
+
+
+
+    // ---------------------------------------------------------
+    // [B] 系统日志视图 (System Logs)
+    // ---------------------------------------------------------
+
+    /** * 终端输出日志
+     * 显示内核 printToTerminal 的内容，模拟标准输出 (stdout)
+     */
+    @FXML private ListView<String> outputListView;
+
+    /** * 操作日志
+     * 记录关键系统事件 (如 "进程创建 PID=1", "分配内存 64KB")，用于审计和调试
+     */
+    @FXML private ListView<String> operationLogListView;
+
+
+
+    // ---------------------------------------------------------
+    // [C] 资源监控仪表盘 (Resource Monitor)
+    // ---------------------------------------------------------
+
+    /** 进度条组件：可视化显示资源占用百分比 (0.0 - 1.0) */
+    @FXML private ProgressBar memoryUsageBar;   // 物理内存使用率
+    @FXML private ProgressBar diskUsageBar;     // 磁盘空间使用率
+    @FXML private ProgressBar cpuUtilizationBar;// CPU 实时利用率
+    @FXML private ProgressBar systemLoadBar;    // 系统平均负载
+
+    /** 文本标签：显示具体的数值信息 (如 "1024KB / 2048KB") */
+    @FXML private Label memoryInfoLabel;
+    @FXML private Label diskInfoLabel;
+    @FXML private Label fragmentationLabel;     // 内存碎片率显示
+
+    /** 性能统计指标 (Dashboard Metrics) */
+    @FXML private Label cpuUtilizationLabel, systemLoadLabel; // 实时值
+    @FXML private Label avgCpuLabel, avgMemoryLabel;          // 平均值 (历史统计)
+    @FXML private Label peakCpuLabel, peakMemoryLabel;        // 峰值 (历史最高)
+
+
+
+    // ---------------------------------------------------------
+    // [D] 内存管理视图 (Memory Management)
+    // ---------------------------------------------------------
+
+    /** * 内存块分配表
+     * 展示物理内存中每一个已分配块的详细信息 (起始地址、大小、所属进程)
+     */
     @FXML private TableView<MemoryBlock> memoryBlockTableView;
-    @FXML private TableColumn<MemoryBlock, Number> startAddressColumn, blockSizeColumn;
-    @FXML private TableColumn<MemoryBlock, String> processColumn;
+    @FXML private TableColumn<MemoryBlock, Number> startAddressColumn; // 块起始物理地址
+    @FXML private TableColumn<MemoryBlock, Number> blockSizeColumn;    // 块大小
+    @FXML private TableColumn<MemoryBlock, String> processColumn;      // 占用该块的 PID
+
+    /** * 内存可视化画布 (核心组件)
+     * 动态绘制彩色条带：红色代表系统进程，蓝色代表用户进程，白色代表空闲
+     * 高度直观地展示内存碎片化情况
+     */
+    @FXML private Pane memoryVisualizationPane;
+
+    /** 内存刻度尺：在可视化条带上方绘制地址刻度 (0, 64K, 128K...) */
+    @FXML private Pane memoryRulerPane;
+
+
+
+    // ---------------------------------------------------------
+    // [E] 文件系统视图 (File System)
+    // ---------------------------------------------------------
+
+    /** * 目录树视图
+     * 展示层级化的文件系统结构，支持展开/折叠、图标显示、多选操作
+     */
     @FXML private TreeView<String> fileSystemTreeView;
+
+
+
+    // ---------------------------------------------------------
+    // [F] 设备管理视图 (Device Management)
+    // ---------------------------------------------------------
+
+    /** * 设备状态表
+     * 展示所有 IO 设备 (A, B, C) 的当前状态
+     */
     @FXML private TableView<Device> deviceTableView;
-    @FXML private TableColumn<Device, String> deviceTypeColumn, deviceInUseColumn;
-    @FXML private TableColumn<Device, Number> devicePidColumn, deviceRemainColumn;
+    @FXML private TableColumn<Device, String> deviceTypeColumn;   // 设备类型
+    @FXML private TableColumn<Device, String> deviceInUseColumn;  // 是否忙碌 (Busy/Free)
+    @FXML private TableColumn<Device, Number> devicePidColumn;    // 当前占用设备的 PID
+    @FXML private TableColumn<Device, Number> deviceRemainColumn; // 当前作业剩余 IO 时间
+
+    /** * 设备等待队列表
+     * 展示正在排队等待 IO 资源的进程请求
+     */
     @FXML private TableView<WaitRow> waitQueueTableView;
-    @FXML private TableColumn<WaitRow, String> waitDeviceColumn;
-    @FXML private TableColumn<WaitRow, Number> waitPidColumn, waitTimeColumn;
-    // 【修改】在最后添加 timeSliceColumn
-    @FXML private TableColumn<PCB, Number> timeSliceColumn;
-    @FXML private TableColumn<PCB, Number> totalRemainingTimeColumn; // 新增的列
-    @FXML private Pane memoryRulerPane; // 新增的刻度尺
+    @FXML private TableColumn<WaitRow, String> waitDeviceColumn;  // 等待的设备类型
+    @FXML private TableColumn<WaitRow, Number> waitPidColumn;     // 等待进程 PID
+    @FXML private TableColumn<WaitRow, Number> waitTimeColumn;    // 请求所需的 IO 时长
 
-    // --- 后端核心对象引用 ---
+
+
+
+
+
+    // =================================================================================
+    // 2. 核心成员变量
+    // =================================================================================
+
+    /** 操作系统内核引用 (单例模式获取) */
     private Kernel kernel;
-    private final ScheduledExecutorService uiExec = Executors.newSingleThreadScheduledExecutor();
-    private PerformanceChartFX performanceChart;
-    // 【修复 3】移除了未使用的 clipboardFile (单对象)，保留 clipboardFiles (列表)
-    private final Map<Node, InternalWindow> openWindows = new HashMap<>();
-    private final List<Object> clipboardFiles = new ArrayList<>();
-    @FXML
-    private Pane memoryVisualizationPane; // 对应 FXML 中新增的 ID
 
-    // 窗口层 (解决闪烁)
+    /** UI 刷新调度器：单线程池，用于定时从内核拉取数据 */
+    private final ScheduledExecutorService uiExec = Executors.newSingleThreadScheduledExecutor();
+
+    /** 性能图表组件封装 */
+    private PerformanceChartFX performanceChart;
+
+    /** 窗口管理器：记录 "内容节点" -> "窗口外壳" 的映射 */
+    private final Map<Node, InternalWindow> openWindows = new HashMap<>();
+
+    /** 剪贴板：存储复制的文件/目录对象 */
+    private final List<Object> clipboardFiles = new ArrayList<>();
+
+    /** 窗口层：专门用于放置内部窗口 (InternalWindow) 的透明层，覆盖在桌面图标之上 */
     private Pane windowLayer;
 
+
+    // =================================================================================
+    // 3. 初始化逻辑 (Initialize)
+    // =================================================================================
+
     /**
-     * 控制器初始化方法，由JavaFX框架在FXML加载完成后自动调用
-     * 
-     * 该方法负责整个系统界面的初始化工作，包括：
-     * 1. 获取内核实例，建立与业务逻辑层的连接
-     * 2. 初始化数据绑定和性能图表
-     * 3. 设置文件系统树的多选模式
-     * 4. 初始化窗口层，为内部窗口系统做准备
-     * 5. 注册文件系统监听器，实现文件变化的实时刷新
-     * 6. 监听内存视图宽度变化，解决初始显示空白的问题
-     * 7. 设置桌面区域自适应大小
-     * 8. 初始化桌面图标、开始菜单和系统时钟
-     * 9. 执行首次视图更新
-     * 10. 设置文件系统事件处理
-     * 11. 初始化控制按钮状态
-     * 12. 注册全局快捷键（Ctrl+F搜索）
-     * 13. 启动定时刷新任务，每500毫秒更新一次UI
-     * 
-     * 性能考虑：
-     * - 所有UI更新操作都通过Platform.runLater()在JavaFX应用线程中执行
-     * - 使用单线程调度器避免并发问题
-     * - 定时任务间隔设置为500毫秒，平衡实时性和性能
-     * 
-     * @param location FXML文件的位置（通常不需要手动处理）
-     * @param resources 国际化资源包（支持多语言）
+     * JavaFX 控制器入口点
+     * 执行顺序：获取内核 -> 绑定数据 -> 初始化子系统 -> 启动定时任务
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // 获取内核单例实例，建立与业务逻辑层的连接
+        // 1. 获取后端业务逻辑核心
         kernel = Kernel.getInstance();
-        
-        // 初始化数据绑定关系
+
+        // 2. 配置表格列与 JavaFX Property 的绑定关系
         initBindings();
-        
-        // 初始化性能监控图表组件
+
+        // 3. 初始化图表组件 (CPU/内存曲线)
         initializePerformanceChart();
 
-        // 设置文件系统树的选择模式为多选，支持同时选择多个文件/目录
+        // 4. 配置资源管理器的选择模式 (多选)
         fileSystemTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        // 初始化窗口层，为内部窗口系统做准备
+        // 5. 【关键】初始化窗口层，解决窗口遮挡和点击穿透问题
         initWindowLayer();
 
-        // 注册文件系统监听器，当文件系统发生变化时自动刷新视图
-        // 使用Platform.runLater()确保UI更新在JavaFX线程中执行
+        // 6. 注册内核监听器：当文件系统后端发生改变时，通知前端刷新
         kernel.getFileSystemManager().addListener(() -> {
-            Platform.runLater(() -> {
-                updateFileSystemView();
-            });
+            Platform.runLater(this::updateFileSystemView);
         });
 
-        // 监听内存视图宽度变化，解决"刚打开是空白"的问题
-        // 当内存可视化面板宽度大于0时，立即执行内存可视化更新
+        // 7. 解决 JavaFX 布局坑：面板初始化时宽度可能为0，监听宽度变化以便首次绘制
         if (memoryVisualizationPane != null) {
             memoryVisualizationPane.widthProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal.doubleValue() > 0) {
@@ -205,31 +312,25 @@ public class MainController implements Initializable {
             });
         }
 
-        // 设置桌面区域自适应大小，根据内容自动调整尺寸
+        // 8. 布局自适应调整
         desktopArea.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
 
-        // 初始化桌面环境，包括桌面图标和交互功能
-        initDesktop();
-        
-        // 初始化开始菜单
-        initStartMenu();
-        
-        // 启动系统时钟，开始更新时间显示
-        startClock();
+        // 9. 初始化桌面环境组件
+        initDesktop();   // 创建桌面图标
+        initStartMenu(); // 创建开始菜单
+        startClock();    // 启动右上角时钟
 
-        // 执行首次全面视图更新，确保界面显示最新数据
+        // 10. 执行第一次全量视图刷新
         updateAllViews();
-        
-        // 更新文件系统视图
         updateFileSystemView();
-        
-        // 设置文件系统相关的事件监听器
+
+        // 11. 绑定文件系统的交互事件 (双击、右键菜单)
         setupFileSystemEvents();
-        
-        // 初始化控制按钮的可用状态
+
+        // 12. 初始化按钮状态 (未启动系统前，大部分按钮禁用)
         updateControlButtonsState(false);
 
-        // 注册全局快捷键：Ctrl+F 打开文件搜索功能
+        // 13. 注册全局快捷键 (Ctrl+F 搜索)
         rootStackPane.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.isShortcutDown() && e.getCode() == KeyCode.F) {
                 onSearchFileClick();
@@ -237,22 +338,27 @@ public class MainController implements Initializable {
             }
         });
 
-        // 启动定时刷新任务，每500毫秒更新一次UI视图
-        // 使用单线程调度器确保线程安全
+        // 14. 【核心循环】启动 UI 定时刷新任务 (500ms 间隔)
+        // 注意：数据读取在后台线程，UI 更新必须包裹在 Platform.runLater 中
         uiExec.scheduleAtFixedRate(() -> Platform.runLater(() -> {
-            updateProcessView();      // 更新进程视图
-            updateMemoryView();       // 更新内存视图
-            updateDeviceView();       // 更新设备视图
-            updateOperationLogView(); // 更新操作日志视图
-            updatePerformanceChart(); // 更新性能图表
-            updatePerformanceMetrics(); // 更新性能指标
+            updateProcessView();      // 刷新进程列表、CPU 状态
+            updateMemoryView();       // 刷新内存条带、碎片率
+            updateDeviceView();       // 刷新设备状态、等待队列
+            updateOperationLogView(); // 刷新日志输出
+            updatePerformanceChart(); // 刷新折线图数据点
+            updatePerformanceMetrics(); // 刷新顶部状态栏百分比
         }), 0, 500, TimeUnit.MILLISECONDS);
     }
 
-    // 【核心修复】修改初始化逻辑，确保窗口层一定被添加到界面上
+
+
+    /**
+     * 初始化浮动窗口层
+     * 原理：在 StackPane 最上层覆盖一个透明 Pane，所有 InternalWindow 添加到这个层。
+     */
     private void initWindowLayer() {
         this.windowLayer = new Pane();
-        this.windowLayer.setPickOnBounds(false); // 关键：鼠标点击空白处穿透下去，不阻挡底层图标
+        this.windowLayer.setPickOnBounds(false); // 关键：允许鼠标点击空白处穿透到下层的桌面图标
 
         // 绑定大小，跟随根容器，确保覆盖全屏
         this.windowLayer.prefWidthProperty().bind(rootStackPane.widthProperty());
@@ -264,36 +370,26 @@ public class MainController implements Initializable {
         clip.heightProperty().bind(this.windowLayer.heightProperty());
         this.windowLayer.setClip(clip);
 
-        // 【修复点】直接添加到 rootStackPane 的最上层
-        // 这样无论 desktopArea 被藏在哪里，窗口层永远在最上面
+        // 【关键】直接添加到 rootStackPane 的最上层
         rootStackPane.getChildren().add(this.windowLayer);
     }
 
+
+
+    /**
+     * 程序退出清理
+     */
     public void shutdown() {
         if (!uiExec.isShutdown()) {
             uiExec.shutdownNow();
         }
     }
 
-/**
-     * 递归查找树形结构中第一个可执行文件（.e后缀）
-     * 
-     * 该方法用于在文件系统树中自动查找可执行文件，主要用途：
-     * 1. 系统启动时自动定位到第一个可执行文件
-     * 2. 为用户提供快捷的执行文件入口
-     * 3. 演示文件系统的遍历功能
-     * 
-     * 搜索逻辑：
-     * - 深度优先搜索：先检查当前节点，再递归检查子节点
-     * - 后缀匹配：查找以".e"结尾的文件名
-     * - 返回第一个匹配项：找到后立即返回，不继续搜索
-     * 
-     * @param node 搜索的起始树节点
-     * @return 第一个找到的可执行文件节点，如果未找到返回null
-     * 
-     * @see TreeItem
-     * @see String#endsWith(String)
-     */
+    // =================================================================================
+    // 4. 辅助查找方法
+    // =================================================================================
+
+    /** 递归查找第一个可执行文件 (.e) */
     private TreeItem<String> findFirstExecutable(TreeItem<String> node) {
         if (node.getValue() != null && node.getValue().endsWith(".e")) {
             return node;
@@ -305,29 +401,7 @@ public class MainController implements Initializable {
         return null;
     }
 
-    /**
-     * 展开树形节点的父路径（确保选中项可见）
-     * 
-     * 该方法用于确保指定的树节点在界面中可见，主要应用场景：
-     * 1. 自动选择文件后，确保用户能看到选中的文件
-     * 2. 搜索功能定位到文件后，展开其父目录
-     * 3. 程序启动时展开到默认位置
-     * 
-     * 实现逻辑：
-     * - 自底向上遍历：从目标节点开始，逐级向上查找父节点
-     * - 展开所有父节点：将路径上的所有父节点设置为展开状态
-     * - 确保可见性：展开后目标节点将在树中可见
-     * 
-     * 用户体验：
-     * - 自动展开避免了用户手动点击展开的操作
-     * - 保持展开状态，用户可以看到完整的文件路径
-     * - 与选中操作配合使用，提供完整的视觉反馈
-     * 
-     * @param item 需要展开的目标树节点
-     * 
-     * @see TreeItem#setExpanded(boolean)
-     * @see TreeItem#getParent()
-     */
+    /** 展开树路径，确保目标可见 */
     private void expandPath(TreeItem<String> item) {
         TreeItem<String> parent = item.getParent();
         while (parent != null) {
@@ -336,6 +410,11 @@ public class MainController implements Initializable {
         }
     }
 
+    // =================================================================================
+    // 5. 桌面环境逻辑 (Desktop & Icons)
+    // =================================================================================
+
+    /** 初始化桌面图标 */
     private void initDesktop() {
         addDesktopIcon("进程管理", "process.png", processViewRoot, 800, 600);
         addDesktopIcon("内存管理", "memory.png", memoryViewRoot, 700, 500);
@@ -345,6 +424,7 @@ public class MainController implements Initializable {
         addDesktopIcon("终端", "terminal.png", null, 600, 400);
     }
 
+    /** 启动右上角时钟 */
     private void startClock() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         uiExec.scheduleAtFixedRate(() -> {
@@ -357,6 +437,7 @@ public class MainController implements Initializable {
 
     @FXML protected void onDesktopClick() { }
 
+    /** 创建单个桌面图标 */
     private void addDesktopIcon(String name, String iconFileName, Node contentNode, double winWidth, double winHeight) {
         VBox iconBox = new VBox(5);
         iconBox.setAlignment(Pos.TOP_CENTER);
@@ -382,6 +463,7 @@ public class MainController implements Initializable {
         } catch (Exception e) {
             Label fallbackLabel = new Label();
             fallbackLabel.getStyleClass().add("icon-label-fallback");
+            // 回退图标
             switch (name) {
                 case "进程管理" -> fallbackLabel.setText("⚙️");
                 case "内存管理" -> fallbackLabel.setText("🧠");
@@ -398,6 +480,7 @@ public class MainController implements Initializable {
         nameLbl.getStyleClass().add("icon-label");
         iconBox.getChildren().addAll(graphicNode, nameLbl);
 
+        // 双击事件
         iconBox.setOnMouseClicked(e -> {
             if (e.getClickCount() == 2 && e.getButton() == MouseButton.PRIMARY) {
                 if ("终端".equals(name)) onOpenTerminalClick();
@@ -405,6 +488,7 @@ public class MainController implements Initializable {
             }
         });
 
+        // 右键菜单
         ContextMenu menu = new ContextMenu();
         MenuItem openItem = new MenuItem("打开");
         openItem.setOnAction(ev -> {
@@ -417,160 +501,108 @@ public class MainController implements Initializable {
         desktopArea.getChildren().add(iconBox);
     }
 
+    // =================================================================================
+    // 6. 内存可视化逻辑 (Memory Visualization)
+    // =================================================================================
 
-
-/**
+    /**
      * 【终极修复版】绘制内存条带与刻度尺
-     * 
-     * 该方法负责在内存可视化面板中绘制内存使用情况的图形表示，包括：
-     * 1. 内存块可视化：用彩色矩形表示已分配的内存块
-     * 2. 内存刻度尺：在顶部显示内存地址刻度，便于用户了解内存分布
-     * 
-     * 核心特性：
-     * - 自适应布局：根据面板宽度动态调整显示比例
-     * - 颜色编码：系统进程使用红色，用户进程使用蓝色
-     * - 智能刻度：根据窗口宽度自动计算刻度间隔，防止文字重叠
-     * - 工具提示：鼠标悬停显示详细的内存块信息
-     * - 边界保护：确保图形元素不会超出面板边界
-     * 
-     * 性能优化：
-     * - 宽度为0时直接返回，避免无效计算
-     * - 先清空再重绘，确保显示一致性
-     * - 使用估算文字宽度，避免昂贵的文字测量操作
-     * 
-     * 修复历史：
-     * - 修复了宽度为0导致不显示的问题
-     * - 修复了刻度尺文字重叠问题
-     * - 修复了小窗口下边框过粗的问题
-     * 
-     * 设计原理：
-     * - 采用比例映射：内存地址和大小按比例映射到面板像素
-     * - 步长规整化：刻度步长对齐到64KB倍数，显示更规整
-     * - 视觉层次：通过颜色、边框、透明度区分不同元素
+     * 包括：彩色内存块、自适应宽度、智能刻度尺
      */
     private void updateMemoryVisualization() {
-        // ========================= 阶段1：安全检查 =========================
-        // 确保内存可视化面板存在且有有效宽度，避免后续计算出现除零错误
         if (memoryVisualizationPane == null || memoryVisualizationPane.getWidth() <= 0) {
-            return; // 面板未准备好，直接返回
+            return;
         }
 
-        // ========================= 阶段2：清空画布 =========================
-        // 清除之前的绘制内容，确保显示的一致性和正确性
+        // 清空画布
         memoryVisualizationPane.getChildren().clear();
         if (memoryRulerPane != null) memoryRulerPane.getChildren().clear();
 
-        // ========================= 阶段3：获取基础数据 =========================
-        // 获取面板的物理尺寸，用于后续的像素映射计算
         double paneWidth = memoryVisualizationPane.getWidth();
         double paneHeight = memoryVisualizationPane.getPrefHeight();
-        
-        // 获取内存总大小 (KB)，这是所有比例计算的基础
+
         int totalMemorySize = kernel.getMemoryManager().getMemory().getSize();
-        
-        // 获取当前已分配的内存块列表，这些是我们要可视化显示的对象
         var allocatedBlocks = kernel.getMemoryManager().getAllocatedBlocks();
 
-        // =========================================================
-        // A. 绘制内存块 (彩色方块)
-        // =========================================================
+        // --- A. 绘制内存块 ---
         for (MemoryBlock block : allocatedBlocks) {
-            // 计算比例位置
             double x = ((double) block.getStartAddress() / totalMemorySize) * paneWidth;
             double w = ((double) block.getSize() / totalMemorySize) * paneWidth;
 
-            // 视觉修正：防止块太小完全消失，但在小窗口下不强制过大导致重叠
-            // 使用 0.5px 主要是为了让它在屏幕上至少有一条线
+            // 视觉修正：防止块太小看不见
             if (w < 0.5) w = 0.5;
 
             Rectangle rect = new Rectangle(x, 0, w, paneHeight);
 
-            // 颜色判断：系统进程(PID -1)用红色，普通进程用蓝色
+            // 颜色：系统红，用户蓝
             int pid = findProcessIdForMemoryBlock(block);
-            if (pid == -1) {
-                rect.setFill(Color.web("#e74c3c")); // 系统红
-            } else {
-                rect.setFill(Color.web("#3498db")); // 用户蓝
-            }
+            if (pid == -1) rect.setFill(Color.web("#e74c3c"));
+            else rect.setFill(Color.web("#3498db"));
 
-            // 描边设置：在小窗口模式下，去掉描边或设得极细，防止全是边框颜色
-            if (paneWidth < 600) {
-                rect.setStrokeWidth(0); // 窗口太小时，去掉边框
-            } else {
+            // 描边
+            if (paneWidth < 600) rect.setStrokeWidth(0);
+            else {
                 rect.setStroke(Color.WHITE);
                 rect.setStrokeWidth(0.5);
             }
 
-            // Tooltip 详情
+            // Tooltip
             String info = String.format("PID: %s\n地址: %d\n大小: %d KB",
-                    (pid == -1 ? "System" : pid),
-                    block.getStartAddress(),
-                    block.getSize());
+                    (pid == -1 ? "System" : pid), block.getStartAddress(), block.getSize());
             Tooltip.install(rect, new Tooltip(info));
 
             memoryVisualizationPane.getChildren().add(rect);
         }
 
-        // =========================================================
-        // B. 绘制刻度尺 (自适应算法)
-        // =========================================================
+        // --- B. 绘制刻度尺 (自适应算法) ---
         if (memoryRulerPane != null) {
-            // 【核心修复算法】
-            // 1. 设定每个刻度文字至少需要占用 60 像素宽度，才不会重叠
             double minPixelsPerLabel = 60.0;
-
-            // 2. 计算当前宽度最多能容纳多少个标签
             int maxLabels = (int) (paneWidth / minPixelsPerLabel);
-            if (maxLabels < 1) maxLabels = 1; // 至少显示结束值
+            if (maxLabels < 1) maxLabels = 1;
 
-            // 3. 计算理想的内存步长 (KB)
             int rawStep = totalMemorySize / maxLabels;
-
-            // 4. 将步长规整化：向下取整到最近的 64KB 倍数 (因为内存块通常是64的倍数)
-            // 这样显示的刻度如 0, 128, 256 会比 0, 143, 286 这种数字好看得多
             int step = 64;
-            while (step < rawStep) {
-                step += 64; // 步进增加 64，直到满足最小像素间隔
-            }
+            while (step < rawStep) step += 64; // 64KB 对齐
 
-            // 5. 循环绘制
             for (int addr = 0; addr <= totalMemorySize; addr += step) {
-                // 计算 X 坐标
                 double x = ((double) addr / totalMemorySize) * paneWidth;
 
-                // 画小竖线
                 javafx.scene.shape.Line line = new javafx.scene.shape.Line(x, 0, x, 5);
                 line.setStroke(Color.GRAY);
 
-                // 画文字
                 javafx.scene.text.Text text = new javafx.scene.text.Text(String.valueOf(addr));
                 text.setStyle("-fx-font-size: 10px; -fx-fill: #666;");
 
-                // 文字居中修正
-                double textWidthEstimate = text.getText().length() * 6.0; // 估算文字宽度
+                double textWidthEstimate = text.getText().length() * 6.0;
                 double textX = x - (textWidthEstimate / 2);
 
-                // 边界修正：最左边不要出界，最右边也不要出界
+                // 边界修正
                 if (textX < 0) textX = 0;
                 if (textX + textWidthEstimate > paneWidth) textX = paneWidth - textWidthEstimate;
 
                 text.setX(textX);
-                text.setY(15); // 距离上方线条的距离
+                text.setY(15);
 
                 memoryRulerPane.getChildren().addAll(line, text);
             }
         }
     }
 
+    // =================================================================================
+    // 7. 窗口管理核心逻辑 (Window Manager)
+    // =================================================================================
 
-
+    /**
+     * 打开或激活一个窗口
+     */
     private void openWindow(String title, Node content, double w, double h) {
         if (content == null) return;
 
-        // 【新增】强制确保内容可见（防止 FXML 中设置了 visible="false"）
+        // 强制确保内容可见
         content.setVisible(true);
         content.setManaged(true);
 
+        // 如果已存在，则置顶
         if (openWindows.containsKey(content)) {
             InternalWindow existing = openWindows.get(content);
             existing.toFront();
@@ -582,6 +614,7 @@ public class MainController implements Initializable {
             return;
         }
 
+        // 创建新窗口
         InternalWindow window = new InternalWindow(title, content, w, h);
         double offset = openWindows.size() * 30;
         window.setLayoutX(100 + offset);
@@ -592,8 +625,7 @@ public class MainController implements Initializable {
         addTaskBarItem(window);
     }
 
-
-
+    /** 添加任务栏按钮 */
     private void addTaskBarItem(InternalWindow window) {
         Button taskBtn = new Button(window.title);
         taskBtn.getStyleClass().add("task-app-btn");
@@ -609,85 +641,79 @@ public class MainController implements Initializable {
         taskBarApps.getChildren().add(taskBtn);
     }
 
-/**
-     * 内部窗口类 - 模拟操作系统窗口系统的核心组件
-     * 
-     * 该类实现了操作系统模拟器中的窗口管理功能，提供了类似真实操作系统的窗口体验：
-     * 1. 窗口拖动：通过标题栏拖动整个窗口
-     * 2. 窗口调整：支持八个方向的边框调整
-     * 3. 窗口最大化：支持最大化/还原功能
-     * 4. 窗口控制：提供最小化、关闭等标准窗口操作
-     * 
-     * 设计特点：
-     * - 继承自VBox，使用JavaFX布局系统
-     * - 采用组合模式，包含标题栏和内容区域
-     * - 使用枚举定义调整大小的方向
-     * - 支持自定义关闭回调函数
-     * 
-     * 交互体验：
-     * - 鼠标悬停时显示相应的调整光标
-     * - 拖动过程中实时预览窗口变化
-     * - 最大化时记住原始位置和大小
-     * - 边界保护，防止窗口过小
-     * 
-     * 性能考虑：
-     * - 使用缓存变量减少重复计算
-     * - 事件处理中及时消耗事件，避免冒泡
-     * - 使用最小尺寸限制，防止无效状态
-     * 
-     * @see VBox
-     * @see Runnable
-     */
-    // --- 内部窗口类 ---
-    class InternalWindow extends VBox {
-        // ========================= 窗口位置状态 =========================
-        /** 鼠标按下时相对于窗口的X偏移量，用于拖动计算 */
-        private double xOffset = 0, yOffset = 0;
-        
-        /** 窗口拖动开始时的初始位置和大小，用于恢复和边界计算 */
-        private double initX, initY, initW, initH;
-        
-        /** 标记是否正在拖动窗口，用于区分拖动和其他鼠标操作 */
-        private boolean isDraggingWindow = false;
-        
-        /** 窗口的最大化状态，true表示当前处于最大化状态 */
-        private boolean isMaximized = false;
-        
-        /** 窗口最大化前的位置和大小，用于还原操作 */
-        private double restoreX, restoreY, restoreW, restoreH;
-        
-        /** 调整窗口大时的检测边距，鼠标进入此范围显示调整光标 */
-        private static final double RESIZE_MARGIN = 10.0;
-        
-        /** 窗口最小宽度限制，防止窗口过小影响使用 */
-        private static final double MIN_WIDTH = 200;
-        
-        /** 窗口最小高度限制，确保内容区域有足够空间 */
-        private static final double MIN_HEIGHT = 150;
 
-        // ========================= 窗口属性 =========================
-        /** 窗口标题，显示在标题栏和任务栏按钮上 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * 内部窗口类 (InternalWindow) - 模拟操作系统窗口系统的核心组件
+     * * 核心职责：
+     * 1. 提供标准的窗口外观（标题栏、控制按钮、内容区域）。
+     * 2. 实现窗口管理器功能（拖拽移动、边缘缩放、最大化/还原、关闭）。
+     * 3. 解决 JavaFX 中嵌套窗口的层级和事件冲突问题。
+     */
+    class InternalWindow extends VBox {
+        // ========================= 1. 窗口状态变量 =========================
+        // 用于计算拖拽时的位移差值
+        private double xOffset = 0, yOffset = 0;
+        // 记录操作开始时的窗口状态（用于计算缩放增量）
+        private double initX, initY, initW, initH;
+
+        // 状态标记位
+        private boolean isDraggingWindow = false; // 是否正在拖动窗口位置
+        private boolean isMaximized = false;      // 是否处于最大化状态
+
+        // 记录最大化前的窗口位置/大小，用于点击"还原"按钮时恢复
+        private double restoreX, restoreY, restoreW, restoreH;
+
+        // ========================= 2. 常量定义 =========================
+        private static final double RESIZE_MARGIN = 10.0; // 鼠标距离边缘多少像素内触发"缩放模式"
+        private static final double MIN_WIDTH = 200;      // 窗口最小宽度限制
+        private static final double MIN_HEIGHT = 150;     // 窗口最小高度限制
+
+        // ========================= 3. UI 组件 =========================
         String title;
-        
-        /** 窗口关闭时的回调函数，用于清理资源和更新UI */
-        Runnable onClosed;
-        
-        /** 最大化/还原按钮的引用，用于动态更新按钮图标 */
-        private final Button maxBtn;
-        
-        /** 当前调整大小模式，指示用户正在从哪个方向调整窗口 */
+        Runnable onClosed; // 窗口关闭时的回调函数（用于从任务栏移除按钮）
+        private final Button maxBtn; // 最大化按钮引用（因为图标会变，所以需要持有引用）
+
+        // 缩放模式枚举：记录鼠标当前位于窗口的哪个边缘/角落
         private ResizeMode currentResizeMode = ResizeMode.NONE;
-        
-        /** 调整大小方向枚举，定义了八个可能的调整方向 */
         private enum ResizeMode { NONE, TOP, RIGHT, BOTTOM, LEFT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT }
 
+        /**
+         * 构造函数：初始化窗口外观和事件
+         */
         public InternalWindow(String title, Node content, double w, double h) {
-            this.setManaged(false);
+            this.setManaged(false); // 关键：取消布局托管，允许手动设置 X/Y 坐标
             this.title = title;
             this.resize(w, h);
             this.setPrefSize(w, h);
-            this.getStyleClass().add("window-frame");
+            this.getStyleClass().add("window-frame"); // 应用 CSS 样式
 
+            // ---------------------------------------------------------
+            // A. 构建标题栏 (TitleBar)
+            // ---------------------------------------------------------
             HBox titleBar = new HBox();
             titleBar.getStyleClass().add("window-title-bar");
             titleBar.setAlignment(Pos.CENTER_LEFT);
@@ -696,14 +722,18 @@ public class MainController implements Initializable {
 
             Label titleLbl = new Label(title);
             titleLbl.getStyleClass().add("window-title");
+
+            // 占位符：将标题挤到左边，按钮挤到右边
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
+            // 按钮样式定义 (内联样式用于微调)
             String baseStyle = "-fx-font-weight: bold; -fx-background-color: transparent;";
             String minBtnStyle = baseStyle + "-fx-font-size: 10px; -fx-alignment: bottom-center; -fx-padding: 0 0 3 0;";
             String maxCloseStyle = baseStyle + "-fx-font-size: 12px; -fx-alignment: center; -fx-padding: 0;";
             String hoverBg = "-fx-background-color: #e0e0e0;";
 
+            // [最小化按钮] - 逻辑上只是隐藏窗口
             Button minBtn = new Button("—");
             minBtn.getStyleClass().add("window-close-btn");
             minBtn.setStyle(minBtnStyle);
@@ -712,6 +742,7 @@ public class MainController implements Initializable {
             minBtn.setOnMouseEntered(e -> minBtn.setStyle(minBtnStyle + hoverBg));
             minBtn.setOnMouseExited(e -> minBtn.setStyle(minBtnStyle));
 
+            // [最大化按钮]
             maxBtn = new Button("□");
             maxBtn.getStyleClass().add("window-close-btn");
             maxBtn.setStyle(maxCloseStyle);
@@ -720,113 +751,185 @@ public class MainController implements Initializable {
             maxBtn.setOnMouseEntered(e -> maxBtn.setStyle(maxCloseStyle + hoverBg));
             maxBtn.setOnMouseExited(e -> maxBtn.setStyle(maxCloseStyle));
 
+            // [关闭按钮]
             Button closeBtn = new Button("✕");
             closeBtn.getStyleClass().add("window-close-btn");
             closeBtn.setStyle(maxCloseStyle);
             closeBtn.setPrefSize(30, 20);
-            closeBtn.setOnAction(e -> close());
+            closeBtn.setOnAction(e -> close()); // 调用清理逻辑
+
+            // 关闭按钮的红色悬停效果
             String closeHover = "-fx-background-color: #e81123; -fx-text-fill: white;";
             closeBtn.setOnMouseEntered(e -> closeBtn.setStyle(maxCloseStyle + closeHover));
             closeBtn.setOnMouseExited(e -> closeBtn.setStyle(maxCloseStyle + "-fx-text-fill: black;"));
 
             titleBar.getChildren().addAll(titleLbl, spacer, minBtn, maxBtn, closeBtn);
 
+            // ---------------------------------------------------------
+            // B. 构建内容容器
+            // ---------------------------------------------------------
             VBox contentContainer = new VBox(content);
             contentContainer.setPadding(new Insets(5));
-            VBox.setVgrow(contentContainer, Priority.ALWAYS);
+            VBox.setVgrow(contentContainer, Priority.ALWAYS); // 内容区自动撑满剩余空间
 
+            // 强制内容组件填满窗口
             if (content instanceof Region r) r.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             if (content instanceof Control c) c.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             VBox.setVgrow(content, Priority.ALWAYS);
 
             this.getChildren().addAll(titleBar, contentContainer);
+
+            // ---------------------------------------------------------
+            // C. 绑定交互事件 (核心)
+            // ---------------------------------------------------------
             setupWindowEvents();
 
-            // 【修复 1】使用正确的类引用
+            // 性能优化：启用缓存以提高拖动时的渲染帧率
             this.setCache(true);
             this.setCacheHint(CacheHint.SPEED);
 
+            // 确保样式应用后再计算布局
             Platform.runLater(() -> {
                 this.requestLayout();
                 this.applyCss();
             });
         }
 
+        /**
+         * 【核心逻辑】配置窗口的所有鼠标交互事件
+         * 这是一个状态机，根据鼠标位置和按下状态在"普通"、"拖拽"、"缩放"模式间切换。
+         */
         private void setupWindowEvents() {
+            // 1. [鼠标移动]：检测边缘，改变光标形状 (提示用户可以缩放)
             this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_MOVED, e -> {
-                if (isMaximized) { this.setCursor(Cursor.DEFAULT); return; }
+                if (isMaximized) { this.setCursor(Cursor.DEFAULT); return; } // 最大化时不改变光标
+
+                // 计算当前鼠标处于哪个边缘区域
                 ResizeMode mode = getResizeMode(e.getX(), e.getY());
+                // 根据区域设置光标 (例如：右边缘显示 H_RESIZE 箭头)
                 setCursorBasedOnMode(mode);
             });
+
+            // 2. [鼠标移出]：还原默认光标
             this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_EXITED, e -> {
+                // 如果没按住鼠标(非拖动中)，则还原光标
                 if (!e.isPrimaryButtonDown()) this.setCursor(Cursor.DEFAULT);
             });
+
+            // 3. [鼠标按下]：决定操作模式 (拖动 vs 缩放 vs 点击)
             this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
-                this.toFront();
-                boolean isHeader = e.getY() < 32;
-                boolean isButtonArea = e.getX() > (this.getWidth() - 90) && isHeader;
-                if (isHeader && !isButtonArea && e.getClickCount() == 2) { toggleMaximize(); e.consume(); return; }
-                if (isMaximized) return;
+                this.toFront(); // 点击窗口即置顶
+
+                // 判定点击区域
+                boolean isHeader = e.getY() < 32; // 是否点击了标题栏
+                boolean isButtonArea = e.getX() > (this.getWidth() - 90) && isHeader; // 是否点击了按钮区
+
+                // [双击标题栏] -> 触发最大化/还原
+                if (isHeader && !isButtonArea && e.getClickCount() == 2) {
+                    toggleMaximize();
+                    e.consume();
+                    return;
+                }
+
+                if (isMaximized) return; // 最大化状态下禁止拖动和缩放
+
+                // [边缘检测] -> 进入缩放模式
                 ResizeMode mode = getResizeMode(e.getX(), e.getY());
                 if (mode != ResizeMode.NONE) {
-                    currentResizeMode = mode; initX = this.getLayoutX(); initY = this.getLayoutY();
-                    initW = this.getWidth(); initH = this.getHeight();
-                    xOffset = e.getSceneX(); yOffset = e.getSceneY(); e.consume(); return;
-                }
-                if (isHeader && !isButtonArea) {
-                    currentResizeMode = ResizeMode.NONE; isDraggingWindow = true;
+                    currentResizeMode = mode;
+                    // 记录初始快照，用于 delta 计算
                     initX = this.getLayoutX(); initY = this.getLayoutY();
-                    xOffset = e.getSceneX(); yOffset = e.getSceneY(); e.consume();
+                    initW = this.getWidth(); initH = this.getHeight();
+                    xOffset = e.getSceneX(); yOffset = e.getSceneY();
+                    e.consume();
+                    return;
+                }
+
+                // [标题栏检测] -> 进入拖动模式
+                if (isHeader && !isButtonArea) {
+                    currentResizeMode = ResizeMode.NONE;
+                    isDraggingWindow = true;
+                    // 记录初始位置
+                    initX = this.getLayoutX(); initY = this.getLayoutY();
+                    xOffset = e.getSceneX(); yOffset = e.getSceneY();
+                    e.consume();
                 }
             });
+
+            // 4. [鼠标拖拽]：执行实际的位置/大小变更
             this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_DRAGGED, e -> {
                 if (isMaximized) return;
-                if (currentResizeMode != ResizeMode.NONE) { handleResize(e); e.consume(); }
+
+                // 场景 A: 调整大小
+                if (currentResizeMode != ResizeMode.NONE) {
+                    handleResize(e);
+                    e.consume();
+                }
+                // 场景 B: 移动窗口
                 else if (isDraggingWindow) {
+                    // 新位置 = 初始位置 + (当前鼠标绝对坐标 - 按下时鼠标绝对坐标)
                     this.setLayoutX(initX + (e.getSceneX() - xOffset));
                     this.setLayoutY(initY + (e.getSceneY() - yOffset));
                     e.consume();
                 }
             });
+
+            // 5. [鼠标释放]：重置状态
             this.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED, e -> {
-                isDraggingWindow = false; currentResizeMode = ResizeMode.NONE;
+                isDraggingWindow = false;
+                currentResizeMode = ResizeMode.NONE;
             });
         }
 
+        /** 切换窗口最大化/还原状态 */
         private void toggleMaximize() {
             if (getParent() == null) return;
-            Region parent = (Region) getParent();
+            Region parent = (Region) getParent(); // 获取父容器(WindowLayer)
+
             if (isMaximized) {
+                // [还原]：恢复到之前记录的坐标和尺寸
                 this.setLayoutX(restoreX); this.setLayoutY(restoreY);
                 this.setPrefSize(restoreW, restoreH); this.resize(restoreW, restoreH);
-                maxBtn.setText("□"); isMaximized = false;
-                this.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;");
+                maxBtn.setText("□");
+                isMaximized = false;
+                this.setStyle("-fx-background-radius: 5; -fx-border-radius: 5;"); // 恢复圆角
             } else {
+                // [最大化]：记录当前状态，然后填满父容器
                 restoreX = this.getLayoutX(); restoreY = this.getLayoutY();
                 restoreW = this.getWidth(); restoreH = this.getHeight();
                 this.setLayoutX(0); this.setLayoutY(0);
                 this.setPrefSize(parent.getWidth(), parent.getHeight());
                 this.resize(parent.getWidth(), parent.getHeight());
-                maxBtn.setText("❐"); isMaximized = true;
-                this.setStyle("-fx-background-radius: 0; -fx-border-radius: 0;");
+                maxBtn.setText("❐");
+                isMaximized = true;
+                this.setStyle("-fx-background-radius: 0; -fx-border-radius: 0;"); // 最大化去除圆角
             }
             this.requestLayout();
         }
 
+        /** 处理窗口缩放的具体数学计算 */
         private void handleResize(javafx.scene.input.MouseEvent e) {
             double deltaX = e.getSceneX() - xOffset;
             double deltaY = e.getSceneY() - yOffset;
             double newX = initX, newY = initY, newW = initW, newH = initH;
+
+            // 根据拉伸方向调整宽/高/XY坐标
             if (isLeft(currentResizeMode)) { newW = initW - deltaX; newX = initX + deltaX; }
             else if (isRight(currentResizeMode)) { newW = initW + deltaX; }
+
             if (isTop(currentResizeMode)) { newH = initH - deltaY; newY = initY + deltaY; }
             else if (isBottom(currentResizeMode)) { newH = initH + deltaY; }
+
+            // 限制最小尺寸，防止窗口反向
             if (newW < MIN_WIDTH) { newW = MIN_WIDTH; if (isLeft(currentResizeMode)) newX = initX + (initW - MIN_WIDTH); }
             if (newH < MIN_HEIGHT) { newH = MIN_HEIGHT; if (isTop(currentResizeMode)) newY = initY + (initH - MIN_HEIGHT); }
+
+            // 应用新尺寸
             this.resize(newW, newH); this.setPrefSize(newW, newH);
             this.setLayoutX(newX); this.setLayoutY(newY); this.layout();
         }
 
+        // --- 辅助方法：判定鼠标位置 ---
         private ResizeMode getResizeMode(double x, double y) {
             boolean left = x < RESIZE_MARGIN; boolean right = x > this.getWidth() - RESIZE_MARGIN;
             boolean top = y < RESIZE_MARGIN; boolean bottom = y > this.getHeight() - RESIZE_MARGIN;
@@ -836,10 +939,14 @@ public class MainController implements Initializable {
             if (left) return ResizeMode.LEFT; if (right) return ResizeMode.RIGHT;
             return ResizeMode.NONE;
         }
+
+        // --- 辅助方法：方向判断简写 ---
         private boolean isLeft(ResizeMode m) { return m == ResizeMode.LEFT || m == ResizeMode.TOP_LEFT || m == ResizeMode.BOTTOM_LEFT; }
         private boolean isRight(ResizeMode m) { return m == ResizeMode.RIGHT || m == ResizeMode.TOP_RIGHT || m == ResizeMode.BOTTOM_RIGHT; }
         private boolean isTop(ResizeMode m) { return m == ResizeMode.TOP || m == ResizeMode.TOP_LEFT || m == ResizeMode.TOP_RIGHT; }
         private boolean isBottom(ResizeMode m) { return m == ResizeMode.BOTTOM || m == ResizeMode.BOTTOM_LEFT || m == ResizeMode.BOTTOM_RIGHT; }
+
+        /** 根据模式设置光标样式 */
         private void setCursorBasedOnMode(ResizeMode mode) {
             switch (mode) {
                 case TOP, BOTTOM -> this.setCursor(Cursor.V_RESIZE);
@@ -850,40 +957,54 @@ public class MainController implements Initializable {
             }
         }
 
+        /** 窗口关闭逻辑 */
         public void close() {
             this.setVisible(false);
-            if (onClosed != null) onClosed.run();
-            if (getParent() instanceof Pane p) p.getChildren().remove(this);
-            openWindows.values().remove(this);
+            if (onClosed != null) onClosed.run(); // 通知 TaskBar 移除图标
+            if (getParent() instanceof Pane p) p.getChildren().remove(this); // 从界面移除节点
+            openWindows.values().remove(this); // 从控制器缓存移除
         }
     }
 
+    // =================================================================================
+    // 8. 全局 UI 初始化方法 (开始菜单、关于窗口等)
+    // =================================================================================
+
+    /** 初始化"开始"菜单的上下文菜单 */
     private void initStartMenu() {
         ContextMenu startMenu = new ContextMenu();
         startMenu.getStyleClass().add("start-menu");
+
         MenuItem itemHelp = new MenuItem("❓  关于 / 帮助");
         MenuItem itemTerminal = new MenuItem("💻  终端");
         SeparatorMenuItem separator = new SeparatorMenuItem();
         MenuItem itemShutdown = new MenuItem("🔴  关闭系统");
+
+        // 绑定事件
         itemHelp.setOnAction(e -> showAboutWindow());
         itemTerminal.setOnAction(e -> onOpenTerminalClick());
         itemShutdown.setOnAction(e -> {
-            shutdown();
+            shutdown(); // 关闭线程池
             if (kernel != null && kernel.getScheduler() != null) kernel.getScheduler().stop();
             Platform.exit();
             System.exit(0);
         });
+
         startMenu.getItems().addAll(itemHelp, itemTerminal, separator, itemShutdown);
+
+        // 点击按钮显示/隐藏菜单
         startMenuBtn.setOnAction(e -> {
             if (startMenu.isShowing()) startMenu.hide();
             else startMenu.show(startMenuBtn, Side.TOP, 0, 0);
         });
     }
 
+    /** 显示"关于"窗口 */
     private void showAboutWindow() {
         VBox content = new VBox(15);
         content.setPadding(new Insets(20));
         content.setAlignment(Pos.CENTER);
+
         Label title = new Label("SCAU OS Simulation");
         title.getStyleClass().add("about-title");
         Label version = new Label("版本: v1.0.0 Alpha");
@@ -894,14 +1015,18 @@ public class MainController implements Initializable {
         desc.setAlignment(Pos.CENTER);
         Label author = new Label("© 2024 SCAU OS Team");
         author.getStyleClass().add("about-author");
+
         Button closeBtn = new Button("确定");
         content.getChildren().addAll(title, version, desc, new Separator(), author, closeBtn);
 
+        // 创建并显示窗口
         InternalWindow aboutWin = new InternalWindow("关于系统", content, 450, 400);
+        // 居中显示算法
         double x = (desktopArea.getWidth() - 450) / 2;
         double y = (desktopArea.getHeight() - 400) / 2;
         aboutWin.setLayoutX(x > 0 ? x : 100);
         aboutWin.setLayoutY(y > 0 ? y : 100);
+
         closeBtn.setOnAction(e -> aboutWin.close());
 
         windowLayer.getChildren().add(aboutWin);
@@ -909,14 +1034,20 @@ public class MainController implements Initializable {
         addTaskBarItem(aboutWin);
     }
 
+    /** 绑定文件系统的交互事件 (右键菜单、快捷键、双击) */
     private void setupFileSystemEvents() {
+        // [鼠标点击]
         fileSystemTreeView.setOnMouseClicked(event -> {
+            // 安全检查：系统必须启动后才能操作文件
             if (Kernel.getInstance().getScheduler() == null || !Kernel.getInstance().getScheduler().isRunning()) {
                 if (event.getClickCount() == 2) showWarning("系统未启动", "请先点击 [▶ 启动系统] 按钮。");
                 return;
             }
+            // 双击打开文件
             if (event.getClickCount() == 2 && event.getButton() == MouseButton.PRIMARY) openSelectedFile();
         });
+
+        // [右键菜单]
         ContextMenu contextMenu = new ContextMenu();
         MenuItem editItem = new MenuItem("编辑 / 查看");
         MenuItem deleteItem = new MenuItem("删除");
@@ -924,12 +1055,14 @@ public class MainController implements Initializable {
         deleteItem.setOnAction(e -> onDeleteClick());
         contextMenu.getItems().addAll(editItem, deleteItem);
         fileSystemTreeView.setContextMenu(contextMenu);
+
+        // 菜单显示前检查系统状态，未启动则禁用菜单项
         contextMenu.setOnShowing(e -> {
             boolean isRunning = Kernel.getInstance().getScheduler() != null && Kernel.getInstance().getScheduler().isRunning();
             for (MenuItem item : contextMenu.getItems()) item.setDisable(!isRunning);
         });
 
-        // 快捷键监听
+        // [键盘快捷键]
         fileSystemTreeView.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.DELETE) {
                 onDeleteClick();
@@ -938,18 +1071,26 @@ public class MainController implements Initializable {
             }
             if (event.isShortcutDown()) {
                 switch (event.getCode()) {
-                    case C -> { handleCopyShortcut(); event.consume(); }
-                    case V -> { handlePasteShortcut(); event.consume(); }
+                    case C -> { handleCopyShortcut(); event.consume(); } // Ctrl+C
+                    case V -> { handlePasteShortcut(); event.consume(); } // Ctrl+V
                 }
             }
         });
     }
 
+    // =================================================================================
+    // 9. 剪贴板逻辑 (Clipboard Operations)
+    // =================================================================================
+
+    /** 复制选中文件逻辑 */
     private void handleCopyShortcut() {
         var selectedItems = fileSystemTreeView.getSelectionModel().getSelectedItems();
         if (selectedItems.isEmpty()) return;
+
         clipboardFiles.clear();
         StringBuilder names = new StringBuilder();
+
+        // 遍历选中项，从内核获取实际对象并存入剪贴板
         for (TreeItem<String> item : selectedItems) {
             String path = buildPathFromTree(item);
             Object obj = kernel.getFileSystemManager().getObjectByPath(path);
@@ -963,36 +1104,44 @@ public class MainController implements Initializable {
         }
     }
 
+    /** 粘贴文件逻辑 */
     private void handlePasteShortcut() {
         if (clipboardFiles.isEmpty()) {
             showWarning("剪贴板为空", "请先复制文件或目录。");
             return;
         }
+
+        // 确定粘贴的目标目录
         TreeItem<String> selectedItem = fileSystemTreeView.getSelectionModel().getSelectedItem();
         String targetPath;
         if (selectedItem == null) {
-            targetPath = "/";
+            targetPath = "/"; // 默认粘贴到根目录
         } else {
             String path = buildPathFromTree(selectedItem);
             Object targetNode = kernel.getFileSystemManager().getObjectByPath(path);
             if (targetNode instanceof Directory) {
-                targetPath = path;
+                targetPath = path; // 如果选中的是目录，粘贴到该目录内
             } else {
+                // 如果选中的是文件，粘贴到该文件的父目录
                 if (path.contains("/")) targetPath = path.substring(0, path.lastIndexOf('/'));
                 else targetPath = "/";
                 if (targetPath.isEmpty()) targetPath = "/";
             }
         }
+
+        // 执行粘贴操作
         int successCount = 0;
         for (Object source : clipboardFiles) {
             try {
-                kernel.getFileSystemManager().paste(source, targetPath);
+                kernel.getFileSystemManager().paste(source, targetPath); // 调用内核 API
                 successCount++;
             } catch (Exception e) {
                 String name = (source instanceof Directory d) ? d.getName() : ((File)source).getName();
                 showError("粘贴失败", "无法粘贴 '" + name + "': " + e.getMessage());
             }
         }
+
+        // 刷新视图并展开
         if (successCount > 0) {
             updateFileSystemView();
             expandTreePath(targetPath);
@@ -1000,6 +1149,7 @@ public class MainController implements Initializable {
         }
     }
 
+    /** 辅助方法：展开指定路径的树节点 */
     private void expandTreePath(String path) {
         if (path == null || path.equals("/") || path.isEmpty()) return;
         TreeItem<String> current = fileSystemTreeView.getRoot();
@@ -1021,6 +1171,7 @@ public class MainController implements Initializable {
         }
     }
 
+    /** 更新控制按钮状态 (根据系统是否运行) */
     private void updateControlButtonsState(boolean isRunning) {
         boolean disable = !isRunning;
         if (createProcessBtn != null) createProcessBtn.setDisable(disable);
@@ -1033,24 +1184,37 @@ public class MainController implements Initializable {
         if (searchFileBtn != null) searchFileBtn.setDisable(disable);
     }
 
+    // =================================================================================
+    // 10. 交互事件处理 (Actions)
+    // =================================================================================
+
+    /** 点击"启动系统"按钮 */
     @FXML protected void onStartSystemClick() {
-        Kernel.getInstance().start();
+        Kernel.getInstance().start(); // 启动内核线程
         startSystemBtn.setDisable(true);
         if (stopSystemBtn != null) stopSystemBtn.setDisable(false);
-        updateControlButtonsState(true);
+        updateControlButtonsState(true); // 激活所有功能按钮
         showInfo("系统已启动", "CPU 开始运行，调度器已激活。");
     }
 
-
-
+    /**
+     * 【核心功能】创建进程按钮处理
+     * 特性：
+     * 1. 弹出自定义对话框，包含表单。
+     * 2. 左侧显示文件树，用于选择可执行文件。
+     * 3. 选中文件时，自动填充路径，并根据文件名智能推断进程名。
+     * 4. 自动定位并选中系统中的第一个 .e 文件 (提升演示体验)。
+     */
     @FXML protected void onCreateProcessClick() {
+        // 1. 准备表单控件
         TextField processNameField = new TextField("新进程");
         processNameField.setMaxWidth(Double.MAX_VALUE);
         ComboBox<Integer> priorityBox = new ComboBox<>(FXCollections.observableArrayList(1, 2, 3, 4, 5));
-        priorityBox.setValue(1);
+        priorityBox.setValue(1); // 默认优先级
         TextField execPathField = new TextField();
         execPathField.setMaxWidth(Double.MAX_VALUE);
 
+        // 2. 构建文件选择树 (仅用于此对话框)
         Directory rootDir = kernel.getFileSystemManager().getRootDirectory();
         TreeItem<String> rootItem = new TreeItem<>(rootDir.getName());
         rootItem.setExpanded(true);
@@ -1060,18 +1224,14 @@ public class MainController implements Initializable {
         fileTreeView.setMaxWidth(Double.MAX_VALUE);
         fileTreeView.setMaxHeight(Double.MAX_VALUE);
 
-        // ---------------------------------------------------------------
-        // 【步骤 1】绑定监听器：包含文件名解析与智能命名逻辑
-        // ---------------------------------------------------------------
+        // 3. 监听选择事件：实现智能填充
         fileTreeView.getSelectionModel().selectedItemProperty().addListener((obs, old, newVal) -> {
             if (newVal != null && newVal.getValue().endsWith(".e")) {
-                // 1. 自动填入路径
-                execPathField.setText(buildPathFromTree(newVal));
+                execPathField.setText(buildPathFromTree(newVal)); // 自动填路径
 
-                // 2. 【核心修改】智能解析文件名，生成人性化的进程名
-                String fileName = newVal.getValue(); // 例如 "p1_A_CPU.e"
-                String suggestedName = fileName.replace(".e", ""); // 默认回退名
-
+                // 智能解析文件名 (例如从 p1_A_CPU.e 推断出 "计算型_A")
+                String fileName = newVal.getValue();
+                String suggestedName = fileName.replace(".e", "");
                 if (fileName.contains("_CPU")) {
                     if (fileName.contains("_A_")) suggestedName = "计算型_A";
                     else if (fileName.contains("_B_")) suggestedName = "计算型_B";
@@ -1081,26 +1241,23 @@ public class MainController implements Initializable {
                     else if (fileName.contains("_B_")) suggestedName = "阻塞型_B";
                     else if (fileName.contains("_C_")) suggestedName = "阻塞型_C";
                 }
-
-                // 3. 将解析出的名字填入文本框 (用户依然可以修改它)
                 processNameField.setText(suggestedName);
             }
         });
 
-        // ---------------------------------------------------------------
-        // 【步骤 2】自动选中第一个可执行文件
-        // ---------------------------------------------------------------
+        // 4. UX 优化：自动选中第一个可执行文件
         TreeItem<String> firstExec = findFirstExecutable(rootItem);
         if (firstExec != null) {
             expandPath(firstExec);
-            // 这一句会触发上面的监听器，自动填好路径和名字
             fileTreeView.getSelectionModel().select(firstExec);
+            // 滚动到选中项
             Platform.runLater(() -> {
                 int row = fileTreeView.getRow(firstExec);
                 if (row >= 0) fileTreeView.scrollTo(row);
             });
         }
 
+        // 5. 布局构建 (GridPane)
         GridPane grid = new GridPane();
         grid.setHgap(10); grid.setVgap(10); grid.setPadding(new Insets(20));
         grid.add(new Label("进程名称:"), 0, 0); grid.add(processNameField, 1, 0);
@@ -1120,22 +1277,30 @@ public class MainController implements Initializable {
         btnBox.getChildren().addAll(okBtn, cancelBtn);
 
         VBox root = new VBox(grid, btnBox); VBox.setVgrow(grid, Priority.ALWAYS);
+
+        // 创建并显示对话框窗口
         InternalWindow win = new InternalWindow("创建新进程", root, 500, 400);
         double x = (desktopArea.getWidth() - 500) / 2; double y = (desktopArea.getHeight() - 400) / 2;
         win.setLayoutX(x > 0 ? x : 100); win.setLayoutY(y > 0 ? y : 100);
 
         cancelBtn.setOnAction(e -> win.close());
+
+        // 6. 确定按钮逻辑
         okBtn.setOnAction(e -> {
             String name = processNameField.getText().trim(); if (name.isEmpty()) name = "新进程";
             String path = execPathField.getText().trim(); int priority = priorityBox.getValue();
+
+            // 加载可执行文件
             org.example.scau_os_simulation.process.Executable exec = kernel.getFileSystemManager().loadExecutable(path);
             if (exec != null) {
-                // 使用全限定名，防止 Process 类冲突
+                // 调用内核创建进程 (使用全限定名避免 Process 类冲突)
                 org.example.scau_os_simulation.process.Process p = kernel.getProcessManager().createProcess(name, priority);
                 if (p != null) {
-                    p.setExecutable(exec);
-                    updateProcessView(); showInfo("成功", "进程已创建"); win.close();
-                } else showError("失败", "无法创建进程");
+                    p.setExecutable(exec); // 绑定指令
+                    updateProcessView();   // 刷新界面
+                    showInfo("成功", "进程已创建");
+                    win.close();
+                } else showError("失败", "无法创建进程 (可能内存不足)");
             } else showError("文件错误", "无法加载可执行文件");
         });
 
@@ -1146,93 +1311,201 @@ public class MainController implements Initializable {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// =================================================================================
+    // 11. 进程控制逻辑 (Process Control Actions)
+    // =================================================================================
+
+    /**
+     * [终止进程] 按钮点击事件
+     * 逻辑：
+     * 1. 获取当前表格中选中的 PCB。
+     * 2. 安全检查：禁止终止 PID=-1 的系统闲逛进程。
+     * 3. 弹出确认框，用户确认后调用内核终止进程。
+     * 4. 刷新进程视图和内存视图（释放内存后视图需更新）。
+     */
     @FXML protected void onTerminateProcessClick() {
         PCB selected = processTableView == null ? null : processTableView.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            if (selected.getPid() == -1) { showError("非法操作", "无法结束系统闲逛进程 (IDLE)。"); return; }
-            String msg = "确定要强制结束进程 [" + selected.getName() + "] (PID=" + selected.getPid() + ") 吗？\n此操作不可撤销。";
-            showInternalConfirm("确认终止进程", msg, () -> {
-                kernel.getProcessManager().terminateProcess(selected.getPid());
-                updateProcessView(); updateMemoryView();
-            });
-        } else showWarning("未选择进程", "请先选择要终止的进程。");
 
-        // 新增这一行：
+        if (selected != null) {
+            // 安全保护：防止用户误杀系统核心进程
+            if (selected.getPid() == -1) {
+                showError("非法操作", "无法结束系统闲逛进程 (IDLE)。");
+                return;
+            }
+
+            String msg = "确定要强制结束进程 [" + selected.getName() + "] (PID=" + selected.getPid() + ") 吗？\n此操作不可撤销。";
+
+            // 使用自定义内部确认弹窗
+            showInternalConfirm("确认终止进程", msg, () -> {
+                // 回调：调用内核执行终止
+                kernel.getProcessManager().terminateProcess(selected.getPid());
+                // 刷新 UI
+                updateProcessView();
+                updateMemoryView();
+            });
+        } else {
+            showWarning("未选择进程", "请先选择要终止的进程。");
+        }
+
+        // 无论是否成功，刷新内存可视化条带（可能选中状态改变）
         updateMemoryVisualization();
     }
 
+    // =================================================================================
+    // 12. 文件系统操作逻辑 (File System Actions)
+    // =================================================================================
+
+    /**
+     * [创建文件] 按钮点击事件
+     * 逻辑：
+     * 1. 确定父目录：如果选中了文件，则取其父目录；如果选中目录，则取该目录。
+     * 2. 弹出输入框询问文件名。
+     * 3. 调用内核创建文件，并刷新文件树。
+     */
     @FXML protected void onCreateFileClick() {
         TreeItem<String> selectedItem = fileSystemTreeView.getSelectionModel().getSelectedItem();
-        String path = "/";
+        String path = "/"; // 默认根目录
+
+        // 智能路径判断
         if (selectedItem != null) {
             path = buildPathFromTree(selectedItem);
+            // 检查当前路径对应的对象
             Object node = kernel.getFileSystemManager().getFileByPath(path);
+            // 如果选中的是文件，则在其父目录下创建
             if (node != null) {
                 path = path.substring(0, path.lastIndexOf('/'));
                 if (path.isEmpty()) path = "/";
             }
         }
-        final String finalPath = path;
+
+        final String finalPath = path; // Lambda 表达式需要 final 变量
+
+        // 弹出输入框
         showInternalInput("创建文件", "在路径 '" + finalPath + "' 下创建新文件:", "new.txt", (name) -> {
             if (name != null && !name.trim().isEmpty()) {
                 try {
+                    // 调用内核 API
                     kernel.getFileSystemManager().createFile(finalPath, name, 1);
-                    updateFileSystemView(); showInfo("文件创建成功", "文件 '" + name + "' 创建成功。");
-                } catch (Exception e) { showError("文件创建失败", e.getMessage()); }
+                    // 刷新视图并提示
+                    updateFileSystemView();
+                    showInfo("文件创建成功", "文件 '" + name + "' 创建成功。");
+                } catch (Exception e) {
+                    showError("文件创建失败", e.getMessage());
+                }
             }
         });
     }
 
+    /**
+     * [停止系统] 按钮点击事件
+     * 作用：暂停 CPU 调度，冻结系统状态。
+     */
     @FXML protected void onStopSystemClick() {
         if (Kernel.getInstance().getScheduler() != null) Kernel.getInstance().getScheduler().stop();
+
+        // 切换按钮可用状态
         startSystemBtn.setDisable(false);
         if (stopSystemBtn != null) stopSystemBtn.setDisable(true);
-        updateControlButtonsState(false);
+        updateControlButtonsState(false); // 禁用大部分功能按钮
+
         showInfo("系统已暂停", "CPU 调度已停止。");
     }
 
+    /**
+     * [创建目录] 按钮点击事件
+     * 逻辑与创建文件类似，但调用的是 createDirectory。
+     */
     @FXML protected void onCreateDirectoryClick() {
         TreeItem<String> selectedItem = fileSystemTreeView.getSelectionModel().getSelectedItem();
         String path = "/";
         if (selectedItem != null) {
             path = buildPathFromTree(selectedItem);
+            // 如果选中的是文件，回退到父目录
             if (kernel.getFileSystemManager().getFileByPath(path) != null) {
                 path = path.substring(0, path.lastIndexOf('/'));
                 if (path.isEmpty()) path = "/";
             }
         }
         final String finalPath = path;
+
         showInternalInput("创建目录", "在路径 '" + finalPath + "' 下创建新目录:", "NewFolder", (name) -> {
             if (name != null && !name.trim().isEmpty()) {
                 try {
                     kernel.getFileSystemManager().createDirectory(finalPath, name);
-                    updateFileSystemView(); showInfo("目录创建成功", "目录 '" + name + "' 创建成功。");
-                } catch (Exception e) { showError("目录创建失败", e.getMessage()); }
+                    updateFileSystemView();
+                    showInfo("目录创建成功", "目录 '" + name + "' 创建成功。");
+                } catch (Exception e) {
+                    showError("目录创建失败", e.getMessage());
+                }
             }
         });
     }
 
+    /**
+     * [删除] 按钮点击事件
+     * 支持批量删除，支持删除非空目录（内核层处理递归）。
+     */
     @FXML protected void onDeleteClick() {
         if (fileSystemTreeView == null) return;
+
+        // 获取多选列表
         var selectedItems = fileSystemTreeView.getSelectionModel().getSelectedItems();
-        if (selectedItems.isEmpty()) { showWarning("未选择", "请先选择要删除的文件或目录。"); return; }
+        if (selectedItems.isEmpty()) {
+            showWarning("未选择", "请先选择要删除的文件或目录。");
+            return;
+        }
+
         List<String> pathsToDelete = new ArrayList<>();
         boolean containsRoot = false;
+
+        // 构建路径列表
         for (TreeItem<String> item : selectedItems) {
-            if (item == null || item.getParent() == null) { containsRoot = true; continue; }
+            if (item == null || item.getParent() == null) { containsRoot = true; continue; } // 根目录保护
             pathsToDelete.add(buildPathFromTree(item));
         }
-        if (pathsToDelete.isEmpty()) { if (containsRoot) showError("无法删除", "根目录不可删除。"); return; }
-        String msg = pathsToDelete.size() == 1 ? "您确定要删除 '" + pathsToDelete.get(0) + "' 吗？" : "您确定要删除选中的 " + pathsToDelete.size() + " 个项目吗？";
+
+        if (pathsToDelete.isEmpty()) {
+            if (containsRoot) showError("无法删除", "根目录不可删除。");
+            return;
+        }
+
+        // 构建提示信息
+        String msg = pathsToDelete.size() == 1 ?
+                "您确定要删除 '" + pathsToDelete.get(0) + "' 吗？" :
+                "您确定要删除选中的 " + pathsToDelete.size() + " 个项目吗？";
 
         showInternalConfirm("确认删除", msg, () -> {
             int successCount = 0;
             for (String path : pathsToDelete) {
-                try { if (kernel.getFileSystemManager().deletePath(path)) successCount++; }
-                catch (Exception e) { }
+                try {
+                    if (kernel.getFileSystemManager().deletePath(path)) successCount++;
+                } catch (Exception e) { }
             }
+
             if (successCount > 0) {
-                updateFileSystemView();
+                updateFileSystemView(); // 刷新树
                 showInfo("删除成功", "已成功删除 " + successCount + " 个项目。");
             } else {
                 showError("删除失败", "未能删除选中目标。");
@@ -1240,94 +1513,141 @@ public class MainController implements Initializable {
         });
     }
 
+    // =================================================================================
+    // 13. 工具栏其他功能 (Toolbar Utilities)
+    // =================================================================================
+
+    /** [内存整理] 按钮：触发紧凑算法 */
     @FXML protected void onDefragmentClick() {
         kernel.getMemoryManager().defragment();
-        updateMemoryView(); showInfo("内存整理完成", "内存碎片整理已完成。");
+        updateMemoryView();
+        showInfo("内存整理完成", "内存碎片整理已完成。");
     }
 
-    // 【修复 4】删除了 undo/redo 的事件处理方法
-
+    // 剪贴板快捷键的 FXML 绑定
     @FXML protected void onCopyFileClick() { handleCopyShortcut(); }
     @FXML protected void onPasteFileClick() { handlePasteShortcut(); }
 
+    /**
+     * [文件搜索] 按钮点击事件
+     * 特性：实时前缀匹配搜索 + 自动定位树节点
+     */
     @FXML protected void onSearchFileClick() {
+        // 构建搜索窗口界面
         VBox root = new VBox(10); root.setPadding(new Insets(15));
         Label headerLbl = new Label("输入文件名 (支持前缀匹配，不区分大小写):");
+
+        // 使用 ComboBox 显示搜索建议
         ComboBox<String> searchBox = new ComboBox<>();
-        searchBox.setEditable(true); searchBox.setPromptText("例如: new..."); searchBox.setMaxWidth(Double.MAX_VALUE);
+        searchBox.setEditable(true); // 允许输入
+        searchBox.setPromptText("例如: new...");
+        searchBox.setMaxWidth(Double.MAX_VALUE);
+
         HBox btnBox = new HBox(10); btnBox.setAlignment(Pos.CENTER_RIGHT);
-        Button goBtn = new Button("定位"); Button closeBtn = new Button("关闭");
+        Button goBtn = new Button("定位");
+        Button closeBtn = new Button("关闭");
         btnBox.getChildren().addAll(goBtn, closeBtn);
         root.getChildren().addAll(headerLbl, searchBox, btnBox);
 
         InternalWindow win = new InternalWindow("智能搜索", root, 350, 180);
-        win.setLayoutX(desktopArea.getWidth() / 2 - 175); win.setLayoutY(desktopArea.getHeight() / 2 - 90);
+        // 窗口居中逻辑
+        win.setLayoutX(desktopArea.getWidth() / 2 - 175);
+        win.setLayoutY(desktopArea.getHeight() / 2 - 90);
 
+        // [核心] 监听输入变化，实时从文件系统搜索匹配项
         searchBox.getEditor().textProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null || newVal.trim().isEmpty()) { searchBox.hide(); return; }
-            if (newVal.equals(searchBox.getSelectionModel().getSelectedItem())) return;
+            if (newVal.equals(searchBox.getSelectionModel().getSelectedItem())) return; // 避免选中时触发
+
             Directory rootDir = kernel.getFileSystemManager().getRootDirectory();
             List<String> matches = new ArrayList<>();
+            // 调用目录递归搜索
             rootDir.searchByPrefix(newVal.trim(), matches, "");
+
+            // 在 UI 线程更新下拉列表
             Platform.runLater(() -> {
                 if (!searchBox.getItems().equals(matches)) {
                     searchBox.getItems().setAll(matches);
-                    if (!matches.isEmpty()) { if (!searchBox.isShowing()) searchBox.show(); }
-                    else searchBox.hide();
+                    if (!matches.isEmpty()) {
+                        if (!searchBox.isShowing()) searchBox.show();
+                    } else searchBox.hide();
                 }
             });
         });
+
+        // 定位逻辑：根据路径在左侧树中选中对应节点
         Runnable doLocate = () -> {
             String path = searchBox.getEditor().getText();
             if (path != null && !path.trim().isEmpty()) {
                 Object target = kernel.getFileSystemManager().getObjectByPath(path);
-                if (target != null) selectFileInTree(target); else showWarning("未找到", "路径无效或文件不存在。");
+                if (target != null) selectFileInTree(target);
+                else showWarning("未找到", "路径无效或文件不存在。");
             }
         };
+
         goBtn.setOnAction(e -> doLocate.run());
-        searchBox.setOnAction(e -> doLocate.run());
+        searchBox.setOnAction(e -> doLocate.run()); // 回车触发
         closeBtn.setOnAction(e -> win.close());
 
         windowLayer.getChildren().add(win);
         win.toFront();
-        Platform.runLater(searchBox::requestFocus);
+        Platform.runLater(searchBox::requestFocus); // 自动聚焦输入框
     }
 
+    // =================================================================================
+    // 14. 文件编辑器逻辑 (Simple Text Editor)
+    // =================================================================================
+
+    /** 创建编辑器内容节点 (TextArea + Save Button) */
     private VBox createEditorNode(File file) {
         TextArea textArea = new TextArea();
         textArea.setWrapText(true);
+
+        // 读取文件内容 (byte[] -> String)
         if (file.getContent() != null) {
             String content = new String(file.getContent(), 0, file.getActualLength(), java.nio.charset.StandardCharsets.UTF_8);
             textArea.setText(content);
         }
+
+        // 保存逻辑
         Runnable doSave = () -> {
             try {
+                // String -> byte[]
                 byte[] data = textArea.getText().getBytes(java.nio.charset.StandardCharsets.UTF_8);
                 file.setContent(data);
                 showInfo("保存成功", "文件 '" + file.getName() + "' 已保存。");
             } catch (Exception ex) { showError("保存失败", ex.getMessage()); }
         };
+
         Button saveBtn = new Button("保存");
         saveBtn.setOnAction(e -> doSave.run());
+
+        // Ctrl+S 快捷键
         textArea.setOnKeyPressed(event -> {
             if (event.isShortcutDown() && event.getCode() == KeyCode.S) { doSave.run(); event.consume(); }
         });
+
         ToolBar toolBar = new ToolBar(saveBtn);
         VBox editorRoot = new VBox(toolBar, textArea);
         VBox.setVgrow(textArea, Priority.ALWAYS);
         return editorRoot;
     }
 
+    /** 打开当前选中的文件 */
     private void openSelectedFile() {
         TreeItem<String> selectedItem = fileSystemTreeView.getSelectionModel().getSelectedItem();
         if (selectedItem == null) return;
+
         String path = buildPathFromTree(selectedItem);
         File file = kernel.getFileSystemManager().getFileByPath(path);
+
         if (file != null) {
             VBox editorRoot = createEditorNode(file);
+            // 创建编辑器窗口
             InternalWindow editorWin = new InternalWindow("编辑: " + file.getName(), editorRoot, 500, 400);
-            double offset = openWindows.size() * 30;
-            editorWin.setLayoutX(100 + offset); editorWin.setLayoutY(50 + offset);
+            double offset = openWindows.size() * 30; // 级联偏移
+            editorWin.setLayoutX(100 + offset);
+            editorWin.setLayoutY(50 + offset);
 
             windowLayer.getChildren().add(editorWin);
             editorWin.toFront();
@@ -1336,23 +1656,42 @@ public class MainController implements Initializable {
         }
     }
 
+    // =================================================================================
+    // 15. 视图更新总控 (UI Refresh)
+    // =================================================================================
+
+    /** 刷新所有子系统视图 */
     private void updateAllViews() {
-        updateProcessView(); updateMemoryView(); updateDeviceView();
-        updateFileSystemView(); updateOperationLogView(); updatePerformanceMetrics();
+        updateProcessView();
+        updateMemoryView();
+        updateDeviceView();
+        updateFileSystemView();
+        updateOperationLogView();
+        updatePerformanceMetrics();
     }
 
+    /** * 刷新进程视图
+     * 逻辑：
+     * 1. 遍历进程列表，计算每个进程的剩余时间。
+     * 2. 更新 TableView。
+     * 3. 更新就绪/阻塞队列 ListView。
+     * 4. 更新 CPU 状态面板 (IR, AX, PID)。
+     */
     private void updateProcessView() {
-        // 【核心修改】在刷新表格前，先计算每个进程的总剩余时间
+        // 更新计算字段
         for (org.example.scau_os_simulation.process.Process p : kernel.getProcessManager().getProcesses()) {
-            // 调用您在 Process.java 中写好的 getRemainingTime()
             int remaining = p.getRemainingTime();
-            // 存入 PCB
             p.getPcb().setTotalRemainingTime(remaining);
         }
 
+        // 刷新表格数据
         processTableView.getItems().setAll(kernel.getProcessManager().getProcesses().stream().map(org.example.scau_os_simulation.process.Process::getPcb).toList());
+
+        // 刷新队列列表 (简略信息)
         readyQueueListView.getItems().setAll(kernel.getProcessManager().getReadyQueue().stream().map(p -> "PID: " + p.getPcb().getPid() + " (优先级: " + p.getPcb().getPriority() + ")").toList());
         blockedQueueListView.getItems().setAll(kernel.getProcessManager().getBlockedQueue().stream().map(p -> "PID: " + p.getPcb().getPid()).toList());
+
+        // 刷新 CPU 状态栏
         org.example.scau_os_simulation.process.Process running = kernel.getProcessManager().getRunning();
         if (running != null) {
             PCB pcb = running.getPcb();
@@ -1360,30 +1699,40 @@ public class MainController implements Initializable {
             irLabel.setText("IR: " + pcb.getIr());
             axLabel.setText("AX: " + pcb.getAx());
             tsLabel.setText("时间片: " + kernel.getTimeSlice());
-        } else runningPidLabel.setText("运行中PID: 无");
+        } else {
+            runningPidLabel.setText("运行中PID: 无");
+        }
     }
 
+    /** * 刷新内存视图
+     * 逻辑：
+     * 1. 更新进度条。
+     * 2. 更新内存块表格。
+     * 3. 计算并显示碎片率。
+     * 4. 重绘内存可视化条带。
+     */
     private void updateMemoryView() {
         MemoryManager memoryManager = kernel.getMemoryManager();
         int totalMemory = memoryManager.getMemory().getSize();
         int usedMemory = memoryManager.getTotalUsedMemory();
         double usage = (double) usedMemory / totalMemory;
+
         memoryUsageBar.setProgress(usage);
         memoryInfoLabel.setText(String.format("已用: %d KB / 总量: %d KB", usedMemory, totalMemory));
 
-        // 更新表格
         memoryBlockTableView.getItems().setAll(memoryManager.getAllocatedBlocks());
 
-        // 更新碎片率文字
         double fragmentationRate = memoryManager.getFragmentationRate();
         fragmentationLabel.setText(String.format("碎片率: %.2f%%", fragmentationRate * 100));
 
-        // 【新增】这一行必须加！否则点击整理按钮后，下面的彩色条不会动！
-        updateMemoryVisualization();
+        updateMemoryVisualization(); // 关键：更新彩色条带
     }
 
+    /** 刷新设备视图 */
     private void updateDeviceView() {
         deviceTableView.getItems().setAll(kernel.getDeviceManager().getAllDevices());
+
+        // 转换等待队列数据为 DTO
         List<WaitRow> waitRows = new ArrayList<>();
         for (DeviceType t : DeviceType.values()) {
             for (DeviceRequest request : kernel.getDeviceManager().getWaitingQueue(t)) {
@@ -1393,21 +1742,35 @@ public class MainController implements Initializable {
         waitQueueTableView.getItems().setAll(waitRows);
     }
 
+
+    /** * 刷新文件系统视图 (树形图)
+     * 难点：刷新树会导致所有节点折叠，这里实现了"状态保存与恢复"逻辑。
+     */
     private void updateFileSystemView() {
+        // 1. 保存当前展开的路径集合
         Set<String> expandedPaths = new HashSet<>();
         if (fileSystemTreeView.getRoot() != null) saveExpansionState(fileSystemTreeView.getRoot(), expandedPaths);
+
+        // 2. 保存当前选中的路径
         String selectedPath = null;
         TreeItem<String> selectedItem = fileSystemTreeView.getSelectionModel().getSelectedItem();
-        if (selectedItem != null) { selectedPath = buildPathFromTree(selectedItem); expandedPaths.add(selectedPath); }
+        if (selectedItem != null) {
+            selectedPath = buildPathFromTree(selectedItem);
+            expandedPaths.add(selectedPath);
+        }
 
+        // 3. 重新构建树
         Directory rootDir = kernel.getFileSystemManager().getRootDirectory();
         TreeItem<String> rootItem = new TreeItem<>(rootDir.getName());
         rootItem.setGraphic(createIcon("folder"));
         populateFileSystemTree(rootDir, rootItem);
         fileSystemTreeView.setRoot(rootItem);
 
+        // 4. 恢复展开状态
         restoreExpansionState(rootItem, expandedPaths);
-        rootItem.setExpanded(true);
+        rootItem.setExpanded(true); // 根目录始终展开
+
+        // 5. 恢复选中状态
         if (selectedPath != null) {
             TreeItem<String> targetItem = findItemByPath(rootItem, selectedPath);
             if (targetItem != null) {
@@ -1416,6 +1779,8 @@ public class MainController implements Initializable {
                 if (row >= 0) fileSystemTreeView.scrollTo(row);
             }
         }
+
+        // 6. 更新磁盘容量条
         if (kernel.getFileSystemManager().getFileSystem() != null) {
             int total = kernel.getFileSystemManager().getFileSystem().getTotalSize();
             int used = kernel.getFileSystemManager().getFileSystem().getUsedSize();
@@ -1425,26 +1790,33 @@ public class MainController implements Initializable {
         }
     }
 
+
+    /** 辅助：递归保存展开状态 */
     private void saveExpansionState(TreeItem<String> item, Set<String> expandedPaths) {
         if (item.isExpanded()) expandedPaths.add(buildPathFromTree(item));
         for (TreeItem<String> child : item.getChildren()) saveExpansionState(child, expandedPaths);
     }
 
+    /** 辅助：递归恢复展开状态 */
     private void restoreExpansionState(TreeItem<String> item, Set<String> expandedPaths) {
         String currentPath = buildPathFromTree(item);
         if (expandedPaths.contains(currentPath)) item.setExpanded(true);
         for (TreeItem<String> child : item.getChildren()) restoreExpansionState(child, expandedPaths);
     }
 
+    /** * 递归填充文件树
+     * 根据对象类型 (Directory/File) 设置不同的图标和节点
+     */
     private void populateFileSystemTree(Directory parent, TreeItem<String> parentItem) {
         for (Object child : parent.getChildren()) {
             if (child instanceof Directory dir) {
                 TreeItem<String> dirItem = new TreeItem<>(dir.getName());
                 dirItem.setGraphic(createIcon("folder"));
                 parentItem.getChildren().add(dirItem);
-                populateFileSystemTree(dir, dirItem);
+                populateFileSystemTree(dir, dirItem); // 递归
             } else if (child instanceof File f) {
                 TreeItem<String> fileItem = new TreeItem<>(f.getName());
+                // 根据后缀判断图标
                 if (f.getName().endsWith(".e")) fileItem.setGraphic(createIcon("exec"));
                 else if (f.getName().endsWith(".txt")) fileItem.setGraphic(createIcon("text"));
                 else fileItem.setGraphic(createIcon("file"));
@@ -1453,8 +1825,10 @@ public class MainController implements Initializable {
         }
     }
 
+    /** 工厂方法：创建特定样式的 Label 作为图标 */
     private javafx.scene.control.Label createIcon(String type) {
         javafx.scene.control.Label iconLabel = new javafx.scene.control.Label();
+        // 使用 Emoji 字体作为轻量级图标
         iconLabel.setStyle("-fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Segoe UI Symbol';");
         switch (type) {
             case "folder" -> { iconLabel.setText("📁"); iconLabel.getStyleClass().add("folder-icon"); }
@@ -1465,11 +1839,17 @@ public class MainController implements Initializable {
         return iconLabel;
     }
 
+    /** 刷新日志视图 */
     private void updateOperationLogView() {
         operationLogListView.getItems().setAll(kernel.getOperationLogger().getLogs());
         outputListView.getItems().setAll(kernel.getOutputLogs());
     }
 
+    // =================================================================================
+    // 16. 性能监控逻辑 (Performance Monitor)
+    // =================================================================================
+
+    /** 初始化图表 */
     private void initializePerformanceChart() {
         try {
             performanceChart = new PerformanceChartFX();
@@ -1477,6 +1857,7 @@ public class MainController implements Initializable {
             if (performanceChartContainer != null) {
                 performanceChartContainer.getChildren().clear();
                 performanceChartContainer.getChildren().add(chart);
+                // 绑定尺寸
                 chart.prefWidthProperty().bind(performanceChartContainer.widthProperty());
                 chart.prefHeightProperty().bind(performanceChartContainer.heightProperty());
                 chart.setStyle("-fx-background-color: transparent;");
@@ -1486,22 +1867,28 @@ public class MainController implements Initializable {
         }
     }
 
+
+    /** 定时更新图表数据点 */
     private void updatePerformanceChart() {
         if (performanceChart != null && kernel != null) {
             performanceChart.update(kernel.getSystemClock(), kernel.getCpuUtilization(), kernel.getMemoryUtilization());
         }
     }
 
+
+    /** 更新文字性能指标 (平均值、峰值) */
     private void updatePerformanceMetrics() {
         PerformanceMonitor pm = kernel.getPerformanceMonitor();
         double avgCpu = pm.getAverageCpuUtilization();
         double avgMem = pm.getAverageMemoryUtilization();
         double peakCpu = pm.getPeakCpuUtilization();
         double peakMem = pm.getPeakMemoryUtilization();
+
         avgCpuLabel.setText(String.format("平均CPU: %.2f%%", avgCpu * 100));
         avgMemoryLabel.setText(String.format("平均内存: %.2f%%", avgMem * 100));
         peakCpuLabel.setText(String.format("峰值CPU: %.2f%%", peakCpu * 100));
         peakMemoryLabel.setText(String.format("峰值内存: %.2f%%", peakMem * 100));
+
         double currentCpu = kernel.getCpuUtilization();
         double currentLoad = kernel.getSystemLoad();
         cpuUtilizationBar.setProgress(currentCpu);
@@ -1510,34 +1897,49 @@ public class MainController implements Initializable {
         systemLoadLabel.setText(String.format("负载: %.2f", currentLoad));
     }
 
+
+
+    // =================================================================================
+    // 17. 数据绑定配置 (Data Binding)
+    // =================================================================================
+
+    /** 配置表格列与模型属性的映射 */
     private void initBindings() {
+        // 进程表绑定
         pidColumn.setCellValueFactory(cellData -> cellData.getValue().pidProperty());
         nameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
         stateColumn.setCellValueFactory(cellData -> cellData.getValue().stateProperty());
         priorityColumn.setCellValueFactory(cellData -> cellData.getValue().priorityProperty());
         memoryAddressColumn.setCellValueFactory(cellData -> cellData.getValue().memoryAddressProperty());
         memorySizeColumn.setCellValueFactory(cellData -> cellData.getValue().memorySizeProperty());
+
+        // 内存块表绑定
         startAddressColumn.setCellValueFactory(cellData -> cellData.getValue().startAddressProperty());
         blockSizeColumn.setCellValueFactory(cellData -> cellData.getValue().sizeProperty());
         processColumn.setCellValueFactory(cellData -> {
             int pid = findProcessIdForMemoryBlock(cellData.getValue());
             return new javafx.beans.property.SimpleStringProperty(pid >= 0 ? String.valueOf(pid) : "N/A");
         });
+
+        // 设备表绑定
         deviceTypeColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getType().toString()));
         deviceInUseColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().isBusy() ? "是" : "否"));
         devicePidColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().getCurrentUserPid()));
         deviceRemainColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().getRemainingTime()));
+
+        // 等待队列表绑定
         waitDeviceColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().device()));
         waitPidColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().pid()));
         waitTimeColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().time()));
-        // 【新增】绑定剩余时间片列
+
+        // 时间统计绑定
         timeSliceColumn.setCellValueFactory(cellData -> cellData.getValue().timeSliceProperty());
-        // 【新增】绑定“总剩余时间”列
         if (totalRemainingTimeColumn != null) {
             totalRemainingTimeColumn.setCellValueFactory(cellData -> cellData.getValue().totalRemainingTimeProperty());
         }
     }
 
+    /** 辅助：反向查找占用某内存块的 PID */
     private int findProcessIdForMemoryBlock(MemoryBlock block) {
         for (org.example.scau_os_simulation.process.Process p : kernel.getProcessManager().getProcesses()) {
             if (p.getPcb().getMemoryAddress() == block.getStartAddress() && p.getPcb().getMemorySize() == block.getSize()) {
@@ -1547,6 +1949,13 @@ public class MainController implements Initializable {
         return -1;
     }
 
+
+
+    // =================================================================================
+    // 18. 路径与树转换工具 (Path Utilities)
+    // =================================================================================
+
+    /** TreeItem -> String 绝对路径 */
     private String buildPathFromTree(TreeItem<String> item) {
         StringBuilder path = new StringBuilder();
         while (item != null && item.getParent() != null) {
@@ -1556,6 +1965,7 @@ public class MainController implements Initializable {
         return !path.isEmpty() ? path.toString() : "/";
     }
 
+    /** String 绝对路径 -> TreeItem */
     private TreeItem<String> findItemByPath(TreeItem<String> root, String path) {
         if (path.equals("/")) return root;
         String[] parts = path.split("/");
@@ -1572,10 +1982,12 @@ public class MainController implements Initializable {
         return current;
     }
 
+    /** FileSystem 对象 -> String 绝对路径 */
     private String buildFullPath(Object fileObj) {
         return findObjectPath(fileObj, kernel.getFileSystemManager().getRootDirectory(), "");
     }
 
+    /** 递归查找对象路径 */
     private String findObjectPath(Object target, Directory current, String currentPath) {
         if (current == target) return currentPath.isEmpty() ? "/" : currentPath;
         for (Object child : current.getChildren()) {
@@ -1590,6 +2002,7 @@ public class MainController implements Initializable {
         return null;
     }
 
+    /** 在 UI 树中选中指定文件对象 */
     private void selectFileInTree(Object fileObj) {
         String path = buildFullPath(fileObj);
         if (path != null && !path.isEmpty()) {
@@ -1602,18 +2015,27 @@ public class MainController implements Initializable {
         }
     }
 
+    // 弹窗快捷方法
     private void showInfo(String title, String message) { showInternalAlert("info", title, message); }
     private void showWarning(String title, String message) { showInternalAlert("warning", title, message); }
     private void showError(String title, String message) { showInternalAlert("error", title, message); }
 
+    // 等待队列数据传输对象
     private record WaitRow(String device, int pid, int time) {}
 
+    // =================================================================================
+    // 19. 终端与弹窗实现 (Terminal & Dialogs)
+    // =================================================================================
+
+    /** 打开终端窗口 */
     @FXML protected void onOpenTerminalClick() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/scau_os_simulation/terminal_view.fxml"));
             Parent terminalContent = loader.load();
             TerminalController controller = loader.getController();
             InternalWindow termWin = new InternalWindow("终端", terminalContent, 600, 400);
+
+            // 绑定关闭回调
             termWin.onClosed = () -> controller.onClose();
             openWindow("终端", terminalContent, 600, 400);
         } catch (Exception e) {
@@ -1622,29 +2044,43 @@ public class MainController implements Initializable {
         }
     }
 
+    /** * 显示内部消息弹窗
+     * 用于替代 JavaFX 原生 Alert，确保弹窗在 WindowLayer 内部显示
+     */
     private void showInternalAlert(String type, String title, String content) {
         VBox root = new VBox(10); root.setPadding(new Insets(15)); root.setAlignment(Pos.CENTER);
         Label msgLabel = new Label(content); msgLabel.setWrapText(true); msgLabel.setMaxWidth(250);
         Button okBtn = new Button("确定");
         root.getChildren().addAll(msgLabel, okBtn);
+
         InternalWindow win = new InternalWindow(title, root, 300, 150);
-        double x = (desktopArea.getWidth() - 300) / 2; double y = (desktopArea.getHeight() - 150) / 2;
+        double x = (desktopArea.getWidth() - 300) / 2;
+        double y = (desktopArea.getHeight() - 150) / 2;
         win.setLayoutX(x); win.setLayoutY(y);
+
         okBtn.setOnAction(e -> win.close());
         windowLayer.getChildren().add(win);
     }
 
+    /** 显示内部确认弹窗 (Yes/No) */
     private void showInternalConfirm(String title, String content, Runnable onConfirm) {
         VBox root = new VBox(20); root.setPadding(new Insets(20)); root.setAlignment(Pos.CENTER);
-        Label msgLabel = new Label(content); msgLabel.setWrapText(true); msgLabel.setMaxWidth(300); msgLabel.setStyle("-fx-font-size: 14px;");
+        Label msgLabel = new Label(content);
+        msgLabel.setWrapText(true); msgLabel.setMaxWidth(300);
+        msgLabel.setStyle("-fx-font-size: 14px;");
+
         HBox btnBox = new HBox(15); btnBox.setAlignment(Pos.CENTER);
         Button yesBtn = new Button("确定"); yesBtn.getStyleClass().add("button");
-        yesBtn.setStyle("-fx-background-color: #da1e28; -fx-text-fill: white;");
+        yesBtn.setStyle("-fx-background-color: #da1e28; -fx-text-fill: white;"); // 红色警示
         Button noBtn = new Button("取消");
+
         btnBox.getChildren().addAll(yesBtn, noBtn);
         root.getChildren().addAll(msgLabel, btnBox);
+
         InternalWindow win = new InternalWindow(title, root, 350, 180);
-        win.setLayoutX((desktopArea.getWidth() - 350) / 2); win.setLayoutY((desktopArea.getHeight() - 180) / 2);
+        win.setLayoutX((desktopArea.getWidth() - 350) / 2);
+        win.setLayoutY((desktopArea.getHeight() - 180) / 2);
+
         yesBtn.setOnAction(e -> { win.close(); if (onConfirm != null) onConfirm.run(); });
         noBtn.setOnAction(e -> win.close());
 
@@ -1652,15 +2088,22 @@ public class MainController implements Initializable {
         win.toFront();
     }
 
+    /** 显示内部输入弹窗 */
     private void showInternalInput(String title, String header, String defaultValue, java.util.function.Consumer<String> callback) {
         VBox root = new VBox(10); root.setPadding(new Insets(15));
-        Label headerLbl = new Label(header); TextField textField = new TextField(defaultValue);
+        Label headerLbl = new Label(header);
+        TextField textField = new TextField(defaultValue);
+
         HBox btnBox = new HBox(10); btnBox.setAlignment(Pos.CENTER_RIGHT);
-        Button okBtn = new Button("确定"); Button cancelBtn = new Button("取消");
+        Button okBtn = new Button("确定");
+        Button cancelBtn = new Button("取消");
         btnBox.getChildren().addAll(okBtn, cancelBtn);
+
         root.getChildren().addAll(headerLbl, textField, btnBox);
+
         InternalWindow win = new InternalWindow(title, root, 320, 160);
         win.setLayoutX(200); win.setLayoutY(200);
+
         cancelBtn.setOnAction(e -> win.close());
         okBtn.setOnAction(e -> {
             String result = textField.getText();

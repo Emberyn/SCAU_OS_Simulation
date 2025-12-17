@@ -180,6 +180,7 @@ public class CPU
             // 释放信号量后执行常规指令处理
             pcb.setPc(pcb.getPc() + 1);
             pcb.decTimeSlice();
+
             if (pcb.getTimeSlice() == 0) {
                 processManager.onTimeSliceEnd();
             }

@@ -89,13 +89,7 @@ public class PCB {
         this.totalRemainingTime = totalRemainingTime;
     }
 
-    /**
-     * 总剩余运行时间的JavaFX属性（供UI绑定）
-     * @return 总剩余运行时间的IntegerProperty对象
-     */
-    public IntegerProperty totalRemainingTimeProperty() {
-        return new SimpleIntegerProperty(totalRemainingTime);
-    }
+
 
     // ========================== 基础标识字段 - Getter ==========================
     /** 获取进程PID */
@@ -144,15 +138,15 @@ public class PCB {
     /** 设置进程状态（如就绪→运行、运行→阻塞） */
     public void setState(ProcessState state) { this.state = state; }
 
-    // ========================== 内存相关 - Getter（关联MemoryBlock） ==========================
+
     /**
      * 获取进程内存起始地址（从MemoryBlock实时获取）
-     * 优势：内存碎片整理后，MemoryBlock地址变化，此处自动同步
      * @return 内存起始地址（无内存块返回-1）
      */
     public int getMemoryAddress() {
         return memoryBlock != null ? memoryBlock.getStartAddress() : -1;
     }
+
 
     /**
      * 获取进程内存大小（从MemoryBlock实时获取）
@@ -162,98 +156,76 @@ public class PCB {
         return memoryBlock != null ? memoryBlock.getSize() : 0;
     }
 
+
     /** 获取进程关联的内存块对象（供内存管理器释放内存时使用） */
     public MemoryBlock getMemoryBlock() {
         return memoryBlock;
     }
 
-    // ========================== 寄存器模拟 - Getter/Setter ==========================
-    /** 获取AX通用寄存器值 */
-    public int getAx() { return ax; }
 
-    /**
-     * 设置AX通用寄存器值（限制取值范围0-255，模拟真实CPU寄存器）
-     * @param ax 新的寄存器值
-     */
+    public int getAx() { return ax; }
     public void setAx(int ax) { this.ax = Math.max(0, Math.min(255, ax)); }
 
-    /** 获取程序计数器（下一条指令的索引） */
     public int getPc() { return pc; }
-
-    /** 设置程序计数器（指令执行后更新） */
     public void setPc(int pc) { this.pc = pc; }
 
-    /** 获取当前执行的指令（指令寄存器值） */
     public String getIr() { return ir; }
-
-    /** 设置当前执行的指令（取指阶段更新） */
     public void setIr(String ir) { this.ir = ir; }
+
+
 
     // ========================== 时间片管理 - Getter/核心逻辑 ==========================
     /** 获取剩余时间片时长 */
     public int getTimeSlice() { return timeSlice; }
-
     /** 重置时间片（进程获得CPU执行权时，恢复为初始值10） */
     public void resetTimeSlice() { this.timeSlice = 10; }
-
     /** 减少时间片（CPU执行一个周期后调用，最小为0） */
     public void decTimeSlice() { this.timeSlice = Math.max(0, this.timeSlice - 1); }
+
 
     // ========================== 阻塞管理 - Getter/Setter ==========================
     /** 获取进程阻塞原因 */
     public String getBlockReason() { return blockReason; }
-
     /** 设置进程阻塞原因（如"等待磁盘IO完成"） */
     public void setBlockReason(String blockReason) { this.blockReason = blockReason; }
 
+
+
     // ========================== JavaFX属性绑定 - 供UI表格自动更新 ==========================
-    /**
-     * PID的JavaFX属性（供UI绑定）
-     * 【注意】当前写法为临时方案，若需PID变化时UI自动更新，需将pid改为IntegerProperty成员变量
-     */
+    // PID的JavaFX属性（供UI绑定）
     public IntegerProperty pidProperty() {
         return new SimpleIntegerProperty(pid);
     }
-
     /** 进程名称的JavaFX属性（名称只读，无需更新） */
     public StringProperty nameProperty() {
         return new SimpleStringProperty(name);
     }
-
     /** 进程状态的JavaFX属性（状态变化时UI自动更新） */
     public StringProperty stateProperty() {
         return new SimpleStringProperty(state.name());
     }
-
     /** 进程当前优先级的JavaFX属性（优先级变化时UI自动更新） */
     public IntegerProperty priorityProperty() {
         return new SimpleIntegerProperty(currentPriority);
     }
-
-    /**
-     * 内存地址的JavaFX属性（核心优化）
-     * 直接复用MemoryBlock的startAddressProperty，内存碎片整理后地址变化，UI自动更新
-     * @return 内存地址的IntegerProperty（无内存块返回-1）
-     */
+    //总剩余运行时间的JavaFX属性（供UI绑定）
+    public IntegerProperty totalRemainingTimeProperty() {
+        return new SimpleIntegerProperty(totalRemainingTime);
+    }
+    // 内存地址的JavaFX属性（核心优化）
     public IntegerProperty memoryAddressProperty() {
         if (memoryBlock != null) {
             return memoryBlock.startAddressProperty();
         }
         return new SimpleIntegerProperty(-1);
     }
-
-    /**
-     * 内存大小的JavaFX属性（复用MemoryBlock的sizeProperty）
-     * 内存块大小固定，UI绑定后无需手动更新
-     * @return 内存大小的IntegerProperty（无内存块返回0）
-     */
+    // 内存大小的JavaFX属性（复用MemoryBlock的sizeProperty）
     public IntegerProperty memorySizeProperty() {
         if (memoryBlock != null) {
             return memoryBlock.sizeProperty();
         }
         return new SimpleIntegerProperty(0);
     }
-
     /** 剩余时间片的JavaFX属性（时间片变化时UI自动更新） */
     public IntegerProperty timeSliceProperty() {
         return new SimpleIntegerProperty(timeSlice);
