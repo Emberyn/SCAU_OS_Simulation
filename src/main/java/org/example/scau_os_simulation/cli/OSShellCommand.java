@@ -20,8 +20,8 @@ import picocli.CommandLine.HelpCommand;
                 MakeDirectoryCommand.class,  // `mkdir` 命令，用于创建新目录。
                 ChangeDirectoryCommand.class,// `cd` 命令，用于改变当前工作目录。
                 PwdCommand.class,             // `pwd` 命令，用于显示当前工作目录。
-                TreeCommand.class,  // 【新增】注册 tree 命令
-                TouchCommand.class, // 【新增】注册 touch 命令
+                TreeCommand.class,  // 注册 tree 命令
+                TouchCommand.class, // 注册 touch 命令
                 TypeCommand.class,
                 CopyCommand.class
         })
@@ -32,7 +32,5 @@ public class OSShellCommand implements Runnable
     {
         // 当用户只输入了空命令（例如，直接回车）或者输入了无法被任何子命令识别的命令时，
         // Picocli 会调用这个根命令的 run 方法。
-        // 在本模拟器中，通常不需要在这里执行任何操作，因为 Picocli 会自动处理帮助信息的显示。
-        // 如果需要，可以在这里添加默认行为，例如打印一个简短的欢迎信息或提示用户输入 'help'。
     }
 }

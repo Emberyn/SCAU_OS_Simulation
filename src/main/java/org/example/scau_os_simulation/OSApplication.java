@@ -11,9 +11,6 @@ import org.example.scau_os_simulation.kernel.Kernel;
 
 import java.io.IOException;
 
-/**
- * 操作系统模拟器的主应用程序类
- */
 public class OSApplication extends Application
 {
 
@@ -22,22 +19,19 @@ public class OSApplication extends Application
     @Override
     public void start(Stage stage) throws IOException
     {
-        // 【关键步骤】全局激活 AtlantaFX (PrimerLight) 主题
-        // 这行代码必须在界面加载前执行，它会替换 JavaFX 默认的旧样式
+        // 全局激活 AtlantaFX (PrimerLight) 主题
         Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
 
-        // 初始化内核
         kernel = new Kernel();
         kernel.initialize();
 
         // 加载界面
         FXMLLoader fxmlLoader = new FXMLLoader(OSApplication.class.getResource("main-view.fxml"));
 
-        // 创建场景 (稍微调大默认尺寸以适应现代布局)
+        // 创建场景
         Scene scene = new Scene(fxmlLoader.load(), 1000, 720);
 
         // 加载自定义微调样式 (style.css)
-        // 虽然有了 AtlantaFX，但我们仍需要 style.css 来处理侧边栏布局等细节
         java.net.URL css = OSApplication.class.getResource("style.css");
         if (css != null)
         {
@@ -61,10 +55,8 @@ public class OSApplication extends Application
         // --- 窗口与全屏设置 ---
         // 1. 初始设为全屏
         stage.setFullScreen(true);
-
         // 2. 更新提示文字，告诉用户现在的操作逻辑
         stage.setFullScreenExitHint("按 ESC 退出全屏 | 按 F11 切换全屏");
-
         // 3. 监听全屏变化 (用于退出全屏时恢复合理的窗口大小)
         stage.fullScreenProperty().addListener((obs, wasFullScreen, isFullScreen) ->
         {

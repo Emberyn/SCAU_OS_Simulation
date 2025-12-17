@@ -1,150 +1,261 @@
 package org.example.scau_os_simulation.process;
 
 import org.example.scau_os_simulation.memory.MemoryBlock;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 /**
- * 进程控制块（PCB）- 记录进程运行所需的全部状态
+ * 进程控制块（Process Control Block, PCB）
+ * 核心设计：
+ * 1. 关联物理内存块（MemoryBlock）：替代原有的内存地址/大小字段，支持内存碎片整理后的地址自动同步
+ * 2. 支持JavaFX属性绑定：所有UI展示的字段都提供Property方法，实现数据变→UI自动更
+ * 3. 优先级老化机制：避免低优先级进程长期饥饿（等待时间越长，优先级越高）
+ * 4. 寄存器模拟：模拟CPU寄存器（AX通用寄存器、PC程序计数器、IR指令寄存器）
  */
-public class PCB
-{
+public class PCB {
     private int pid;
     private final String name;
+
+    /** 基准优先级：进程创建时设定的初始优先级，不可变 */
     private final int basePriority;
+    /** 当前优先级：支持动态调整（优先级老化），决定进程调度顺序（数值越大优先级越高） */
     private int currentPriority;
+    /** 等待时间：进程在就绪队列的等待时长，用于触发优先级老化 */
     private int waitingTime;
+
+    /** 进程状态：NEW(新建)/READY(就绪)/RUNNING(运行)/BLOCKED(阻塞)/TERMINATED(终止) */
     private ProcessState state;
-    // 【修改】替换原有的 int memoryAddress, memorySize
+
+    /** 进程关联的物理内存块
+     *  优势：内存碎片整理时，内存块地址变化会自动同步到UI */
     private final MemoryBlock memoryBlock;
+
     private int ax;
     private int pc;
+    /** IR指令寄存器：存储当前正在执行的指令 */
     private String ir;
+
+    /** 时间片剩余时长：进程每次占用CPU的最大时间，用完后触发调度（初始值10） */
     private int timeSlice;
+    /** 阻塞原因：记录进程阻塞的具体原因（如"等待磁盘IO"、"等待内存分配"） */
     private String blockReason;
 
-    /**
-     * 总剩余运行时间（由外部计算后填入）
-     */
+    // -------------------------- 扩展调度字段 --------------------------
+    /** 总剩余运行时间：用于调度算法（如SJF短作业优先），记录进程还需运行的总时长 */
     private int totalRemainingTime;
 
     /**
-     * 构造函数：初始化默认寄存器与时间片
+     * 构造函数：初始化PCB的核心状态，完成进程基础信息的配置
      */
-    public PCB(int pid, String name, int priority, MemoryBlock memoryBlock)
-    {
+    public PCB(int pid, String name, int priority, MemoryBlock memoryBlock) {
+        // 基础标识初始化
         this.pid = pid;
         this.name = name;
         this.basePriority = priority;
-        this.currentPriority = priority;
+        this.currentPriority = priority; // 初始当前优先级=基准优先级
         this.waitingTime = 0;
+
+        // 状态初始化：新建进程默认NEW状态
         this.state = ProcessState.NEW;
-        this.memoryBlock = memoryBlock; // 【关键】保存引用
 
+        this.memoryBlock = memoryBlock;
 
-        this.ax = 0;
-        this.pc = 0;
-        this.ir = "";
-        this.timeSlice = 10;
-        this.blockReason = "";
-        this.totalRemainingTime = 0;
+        this.ax = 0;         // 通用寄存器初始值0
+        this.pc = 0;         // 程序计数器初始指向第一条指令（索引0）
+        this.ir = "";        // 指令寄存器初始为空
 
+        // 调度字段初始化
+        this.timeSlice = 10; // 初始时间片10个单位
+        this.blockReason = "";// 初始无阻塞原因
+        this.totalRemainingTime = 0; // 初始剩余运行时间0
     }
 
-    // --- 新增：为了修复 MainController 报错必须添加的方法 ---
-
+    // ========================== 扩展调度字段 - Getter/Setter（修复UI绑定） ==========================
     /**
-     * 获取总剩余时间数值
+     * 获取进程总剩余运行时间
+     * @return 总剩余运行时间（单位：CPU周期）
      */
     public int getTotalRemainingTime() {
         return totalRemainingTime;
     }
 
     /**
-     * 【修复点 1】设置总剩余时间，供 MainController.java 第 1006 行调用
+     * 设置进程总剩余运行时间（供MainController调用）
+     * @param totalRemainingTime 新的剩余运行时间
      */
     public void setTotalRemainingTime(int totalRemainingTime) {
         this.totalRemainingTime = totalRemainingTime;
     }
 
     /**
-     * 【修复点 2】提供属性绑定，供 MainController.java 第 1186 行调用
+     * 总剩余运行时间的JavaFX属性（供UI绑定）
+     * @return 总剩余运行时间的IntegerProperty对象
      */
-    public javafx.beans.property.IntegerProperty totalRemainingTimeProperty() {
-        return new javafx.beans.property.SimpleIntegerProperty(totalRemainingTime);
+    public IntegerProperty totalRemainingTimeProperty() {
+        return new SimpleIntegerProperty(totalRemainingTime);
     }
 
-    // --- 原有方法保持不变 ---
-
+    // ========================== 基础标识字段 - Getter ==========================
+    /** 获取进程PID */
     public int getPid() { return pid; }
+
+    /** 获取进程名称（只读，进程创建后名称不变） */
     public String getName() { return name; }
+
+    // ========================== 优先级管理 - Getter/核心逻辑 ==========================
+    /** 获取进程当前优先级（调度时使用） */
     public int getPriority() { return currentPriority; }
+
+    /** 获取进程基准优先级（创建时的初始值） */
     public int getBasePriority() { return basePriority; }
+
+    /** 获取进程就绪队列等待时间 */
     public int getWaitingTime() { return waitingTime; }
 
+    /**
+     * 优先级老化核心逻辑：增加等待时间，触发优先级提升
+     * 规则：每等待10个CPU周期，当前优先级+1（最高不超过基准优先级+5）
+     * 目的：避免低优先级进程长期饥饿（永远得不到CPU执行权）
+     */
     public void incrementWaitingTime() {
         waitingTime++;
+        // 每等待10个周期，提升优先级
         if (waitingTime % 10 == 0) {
+            // 优先级上限：基准优先级+5，避免优先级过高抢占核心进程
             currentPriority = Math.min(basePriority + 5, currentPriority + 1);
         }
     }
 
+    /**
+     * 重置等待时间和优先级（进程获得CPU执行权时调用）
+     * 逻辑：等待时间归零，当前优先级恢复为基准优先级
+     */
     public void resetWaitingTime() {
         waitingTime = 0;
         currentPriority = basePriority;
     }
 
+    // ========================== 进程状态管理 - Getter/Setter ==========================
+    /** 获取进程当前状态 */
     public ProcessState getState() { return state; }
+
+    /** 设置进程状态（如就绪→运行、运行→阻塞） */
     public void setState(ProcessState state) { this.state = state; }
-    // 【修改】从 Block 对象获取实时地址
+
+    // ========================== 内存相关 - Getter（关联MemoryBlock） ==========================
+    /**
+     * 获取进程内存起始地址（从MemoryBlock实时获取）
+     * 优势：内存碎片整理后，MemoryBlock地址变化，此处自动同步
+     * @return 内存起始地址（无内存块返回-1）
+     */
     public int getMemoryAddress() {
         return memoryBlock != null ? memoryBlock.getStartAddress() : -1;
     }
+
+    /**
+     * 获取进程内存大小（从MemoryBlock实时获取）
+     * @return 内存大小（无内存块返回0）
+     */
     public int getMemorySize() {
         return memoryBlock != null ? memoryBlock.getSize() : 0;
     }
-    // 新增 getter
+
+    /** 获取进程关联的内存块对象（供内存管理器释放内存时使用） */
     public MemoryBlock getMemoryBlock() {
         return memoryBlock;
     }
+
+    // ========================== 寄存器模拟 - Getter/Setter ==========================
+    /** 获取AX通用寄存器值 */
     public int getAx() { return ax; }
+
+    /**
+     * 设置AX通用寄存器值（限制取值范围0-255，模拟真实CPU寄存器）
+     * @param ax 新的寄存器值
+     */
     public void setAx(int ax) { this.ax = Math.max(0, Math.min(255, ax)); }
+
+    /** 获取程序计数器（下一条指令的索引） */
     public int getPc() { return pc; }
+
+    /** 设置程序计数器（指令执行后更新） */
     public void setPc(int pc) { this.pc = pc; }
+
+    /** 获取当前执行的指令（指令寄存器值） */
     public String getIr() { return ir; }
+
+    /** 设置当前执行的指令（取指阶段更新） */
     public void setIr(String ir) { this.ir = ir; }
+
+    // ========================== 时间片管理 - Getter/核心逻辑 ==========================
+    /** 获取剩余时间片时长 */
     public int getTimeSlice() { return timeSlice; }
+
+    /** 重置时间片（进程获得CPU执行权时，恢复为初始值10） */
     public void resetTimeSlice() { this.timeSlice = 10; }
+
+    /** 减少时间片（CPU执行一个周期后调用，最小为0） */
     public void decTimeSlice() { this.timeSlice = Math.max(0, this.timeSlice - 1); }
+
+    // ========================== 阻塞管理 - Getter/Setter ==========================
+    /** 获取进程阻塞原因 */
     public String getBlockReason() { return blockReason; }
+
+    /** 设置进程阻塞原因（如"等待磁盘IO完成"） */
     public void setBlockReason(String blockReason) { this.blockReason = blockReason; }
 
-    public javafx.beans.property.IntegerProperty pidProperty() {
-        return new javafx.beans.property.SimpleIntegerProperty(pid);
+    // ========================== JavaFX属性绑定 - 供UI表格自动更新 ==========================
+    /**
+     * PID的JavaFX属性（供UI绑定）
+     * 【注意】当前写法为临时方案，若需PID变化时UI自动更新，需将pid改为IntegerProperty成员变量
+     */
+    public IntegerProperty pidProperty() {
+        return new SimpleIntegerProperty(pid);
     }
-    public javafx.beans.property.StringProperty nameProperty() {
-        return new javafx.beans.property.SimpleStringProperty(name);
+
+    /** 进程名称的JavaFX属性（名称只读，无需更新） */
+    public StringProperty nameProperty() {
+        return new SimpleStringProperty(name);
     }
-    public javafx.beans.property.StringProperty stateProperty() {
-        return new javafx.beans.property.SimpleStringProperty(state.name());
+
+    /** 进程状态的JavaFX属性（状态变化时UI自动更新） */
+    public StringProperty stateProperty() {
+        return new SimpleStringProperty(state.name());
     }
-    public javafx.beans.property.IntegerProperty priorityProperty() {
-        return new javafx.beans.property.SimpleIntegerProperty(currentPriority);
+
+    /** 进程当前优先级的JavaFX属性（优先级变化时UI自动更新） */
+    public IntegerProperty priorityProperty() {
+        return new SimpleIntegerProperty(currentPriority);
     }
-    // 【关键优化】直接返回 Block 的 Property
-    // 这样当 defragment 修改了 Block 的地址时，UI 上的表格会自动更新！
-    public javafx.beans.property.IntegerProperty memoryAddressProperty() {
+
+    /**
+     * 内存地址的JavaFX属性（核心优化）
+     * 直接复用MemoryBlock的startAddressProperty，内存碎片整理后地址变化，UI自动更新
+     * @return 内存地址的IntegerProperty（无内存块返回-1）
+     */
+    public IntegerProperty memoryAddressProperty() {
         if (memoryBlock != null) {
             return memoryBlock.startAddressProperty();
         }
-        return new javafx.beans.property.SimpleIntegerProperty(-1);
+        return new SimpleIntegerProperty(-1);
     }
 
-    public javafx.beans.property.IntegerProperty memorySizeProperty() {
+    /**
+     * 内存大小的JavaFX属性（复用MemoryBlock的sizeProperty）
+     * 内存块大小固定，UI绑定后无需手动更新
+     * @return 内存大小的IntegerProperty（无内存块返回0）
+     */
+    public IntegerProperty memorySizeProperty() {
         if (memoryBlock != null) {
             return memoryBlock.sizeProperty();
         }
-        return new javafx.beans.property.SimpleIntegerProperty(0);
+        return new SimpleIntegerProperty(0);
     }
-    public javafx.beans.property.IntegerProperty timeSliceProperty() {
-        return new javafx.beans.property.SimpleIntegerProperty(timeSlice);
+
+    /** 剩余时间片的JavaFX属性（时间片变化时UI自动更新） */
+    public IntegerProperty timeSliceProperty() {
+        return new SimpleIntegerProperty(timeSlice);
     }
 }

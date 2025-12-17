@@ -1,103 +1,159 @@
-/* style.css - AtlantaFX 微调版 */
-/* 我们不再手写按钮和颜色，而是复用主题提供的变量 (如 -color-bg-default) */
+/* Desktop.css - Windows风格桌面样式表
+   整体风格仿Windows系统，包含壁纸、任务栏、桌面图标、窗口等核心样式 */
 
-/* 1. 全局变量定义 */
-.root {
-    /* 定义侧边栏的固定宽度 */
-    -sidebar-width: 220px;
+/* 1. 桌面壁纸样式
+   - 背景图片自适应覆盖，居中显示
+   - 图片加载失败时使用深色备用背景 */
+.desktop-background {
+    -fx-background-image: url("wallpaper.jpg"); /* 壁纸图片路径（与CSS同目录） */
+    -fx-background-size: cover; /* 自适应覆盖整个容器 */
+    -fx-background-position: center center; /* 图片居中 */
+    -fx-background-repeat: no-repeat; /* 不重复 */
+    -fx-background-color: #2b2b2b; /* 备用背景色 */
 }
 
-/* 2. 侧边栏容器 (Sidebar) */
-/* 对应 main-view.fxml 中的 TabPane */
-.sidebar-nav {
-    /* 使用主题默认背景色，确保一致性 */
-    -fx-background-color: -color-bg-default;
-    /* 右侧添加一条极淡的分割线 */
-    -fx-border-color: transparent -color-border-muted transparent transparent;
-    -fx-border-width: 1;
-    /* 固定宽度，防止忽大忽小 */
-    -fx-min-width: -sidebar-width;
-    -fx-pref-width: -sidebar-width;
-    -fx-padding: 10 0 0 0;
+/* 2. 桌面图标区域布局
+   控制图标区的内边距、图标间水平/垂直间距 */
+.desktop-area {
+    -fx-padding: 20px; /* 内边距 */
+    -fx-hgap: 10px; /* 图标水平间距 */
+    -fx-vgap: 20px; /* 图标垂直间距 */
 }
 
-/* 给按钮添加一个类名，例如 class="menu-bar-button" */
-.menu-bar-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #333333;
+/* 3. 底部任务栏样式 */
+.task-bar {
+    -fx-background-color: rgb(206, 225, 218); /* 任务栏背景色 */
+    -fx-pref-height: 45px; /* 任务栏高度 */
+    -fx-padding: 0 10; /* 左右内边距 */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, -2); /* 底部阴影 */
+    -fx-border-color: #444; /* 顶部边框色 */
+    -fx-border-width: 1 0 0 0; /* 仅显示顶部边框 */
 }
 
-.menu-bar-button:hover {
-    -fx-background-color: #e0e0e0; /* 悬停时的浅灰色背景 */
-    -fx-text-fill: black;
+/* 开始菜单按钮样式 */
+.start-button {
+    -fx-background-color: transparent; /* 透明背景 */
+    -fx-text-fill: #28c2dc; /* 文字颜色 */
+    -fx-font-weight: bold; /* 粗体 */
+    -fx-font-size: 14px; /* 字号 */
+    -fx-graphic-text-gap: 8; /* 图标与文字间距 */
+}
+.start-button:hover {
+    -fx-background-color: rgba(255,255,255,0.4); /* 悬浮时浅白背景 */
 }
 
-.menu-bar-button:pressed {
-    -fx-background-color: #d0d0d0; /* 点击时的深灰色 */
+/* 任务栏时钟标签样式 */
+.clock-label {
+    -fx-text-fill: #000000; /* 文字颜色 */
+    -fx-font-size: 12px; /* 字号 */
 }
 
-/* 隐藏 TabPane 顶部的丑陋默认头 */
-.sidebar-nav .tab-header-area {
-    -fx-background-color: transparent;
+/* 4. 桌面图标样式 */
+.desktop-icon {
+    -fx-background-color: transparent; /* 透明背景 */
+    -fx-padding: 10; /* 内边距 */
+    -fx-alignment: top-center; /* 内容上居中 */
+    -fx-pref-width: 90px; /* 图标宽度 */
+    -fx-pref-height: 100px; /* 图标高度 */
 }
-.sidebar-nav .headers-region {
-    -fx-gap: 5px; /* 选项卡之间的间距 */
+.desktop-icon:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2); /* 悬浮背景 */
+    -fx-border-color: rgba(255, 255, 255, 0.4); /* 悬浮边框 */
+    -fx-border-radius: 5; /* 圆角 */
+    -fx-background-radius: 5;
 }
-
-/* 3. 侧边栏选项卡 (Tab) - 扁平化风格 */
-.sidebar-nav .tab {
-    -fx-background-color: transparent;
-    -fx-background-radius: 0;
-    -fx-border-width: 0;
-    -fx-padding: 12 20; /* 增加内边距，让点击区域更大 */
-    -fx-alignment: CENTER_LEFT; /* 文字左对齐，显专业 */
-    -fx-font-size: 14px;
-    -fx-cursor: hand;
-    -fx-transition: -fx-background-color 0.2s;
+.desktop-icon:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.3); /* 按下背景 */
 }
 
-/* 悬停状态：极淡灰色背景 */
-.sidebar-nav .tab:hover {
-    -fx-background-color: -color-bg-subtle;
+/* 图标图片容器（JavaFX CSS对ImageView支持有限，主要在代码中控制大小） */
+.icon-image-view {
 }
 
-/* 选中状态：浅蓝背景 + 左侧指示条 */
-.sidebar-nav .tab:selected {
-    -fx-background-color: -color-accent-subtle; /* 主题定义的浅高亮色 */
-    -fx-background-insets: 0;
-    /* 左侧添加 3px 深蓝色指示条 */
-    -fx-border-color: transparent transparent transparent -color-accent-emphasis;
-    -fx-border-width: 0 0 0 3px;
+/* 图标文字降级样式（无图片时显示） */
+.icon-label-fallback {
+    -fx-font-size: 40px;
 }
 
-/* 选中状态的文字：深蓝色加粗 */
-.sidebar-nav .tab:selected .tab-label {
-    -fx-text-fill: -color-accent-fg;
-    -fx-font-weight: bold;
+/* 图标文字标签样式 */
+.icon-label {
+    -fx-text-fill: white; /* 白色文字 */
+    -fx-font-size: 12px; /* 字号 */
+    -fx-effect: dropshadow(one-pass-box, black, 2, 0.5, 0, 0); /* 文字阴影（增强可读性） */
+    -fx-wrap-text: true; /* 自动换行 */
+    -fx-text-alignment: center; /* 文字居中 */
 }
 
-/* 4. 内容区域 - 卡片化背景 */
-.tab-content-area {
-    -fx-padding: 20;
-    /* 使用略深的背景色，从而突显内部白色的 Card */
-    -fx-background-color: -color-bg-inset;
+/* 5. 窗口样式 */
+.window-frame {
+    -fx-background-color: #f4f4f4; /* 窗口背景 */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 15, 0, 0, 5); /* 窗口阴影 */
+    -fx-border-color: #999; /* 边框色 */
+    -fx-border-width: 1; /* 边框宽度 */
+    -fx-border-radius: 5; /* 圆角 */
+    -fx-background-radius: 5;
 }
 
-/* 卡片容器：纯白背景 + 微弱阴影 */
-.card {
-    -fx-background-color: -color-bg-default;
-    -fx-background-radius: 8px;
-    -fx-border-color: -color-border-muted;
-    -fx-border-width: 1px;
-    /* AtlantaFX 风格的柔和阴影 */
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 8, 0, 0, 2);
-    -fx-padding: 0;
+/* 窗口标题栏 */
+.window-title-bar {
+    -fx-background-color: white; /* 背景色 */
+    -fx-padding: 5 10; /* 内边距 */
+    -fx-alignment: center-left; /* 内容左居中 */
+    -fx-border-color: #ddd; /* 底部边框色 */
+    -fx-border-width: 0 0 1 0; /* 仅底部边框 */
+    -fx-background-radius: 5 5 0 0; /* 仅顶部圆角 */
 }
 
-/* 5. 底部状态栏和 CMD 区域 */
-.cmd-area {
-    -fx-background-color: -color-bg-default;
-    -fx-border-color: -color-border-muted transparent transparent transparent;
-    -fx-border-width: 1;
-    -fx-padding: 10 20;
+/* 窗口标题文字 */
+.window-title {
+    -fx-font-weight: bold; /* 粗体 */
+    -fx-text-fill: #333; /* 文字颜色 */
+}
+
+/* 窗口关闭按钮 */
+.window-close-btn {
+    -fx-background-color: transparent; /* 透明背景 */
+    -fx-text-fill: #666; /* 文字颜色 */
+    -fx-font-weight: bold; /* 粗体 */
+    -fx-font-size: 12px; /* 字号 */
+    -fx-cursor: hand; /* 手型光标 */
+}
+.window-close-btn:hover {
+    -fx-background-color: #e81123; /* 悬浮红色背景（Windows风格） */
+    -fx-text-fill: white; /* 白色文字 */
+}
+
+/* 6. 任务栏应用按钮样式 */
+.task-app-btn {
+    -fx-background-color: rgba(5, 255, 224, 0.2); /* 浅青背景 */
+    -fx-text-fill: #000000; /* 文字颜色 */
+    -fx-background-radius: 2; /* 圆角 */
+    -fx-min-width: 100px; /* 最小宽度 */
+    -fx-alignment: center-left; /* 内容左居中 */
+}
+.task-app-btn:hover {
+    -fx-background-color: rgba(255,255,255,0.4); /* 悬浮浅白背景 */
+}
+
+/* 7. 开始菜单样式 */
+.start-menu {
+    -fx-min-width: 150px; /* 最小宽度 */
+    -fx-padding: 5; /* 内边距 */
+    -fx-background-color: rgba(240, 240, 240, 0.95); /* 半透明白背景 */
+    -fx-background-radius: 5; /* 圆角 */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 2); /* 阴影 */
+}
+
+/* 8. 关于窗口文字样式 */
+.about-title {
+    -fx-font-size: 24px; /* 标题字号 */
+    -fx-font-weight: bold; /* 粗体 */
+    -fx-text-fill: #333; /* 文字颜色 */
+}
+.about-version {
+    -fx-text-fill: #666; /* 版本文字颜色 */
+}
+.about-author {
+    -fx-font-size: 10px; /* 作者字号 */
+    -fx-text-fill: #999; /* 作者文字颜色 */
 }

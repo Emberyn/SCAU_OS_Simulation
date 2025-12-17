@@ -1,72 +1,58 @@
 package org.example.scau_os_simulation.memory;
 
-/**
- * 内存块 - 描述一段连续的内存区间
- * <p>
- * 概念：
- * - `startAddress` 表示起始字节地址（通常由上层保证按KB对齐）。
- * - `size` 表示块大小（KB），便于与 UI 的容量展示保持一致。
- * <p>
- * 用途：
- * - 被 `MemoryManager` 用来记录当前已分配的连续区域。
- * - 在 UI 的“内存块列表”中展示每个块的起止与归属进程。
- */
-public class MemoryBlock
-{
-    private int startAddress;
-    private final int size;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 
-    /**
-     * 构造函数
-     *
-     * @param startAddress 起始地址（字节/KB对齐由上层保证）
-     * @param size         大小（KB）
-     */
-    public MemoryBlock(int startAddress, int size)
-    {
-        this.startAddress = startAddress;
-        this.size = size;
+/**
+ * 内存块实体类
+ * 封装物理内存中连续块的核心信息：起始地址（可修改）、块大小（固定）
+ * 支持JavaFX属性绑定，便于UI实时展示内存块状态
+ */
+public class MemoryBlock {
+    // 核心修改：把 Property 作为成员变量（只初始化一次，保证绑定/监听有效）
+    private final IntegerProperty startAddress = new SimpleIntegerProperty();
+    // size 是 final，用 Property 包装后依然只读（符合原逻辑）
+    private final IntegerProperty size = new SimpleIntegerProperty();
+
+
+    public MemoryBlock(int startAddress, int size) {
+        // 给 Property 设初始值（而非直接给变量赋值）
+        this.startAddress.set(startAddress);
+        this.size.set(size);
+    }
+
+
+    public int getStartAddress() {
+        // 从 Property 取值（而非直接返回变量）
+        return startAddress.get();
+    }
+
+
+    public void setStartAddress(int startAddress) {
+        // 给 Property 设值（会触发监听，UI 自动更新）
+        this.startAddress.set(startAddress);
+    }
+
+
+    public int getSize() {
+        // 从 Property 取值
+        return size.get();
     }
 
     /**
-     * 获取起始地址（字节）
+     * 获取起始地址的JavaFX整数属性（用于UI控件数据绑定）
+     * @return 起始地址的IntegerProperty对象（全局唯一）
      */
-    public int getStartAddress()
-    {
+    public IntegerProperty startAddressProperty() {
+        // 返回成员变量（而非新建），保证绑定/监听有效
         return startAddress;
     }
 
     /**
-     * 设置起始地址（用于内存整理）
+     * 获取内存块大小的JavaFX整数属性（用于UI控件数据绑定）
+     * @return 大小的IntegerProperty对象（全局唯一）
      */
-    public void setStartAddress(int startAddress)
-    {
-        this.startAddress = startAddress;
-    }
-
-    /**
-     * 获取大小（KB）
-     */
-    public int getSize()
-    {
+    public IntegerProperty sizeProperty() {
         return size;
-    }
-
-    /**
-     * 结束地址（闭区间）
-     */
-    public int getEndAddress()
-    {
-        return startAddress + size - 1;
-    }
-
-    public javafx.beans.property.IntegerProperty startAddressProperty()
-    {
-        return new javafx.beans.property.SimpleIntegerProperty(startAddress);
-    }
-
-    public javafx.beans.property.IntegerProperty sizeProperty()
-    {
-        return new javafx.beans.property.SimpleIntegerProperty(size);
     }
 }

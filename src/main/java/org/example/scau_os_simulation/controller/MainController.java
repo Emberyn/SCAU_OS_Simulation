@@ -31,6 +31,8 @@ import org.example.scau_os_simulation.memory.MemoryBlock;
 import org.example.scau_os_simulation.performance.PerformanceChartFX;
 import org.example.scau_os_simulation.performance.PerformanceMonitor;
 import org.example.scau_os_simulation.process.PCB;
+import org.example.scau_os_simulation.process.Process;
+import org.example.scau_os_simulation.process.Executable;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -46,13 +48,46 @@ import javafx.scene.control.Tooltip;
 
 /**
  * 操作系统模拟器主控制器
+ * 
+ * 该类是整个操作系统模拟器的核心控制器，负责：
+ * 1. 管理整个GUI界面的生命周期和状态
+ * 2. 协调各个子系统（进程、内存、文件系统、设备、性能监控）的显示和交互
+ * 3. 处理桌面环境、窗口管理、系统时钟等基础功能
+ * 4. 提供用户操作的入口点（按钮点击、菜单选择等）
+ * 
+ * 主要设计特点：
+ * - 使用JavaFX框架构建GUI界面
+ * - 采用MVC架构模式，将业务逻辑委托给Kernel类处理
+ * - 通过ScheduledExecutorService定时刷新UI，避免阻塞JavaFX应用线程
+ * - 实现了内部窗口系统，模拟真实操作系统的多窗口环境
+ * - 使用FXML注解实现视图和控制的分离
+ * 
+ * 性能优化：
+ * - UI更新操作都通过Platform.runLater()在JavaFX线程中执行
+ * - 定时任务使用单线程调度器，避免资源竞争
+ * - 内存可视化采用增量更新策略
+ * 
+ * @author 操作系统模拟器开发团队
+ * @version 1.0
+ * @since 2024
  */
 public class MainController implements Initializable {
-    // --- 桌面环境核心组件 ---
+    // ========================= 桌面环境核心组件 =========================
+    // 这些组件构成了操作系统模拟器的主界面框架
+    
+    /** 根容器，所有界面元素的最顶层容器，用于承载整个桌面环境 */
     @FXML private StackPane rootStackPane;
+    
+    /** 桌面区域，用于放置桌面图标（如进程管理、内存管理等快捷方式） */
     @FXML private FlowPane desktopArea;
+    
+    /** 任务栏应用区域，显示当前打开的窗口对应的任务按钮 */
     @FXML private HBox taskBarApps;
+    
+    /** 系统时钟标签，显示当前系统时间（格式：yyyy-MM-dd HH:mm） */
     @FXML private Label systemClockLabel;
+    
+    /** 开始菜单按钮，点击可打开系统功能菜单 */
     @FXML private Button startMenuBtn;
 
     // --- 功能视图容器 ---
@@ -109,28 +144,59 @@ public class MainController implements Initializable {
     // 窗口层 (解决闪烁)
     private Pane windowLayer;
 
+    /**
+     * 控制器初始化方法，由JavaFX框架在FXML加载完成后自动调用
+     * 
+     * 该方法负责整个系统界面的初始化工作，包括：
+     * 1. 获取内核实例，建立与业务逻辑层的连接
+     * 2. 初始化数据绑定和性能图表
+     * 3. 设置文件系统树的多选模式
+     * 4. 初始化窗口层，为内部窗口系统做准备
+     * 5. 注册文件系统监听器，实现文件变化的实时刷新
+     * 6. 监听内存视图宽度变化，解决初始显示空白的问题
+     * 7. 设置桌面区域自适应大小
+     * 8. 初始化桌面图标、开始菜单和系统时钟
+     * 9. 执行首次视图更新
+     * 10. 设置文件系统事件处理
+     * 11. 初始化控制按钮状态
+     * 12. 注册全局快捷键（Ctrl+F搜索）
+     * 13. 启动定时刷新任务，每500毫秒更新一次UI
+     * 
+     * 性能考虑：
+     * - 所有UI更新操作都通过Platform.runLater()在JavaFX应用线程中执行
+     * - 使用单线程调度器避免并发问题
+     * - 定时任务间隔设置为500毫秒，平衡实时性和性能
+     * 
+     * @param location FXML文件的位置（通常不需要手动处理）
+     * @param resources 国际化资源包（支持多语言）
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // 获取内核单例实例，建立与业务逻辑层的连接
         kernel = Kernel.getInstance();
+        
+        // 初始化数据绑定关系
         initBindings();
+        
+        // 初始化性能监控图表组件
         initializePerformanceChart();
 
+        // 设置文件系统树的选择模式为多选，支持同时选择多个文件/目录
         fileSystemTreeView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        // 初始化窗口层
+        // 初始化窗口层，为内部窗口系统做准备
         initWindowLayer();
 
-        // 【新增】注册文件系统监听器
-        // 当文件系统发生变化时，在 JavaFX Application 线程中刷新视图
+        // 注册文件系统监听器，当文件系统发生变化时自动刷新视图
+        // 使用Platform.runLater()确保UI更新在JavaFX线程中执行
         kernel.getFileSystemManager().addListener(() -> {
             Platform.runLater(() -> {
                 updateFileSystemView();
-                // 如果你希望磁盘进度条也实时更新，也加上:
-                // updateDiskUsage(); (如果你把这部分逻辑抽离出来了)
             });
         });
 
-        // 【新增】监听内存视图宽度变化，解决"刚打开是空白"的问题
+        // 监听内存视图宽度变化，解决"刚打开是空白"的问题
+        // 当内存可视化面板宽度大于0时，立即执行内存可视化更新
         if (memoryVisualizationPane != null) {
             memoryVisualizationPane.widthProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal.doubleValue() > 0) {
@@ -139,34 +205,47 @@ public class MainController implements Initializable {
             });
         }
 
-        // 桌面区域自适应
+        // 设置桌面区域自适应大小，根据内容自动调整尺寸
         desktopArea.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
 
+        // 初始化桌面环境，包括桌面图标和交互功能
         initDesktop();
+        
+        // 初始化开始菜单
         initStartMenu();
+        
+        // 启动系统时钟，开始更新时间显示
         startClock();
 
+        // 执行首次全面视图更新，确保界面显示最新数据
         updateAllViews();
+        
+        // 更新文件系统视图
         updateFileSystemView();
+        
+        // 设置文件系统相关的事件监听器
         setupFileSystemEvents();
+        
+        // 初始化控制按钮的可用状态
         updateControlButtonsState(false);
 
-        // 全局快捷键：Ctrl+F 搜索
+        // 注册全局快捷键：Ctrl+F 打开文件搜索功能
         rootStackPane.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
             if (e.isShortcutDown() && e.getCode() == KeyCode.F) {
                 onSearchFileClick();
-                e.consume();
+                e.consume(); // 消耗事件，防止进一步传播
             }
         });
 
-        // 定时刷新 UI
+        // 启动定时刷新任务，每500毫秒更新一次UI视图
+        // 使用单线程调度器确保线程安全
         uiExec.scheduleAtFixedRate(() -> Platform.runLater(() -> {
-            updateProcessView();
-            updateMemoryView();
-            updateDeviceView();
-            updateOperationLogView();
-            updatePerformanceChart();
-            updatePerformanceMetrics();
+            updateProcessView();      // 更新进程视图
+            updateMemoryView();       // 更新内存视图
+            updateDeviceView();       // 更新设备视图
+            updateOperationLogView(); // 更新操作日志视图
+            updatePerformanceChart(); // 更新性能图表
+            updatePerformanceMetrics(); // 更新性能指标
         }), 0, 500, TimeUnit.MILLISECONDS);
     }
 
@@ -196,8 +275,24 @@ public class MainController implements Initializable {
         }
     }
 
-    /**
+/**
      * 递归查找树形结构中第一个可执行文件（.e后缀）
+     * 
+     * 该方法用于在文件系统树中自动查找可执行文件，主要用途：
+     * 1. 系统启动时自动定位到第一个可执行文件
+     * 2. 为用户提供快捷的执行文件入口
+     * 3. 演示文件系统的遍历功能
+     * 
+     * 搜索逻辑：
+     * - 深度优先搜索：先检查当前节点，再递归检查子节点
+     * - 后缀匹配：查找以".e"结尾的文件名
+     * - 返回第一个匹配项：找到后立即返回，不继续搜索
+     * 
+     * @param node 搜索的起始树节点
+     * @return 第一个找到的可执行文件节点，如果未找到返回null
+     * 
+     * @see TreeItem
+     * @see String#endsWith(String)
      */
     private TreeItem<String> findFirstExecutable(TreeItem<String> node) {
         if (node.getValue() != null && node.getValue().endsWith(".e")) {
@@ -212,6 +307,26 @@ public class MainController implements Initializable {
 
     /**
      * 展开树形节点的父路径（确保选中项可见）
+     * 
+     * 该方法用于确保指定的树节点在界面中可见，主要应用场景：
+     * 1. 自动选择文件后，确保用户能看到选中的文件
+     * 2. 搜索功能定位到文件后，展开其父目录
+     * 3. 程序启动时展开到默认位置
+     * 
+     * 实现逻辑：
+     * - 自底向上遍历：从目标节点开始，逐级向上查找父节点
+     * - 展开所有父节点：将路径上的所有父节点设置为展开状态
+     * - 确保可见性：展开后目标节点将在树中可见
+     * 
+     * 用户体验：
+     * - 自动展开避免了用户手动点击展开的操作
+     * - 保持展开状态，用户可以看到完整的文件路径
+     * - 与选中操作配合使用，提供完整的视觉反馈
+     * 
+     * @param item 需要展开的目标树节点
+     * 
+     * @see TreeItem#setExpanded(boolean)
+     * @see TreeItem#getParent()
      */
     private void expandPath(TreeItem<String> item) {
         TreeItem<String> parent = item.getParent();
@@ -304,26 +419,56 @@ public class MainController implements Initializable {
 
 
 
-    /**
+/**
      * 【终极修复版】绘制内存条带与刻度尺
-     * 1. 修复了宽度为0导致不显示的问题
-     * 2. 【核心修复】刻度尺自适应：根据窗口宽度动态计算刻度间隔，防止文字重叠
+     * 
+     * 该方法负责在内存可视化面板中绘制内存使用情况的图形表示，包括：
+     * 1. 内存块可视化：用彩色矩形表示已分配的内存块
+     * 2. 内存刻度尺：在顶部显示内存地址刻度，便于用户了解内存分布
+     * 
+     * 核心特性：
+     * - 自适应布局：根据面板宽度动态调整显示比例
+     * - 颜色编码：系统进程使用红色，用户进程使用蓝色
+     * - 智能刻度：根据窗口宽度自动计算刻度间隔，防止文字重叠
+     * - 工具提示：鼠标悬停显示详细的内存块信息
+     * - 边界保护：确保图形元素不会超出面板边界
+     * 
+     * 性能优化：
+     * - 宽度为0时直接返回，避免无效计算
+     * - 先清空再重绘，确保显示一致性
+     * - 使用估算文字宽度，避免昂贵的文字测量操作
+     * 
+     * 修复历史：
+     * - 修复了宽度为0导致不显示的问题
+     * - 修复了刻度尺文字重叠问题
+     * - 修复了小窗口下边框过粗的问题
+     * 
+     * 设计原理：
+     * - 采用比例映射：内存地址和大小按比例映射到面板像素
+     * - 步长规整化：刻度步长对齐到64KB倍数，显示更规整
+     * - 视觉层次：通过颜色、边框、透明度区分不同元素
      */
     private void updateMemoryVisualization() {
-        // 1. 安全检查
+        // ========================= 阶段1：安全检查 =========================
+        // 确保内存可视化面板存在且有有效宽度，避免后续计算出现除零错误
         if (memoryVisualizationPane == null || memoryVisualizationPane.getWidth() <= 0) {
-            return;
+            return; // 面板未准备好，直接返回
         }
 
-        // 2. 清空画布
+        // ========================= 阶段2：清空画布 =========================
+        // 清除之前的绘制内容，确保显示的一致性和正确性
         memoryVisualizationPane.getChildren().clear();
         if (memoryRulerPane != null) memoryRulerPane.getChildren().clear();
 
-        // 3. 获取基础数据
+        // ========================= 阶段3：获取基础数据 =========================
+        // 获取面板的物理尺寸，用于后续的像素映射计算
         double paneWidth = memoryVisualizationPane.getWidth();
         double paneHeight = memoryVisualizationPane.getPrefHeight();
-        // 获取内存总大小 (KB)
+        
+        // 获取内存总大小 (KB)，这是所有比例计算的基础
         int totalMemorySize = kernel.getMemoryManager().getMemory().getSize();
+        
+        // 获取当前已分配的内存块列表，这些是我们要可视化显示的对象
         var allocatedBlocks = kernel.getMemoryManager().getAllocatedBlocks();
 
         // =========================================================
@@ -464,21 +609,76 @@ public class MainController implements Initializable {
         taskBarApps.getChildren().add(taskBtn);
     }
 
+/**
+     * 内部窗口类 - 模拟操作系统窗口系统的核心组件
+     * 
+     * 该类实现了操作系统模拟器中的窗口管理功能，提供了类似真实操作系统的窗口体验：
+     * 1. 窗口拖动：通过标题栏拖动整个窗口
+     * 2. 窗口调整：支持八个方向的边框调整
+     * 3. 窗口最大化：支持最大化/还原功能
+     * 4. 窗口控制：提供最小化、关闭等标准窗口操作
+     * 
+     * 设计特点：
+     * - 继承自VBox，使用JavaFX布局系统
+     * - 采用组合模式，包含标题栏和内容区域
+     * - 使用枚举定义调整大小的方向
+     * - 支持自定义关闭回调函数
+     * 
+     * 交互体验：
+     * - 鼠标悬停时显示相应的调整光标
+     * - 拖动过程中实时预览窗口变化
+     * - 最大化时记住原始位置和大小
+     * - 边界保护，防止窗口过小
+     * 
+     * 性能考虑：
+     * - 使用缓存变量减少重复计算
+     * - 事件处理中及时消耗事件，避免冒泡
+     * - 使用最小尺寸限制，防止无效状态
+     * 
+     * @see VBox
+     * @see Runnable
+     */
     // --- 内部窗口类 ---
     class InternalWindow extends VBox {
+        // ========================= 窗口位置状态 =========================
+        /** 鼠标按下时相对于窗口的X偏移量，用于拖动计算 */
         private double xOffset = 0, yOffset = 0;
+        
+        /** 窗口拖动开始时的初始位置和大小，用于恢复和边界计算 */
         private double initX, initY, initW, initH;
+        
+        /** 标记是否正在拖动窗口，用于区分拖动和其他鼠标操作 */
         private boolean isDraggingWindow = false;
+        
+        /** 窗口的最大化状态，true表示当前处于最大化状态 */
         private boolean isMaximized = false;
+        
+        /** 窗口最大化前的位置和大小，用于还原操作 */
         private double restoreX, restoreY, restoreW, restoreH;
+        
+        /** 调整窗口大时的检测边距，鼠标进入此范围显示调整光标 */
         private static final double RESIZE_MARGIN = 10.0;
+        
+        /** 窗口最小宽度限制，防止窗口过小影响使用 */
         private static final double MIN_WIDTH = 200;
+        
+        /** 窗口最小高度限制，确保内容区域有足够空间 */
         private static final double MIN_HEIGHT = 150;
 
+        // ========================= 窗口属性 =========================
+        /** 窗口标题，显示在标题栏和任务栏按钮上 */
         String title;
+        
+        /** 窗口关闭时的回调函数，用于清理资源和更新UI */
         Runnable onClosed;
+        
+        /** 最大化/还原按钮的引用，用于动态更新按钮图标 */
         private final Button maxBtn;
+        
+        /** 当前调整大小模式，指示用户正在从哪个方向调整窗口 */
         private ResizeMode currentResizeMode = ResizeMode.NONE;
+        
+        /** 调整大小方向枚举，定义了八个可能的调整方向 */
         private enum ResizeMode { NONE, TOP, RIGHT, BOTTOM, LEFT, TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT }
 
         public InternalWindow(String title, Node content, double w, double h) {
