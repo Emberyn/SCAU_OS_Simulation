@@ -28,9 +28,8 @@ public class ProcessManager
         this.memoryManager = memoryManager;
         this.processes = new ArrayList<>();
 
-        // 【修复】初始化闲逛进程，并给它一个死循环指令
-        // 防止它执行一次就结束，导致调度器反复重启它，浪费性能
-        PCB idlePcb = new PCB(-1, "IDLE (闲逛)", 0, 0, 0);
+        // 【修改】IDLE 进程不需要实体内存块，传 null
+        PCB idlePcb = new PCB(-1, "IDLE (闲逛)", 0, null);
         this.idleProcess = new Process(idlePcb);
         // 手动构造一个死循环指令序列
         Executable idleExec = new Executable(Arrays.asList("x=0", "x++", "x--"));
@@ -56,20 +55,23 @@ public class ProcessManager
     public synchronized Process createProcess(String name, int priority)
     {
         int memorySize = 64;
-        int memoryAddress = memoryManager.allocateMemory(memorySize);
 
-        if (memoryAddress < 0)
+        // 【修改】获取对象
+        org.example.scau_os_simulation.memory.MemoryBlock block = memoryManager.allocateMemory(memorySize);
+
+        if (block == null) // 【修改】判空
         {
             Kernel.getInstance().printToTerminal("创建失败: 内存不足");
             return null;
         }
 
-        PCB pcb = new PCB(nextPid++, name, priority, memoryAddress, memorySize);
+        // 【修改】传入 block 对象
+        PCB pcb = new PCB(nextPid++, name, priority, block);
         Process process = new Process(pcb);
 
         processes.add(process);
         process.ready();
-        readyQueue.add(process); // 加入就绪队列
+        readyQueue.add(process);
 
         // 记录日志
         Map<String, Object> details = new HashMap<>();
@@ -97,7 +99,8 @@ public class ProcessManager
         Process process = findProcessInternal(pid);
         if (process != null)
         {
-            memoryManager.freeMemory(process.getPcb().getMemoryAddress(), process.getPcb().getMemorySize());
+            // 【修改】传入 block 对象进行释放，确保能够匹配到搬家后的块
+            memoryManager.freeMemory(process.getPcb().getMemoryBlock());
             processes.remove(process);
 
             // 记录日志

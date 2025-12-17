@@ -22,6 +22,7 @@ public class MemoryManager
 {
     private final Memory memory;
     private final List<MemoryBlock> allocatedBlocks;
+    private static final int SYSTEM_RESERVED_SIZE = 128; // 定义系统保留区大小
 
     /**
      * 构造函数
@@ -31,6 +32,10 @@ public class MemoryManager
     {
         this.memory = memory;
         this.allocatedBlocks = new ArrayList<>();
+
+        // 【新增】初始化时，直接“霸占”前 128KB 给操作系统
+        // 这样 0-128 就算作“已用”，不再是“碎片空隙”了
+        this.allocatedBlocks.add(new MemoryBlock(0, 128));
     }
 
     public Memory getMemory()
@@ -53,36 +58,30 @@ public class MemoryManager
      * @param size 申请的大小（KB）
      * @return 起始地址；失败返回-1
      */
-    public synchronized int allocateMemory(int size)
+    public synchronized MemoryBlock allocateMemory(int size)
     {
-        // 1. 对已分配块按起始地址排序，这是正确计算空隙的前提
+        // 1. 排序
         allocatedBlocks.sort((a, b) -> a.getStartAddress() - b.getStartAddress());
 
-        // 模拟系统区保留：假设前 128KB 是系统区，用户只能从 128 开始用
-        int SYSTEM_RESERVED_SIZE = 128;
-        int candidateAddress = SYSTEM_RESERVED_SIZE;
+        int candidateAddress = 0; // 假设 MemoryManager 构造函数里已经加了系统占用块(0-128)，这里从0开始也没问题
 
-        // 2. 遍历所有已分配块，检查"当前候选地址"到"该块起始地址"之间的空隙
+        // 2. 查找空隙
         for (MemoryBlock block : allocatedBlocks)
         {
-            // 如果空隙足够大 (block.start - candidate >= size)
             if (candidateAddress + size <= block.getStartAddress())
             {
-                // 找到合适位置，跳出循环进行分配
                 break;
             }
-            // 否则，候选地址移动到当前块的末尾之后
             candidateAddress = block.getStartAddress() + block.getSize();
         }
 
-        // 3. 检查最后一个块之后（或者如果内存全空）是否有足够空间
+        // 3. 分配
         if (candidateAddress + size <= memory.getSize())
         {
-            // 分配成功
             MemoryBlock newBlock = new MemoryBlock(candidateAddress, size);
             allocatedBlocks.add(newBlock);
 
-            // 记录日志
+            // 日志
             java.util.Map<String, Object> details = new java.util.HashMap<>();
             details.put("address", candidateAddress);
             details.put("size", size);
@@ -92,7 +91,7 @@ public class MemoryManager
                     details
             );
 
-            return candidateAddress;
+            return newBlock; // 【关键修改】返回对象
         }
 
         // 4. 分配失败
@@ -105,43 +104,36 @@ public class MemoryManager
                 details
         );
 
-        return -1;
+        return null; // 【关键修改】失败返回 null
     }
 
     /**
-     * 释放一块已分配的内存
-     * 通过地址与大小精确匹配对应的内存块并移除记录。
-     *
-     * @param address 起始地址
-     * @param size    大小（KB）
+     * 【修改】直接根据 MemoryBlock 对象释放
      */
-    public synchronized void freeMemory(int address, int size)
+    public synchronized void freeMemory(MemoryBlock block)
     {
-        MemoryBlock blockToRemove = null;
-
-        for (MemoryBlock block : allocatedBlocks)
+        if (block != null && allocatedBlocks.contains(block))
         {
-            if (block.getStartAddress() == address && block.getSize() == size)
-            {
-                blockToRemove = block;
-                break;
-            }
-        }
+            allocatedBlocks.remove(block);
 
-        if (blockToRemove != null)
-        {
-            allocatedBlocks.remove(blockToRemove);
-
-            // 记录日志
+            // 日志
             java.util.Map<String, Object> details = new java.util.HashMap<>();
-            details.put("address", address);
-            details.put("size", size);
+            details.put("address", block.getStartAddress());
+            details.put("size", block.getSize());
             org.example.scau_os_simulation.kernel.Kernel.getInstance().getOperationLogger().info(
                     org.example.scau_os_simulation.logging.OperationLogger.OperationType.MEMORY_FREE,
                     "内存释放成功",
                     details
             );
         }
+    }
+
+
+    // ... 为了兼容性，保留旧的 freeMemory(int, int) 也可以，或者直接删掉 ...
+    // 这里建议保留一个重载方法以防万一，但最好不再使用它
+    public synchronized void freeMemory(int address, int size) {
+        // 尝试通过地址查找并删除 (旧逻辑)
+        allocatedBlocks.removeIf(b -> b.getStartAddress() == address && b.getSize() == size);
     }
 
 
@@ -161,12 +153,15 @@ public class MemoryManager
         // 按起始地址排序
         allocatedBlocks.sort((a, b) -> a.getStartAddress() - b.getStartAddress());
 
+        // 【修改】这里改回 0！
+        // 因为列表里第一个就是系统块(0,128)，它会占据 0 的位置
+        // 下一个块自然会被挤到 128，逻辑完美自洽
         int currentAddress = 0;
+
         for (MemoryBlock block : allocatedBlocks)
         {
             if (block.getStartAddress() != currentAddress)
             {
-                // 移动内存块
                 block.setStartAddress(currentAddress);
             }
             currentAddress += block.getSize();

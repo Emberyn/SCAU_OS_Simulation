@@ -39,6 +39,10 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import javafx.scene.layout.Pane;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.paint.Color;
+import javafx.scene.control.Tooltip;
 
 /**
  * 操作系统模拟器主控制器
@@ -90,6 +94,7 @@ public class MainController implements Initializable {
     // 【修改】在最后添加 timeSliceColumn
     @FXML private TableColumn<PCB, Number> timeSliceColumn;
     @FXML private TableColumn<PCB, Number> totalRemainingTimeColumn; // 新增的列
+    @FXML private Pane memoryRulerPane; // 新增的刻度尺
 
     // --- 后端核心对象引用 ---
     private Kernel kernel;
@@ -98,6 +103,8 @@ public class MainController implements Initializable {
     // 【修复 3】移除了未使用的 clipboardFile (单对象)，保留 clipboardFiles (列表)
     private final Map<Node, InternalWindow> openWindows = new HashMap<>();
     private final List<Object> clipboardFiles = new ArrayList<>();
+    @FXML
+    private Pane memoryVisualizationPane; // 对应 FXML 中新增的 ID
 
     // 窗口层 (解决闪烁)
     private Pane windowLayer;
@@ -122,6 +129,15 @@ public class MainController implements Initializable {
                 // updateDiskUsage(); (如果你把这部分逻辑抽离出来了)
             });
         });
+
+        // 【新增】监听内存视图宽度变化，解决"刚打开是空白"的问题
+        if (memoryVisualizationPane != null) {
+            memoryVisualizationPane.widthProperty().addListener((obs, oldVal, newVal) -> {
+                if (newVal.doubleValue() > 0) {
+                    updateMemoryVisualization();
+                }
+            });
+        }
 
         // 桌面区域自适应
         desktopArea.setMaxSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
@@ -284,6 +300,121 @@ public class MainController implements Initializable {
         iconBox.setOnContextMenuRequested(ev -> menu.show(iconBox, ev.getScreenX(), ev.getScreenY()));
 
         desktopArea.getChildren().add(iconBox);
+    }
+
+
+
+    /**
+     * 【终极修复版】绘制内存条带与刻度尺
+     * 1. 修复了宽度为0导致不显示的问题
+     * 2. 【核心修复】刻度尺自适应：根据窗口宽度动态计算刻度间隔，防止文字重叠
+     */
+    private void updateMemoryVisualization() {
+        // 1. 安全检查
+        if (memoryVisualizationPane == null || memoryVisualizationPane.getWidth() <= 0) {
+            return;
+        }
+
+        // 2. 清空画布
+        memoryVisualizationPane.getChildren().clear();
+        if (memoryRulerPane != null) memoryRulerPane.getChildren().clear();
+
+        // 3. 获取基础数据
+        double paneWidth = memoryVisualizationPane.getWidth();
+        double paneHeight = memoryVisualizationPane.getPrefHeight();
+        // 获取内存总大小 (KB)
+        int totalMemorySize = kernel.getMemoryManager().getMemory().getSize();
+        var allocatedBlocks = kernel.getMemoryManager().getAllocatedBlocks();
+
+        // =========================================================
+        // A. 绘制内存块 (彩色方块)
+        // =========================================================
+        for (MemoryBlock block : allocatedBlocks) {
+            // 计算比例位置
+            double x = ((double) block.getStartAddress() / totalMemorySize) * paneWidth;
+            double w = ((double) block.getSize() / totalMemorySize) * paneWidth;
+
+            // 视觉修正：防止块太小完全消失，但在小窗口下不强制过大导致重叠
+            // 使用 0.5px 主要是为了让它在屏幕上至少有一条线
+            if (w < 0.5) w = 0.5;
+
+            Rectangle rect = new Rectangle(x, 0, w, paneHeight);
+
+            // 颜色判断：系统进程(PID -1)用红色，普通进程用蓝色
+            int pid = findProcessIdForMemoryBlock(block);
+            if (pid == -1) {
+                rect.setFill(Color.web("#e74c3c")); // 系统红
+            } else {
+                rect.setFill(Color.web("#3498db")); // 用户蓝
+            }
+
+            // 描边设置：在小窗口模式下，去掉描边或设得极细，防止全是边框颜色
+            if (paneWidth < 600) {
+                rect.setStrokeWidth(0); // 窗口太小时，去掉边框
+            } else {
+                rect.setStroke(Color.WHITE);
+                rect.setStrokeWidth(0.5);
+            }
+
+            // Tooltip 详情
+            String info = String.format("PID: %s\n地址: %d\n大小: %d KB",
+                    (pid == -1 ? "System" : pid),
+                    block.getStartAddress(),
+                    block.getSize());
+            Tooltip.install(rect, new Tooltip(info));
+
+            memoryVisualizationPane.getChildren().add(rect);
+        }
+
+        // =========================================================
+        // B. 绘制刻度尺 (自适应算法)
+        // =========================================================
+        if (memoryRulerPane != null) {
+            // 【核心修复算法】
+            // 1. 设定每个刻度文字至少需要占用 60 像素宽度，才不会重叠
+            double minPixelsPerLabel = 60.0;
+
+            // 2. 计算当前宽度最多能容纳多少个标签
+            int maxLabels = (int) (paneWidth / minPixelsPerLabel);
+            if (maxLabels < 1) maxLabels = 1; // 至少显示结束值
+
+            // 3. 计算理想的内存步长 (KB)
+            int rawStep = totalMemorySize / maxLabels;
+
+            // 4. 将步长规整化：向下取整到最近的 64KB 倍数 (因为内存块通常是64的倍数)
+            // 这样显示的刻度如 0, 128, 256 会比 0, 143, 286 这种数字好看得多
+            int step = 64;
+            while (step < rawStep) {
+                step += 64; // 步进增加 64，直到满足最小像素间隔
+            }
+
+            // 5. 循环绘制
+            for (int addr = 0; addr <= totalMemorySize; addr += step) {
+                // 计算 X 坐标
+                double x = ((double) addr / totalMemorySize) * paneWidth;
+
+                // 画小竖线
+                javafx.scene.shape.Line line = new javafx.scene.shape.Line(x, 0, x, 5);
+                line.setStroke(Color.GRAY);
+
+                // 画文字
+                javafx.scene.text.Text text = new javafx.scene.text.Text(String.valueOf(addr));
+                text.setStyle("-fx-font-size: 10px; -fx-fill: #666;");
+
+                // 文字居中修正
+                double textWidthEstimate = text.getText().length() * 6.0; // 估算文字宽度
+                double textX = x - (textWidthEstimate / 2);
+
+                // 边界修正：最左边不要出界，最右边也不要出界
+                if (textX < 0) textX = 0;
+                if (textX + textWidthEstimate > paneWidth) textX = paneWidth - textWidthEstimate;
+
+                text.setX(textX);
+                text.setY(15); // 距离上方线条的距离
+
+                memoryRulerPane.getChildren().addAll(line, text);
+            }
+        }
     }
 
 
@@ -825,6 +956,9 @@ public class MainController implements Initializable {
                 updateProcessView(); updateMemoryView();
             });
         } else showWarning("未选择进程", "请先选择要终止的进程。");
+
+        // 新增这一行：
+        updateMemoryVisualization();
     }
 
     @FXML protected void onCreateFileClick() {
@@ -1036,9 +1170,16 @@ public class MainController implements Initializable {
         double usage = (double) usedMemory / totalMemory;
         memoryUsageBar.setProgress(usage);
         memoryInfoLabel.setText(String.format("已用: %d KB / 总量: %d KB", usedMemory, totalMemory));
+
+        // 更新表格
         memoryBlockTableView.getItems().setAll(memoryManager.getAllocatedBlocks());
+
+        // 更新碎片率文字
         double fragmentationRate = memoryManager.getFragmentationRate();
         fragmentationLabel.setText(String.format("碎片率: %.2f%%", fragmentationRate * 100));
+
+        // 【新增】这一行必须加！否则点击整理按钮后，下面的彩色条不会动！
+        updateMemoryVisualization();
     }
 
     private void updateDeviceView() {

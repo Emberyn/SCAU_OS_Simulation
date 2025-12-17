@@ -1,5 +1,7 @@
 package org.example.scau_os_simulation.process;
 
+import org.example.scau_os_simulation.memory.MemoryBlock;
+
 /**
  * 进程控制块（PCB）- 记录进程运行所需的全部状态
  */
@@ -11,8 +13,8 @@ public class PCB
     private int currentPriority;
     private int waitingTime;
     private ProcessState state;
-    private final int memoryAddress;
-    private final int memorySize;
+    // 【修改】替换原有的 int memoryAddress, memorySize
+    private final MemoryBlock memoryBlock;
     private int ax;
     private int pc;
     private String ir;
@@ -27,7 +29,7 @@ public class PCB
     /**
      * 构造函数：初始化默认寄存器与时间片
      */
-    public PCB(int pid, String name, int priority, int memoryAddress, int memorySize)
+    public PCB(int pid, String name, int priority, MemoryBlock memoryBlock)
     {
         this.pid = pid;
         this.name = name;
@@ -35,14 +37,16 @@ public class PCB
         this.currentPriority = priority;
         this.waitingTime = 0;
         this.state = ProcessState.NEW;
-        this.memoryAddress = memoryAddress;
-        this.memorySize = memorySize;
+        this.memoryBlock = memoryBlock; // 【关键】保存引用
+
+
         this.ax = 0;
         this.pc = 0;
         this.ir = "";
         this.timeSlice = 10;
         this.blockReason = "";
         this.totalRemainingTime = 0;
+
     }
 
     // --- 新增：为了修复 MainController 报错必须添加的方法 ---
@@ -90,8 +94,17 @@ public class PCB
 
     public ProcessState getState() { return state; }
     public void setState(ProcessState state) { this.state = state; }
-    public int getMemoryAddress() { return memoryAddress; }
-    public int getMemorySize() { return memorySize; }
+    // 【修改】从 Block 对象获取实时地址
+    public int getMemoryAddress() {
+        return memoryBlock != null ? memoryBlock.getStartAddress() : -1;
+    }
+    public int getMemorySize() {
+        return memoryBlock != null ? memoryBlock.getSize() : 0;
+    }
+    // 新增 getter
+    public MemoryBlock getMemoryBlock() {
+        return memoryBlock;
+    }
     public int getAx() { return ax; }
     public void setAx(int ax) { this.ax = Math.max(0, Math.min(255, ax)); }
     public int getPc() { return pc; }
@@ -116,11 +129,20 @@ public class PCB
     public javafx.beans.property.IntegerProperty priorityProperty() {
         return new javafx.beans.property.SimpleIntegerProperty(currentPriority);
     }
+    // 【关键优化】直接返回 Block 的 Property
+    // 这样当 defragment 修改了 Block 的地址时，UI 上的表格会自动更新！
     public javafx.beans.property.IntegerProperty memoryAddressProperty() {
-        return new javafx.beans.property.SimpleIntegerProperty(memoryAddress);
+        if (memoryBlock != null) {
+            return memoryBlock.startAddressProperty();
+        }
+        return new javafx.beans.property.SimpleIntegerProperty(-1);
     }
+
     public javafx.beans.property.IntegerProperty memorySizeProperty() {
-        return new javafx.beans.property.SimpleIntegerProperty(memorySize);
+        if (memoryBlock != null) {
+            return memoryBlock.sizeProperty();
+        }
+        return new javafx.beans.property.SimpleIntegerProperty(0);
     }
     public javafx.beans.property.IntegerProperty timeSliceProperty() {
         return new javafx.beans.property.SimpleIntegerProperty(timeSlice);
