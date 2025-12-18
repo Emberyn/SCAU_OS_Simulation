@@ -55,7 +55,7 @@ public class FileSystemManager
         }
     }
 
-    // --- 【新增】监听器相关方法（UI刷新核心） ---
+    // 监听器相关方法（UI刷新核心） ---
     /**
      * 注册文件系统变更监听器
      * @param listener 监听器回调（通常是UI层的刷新方法）

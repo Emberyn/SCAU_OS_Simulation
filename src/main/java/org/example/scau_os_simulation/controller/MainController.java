@@ -437,69 +437,122 @@ public class MainController implements Initializable {
 
     @FXML protected void onDesktopClick() { }
 
-    /** 创建单个桌面图标 */
+
+
+    /**
+     * 创建单个桌面图标并添加到桌面区域
+     * 核心功能：
+     * 1. 构建图标UI结构（图标图片+名称标签）
+     * 2. 加载指定图标图片，加载失败时显示emoji回退图标
+     * 3. 为图标绑定双击打开窗口/终端的事件
+     * 4. 为图标绑定右键菜单（支持“打开”操作）
+     * @param contentNode 点击图标后打开的窗口内的内容节点（如进程管理面板）
+     */
     private void addDesktopIcon(String name, String iconFileName, Node contentNode, double winWidth, double winHeight) {
+        // ========================== 步骤1：创建图标容器（VBox） ==========================
+        // VBox：垂直布局容器，用于将图标图片和名称标签上下排列
         VBox iconBox = new VBox(5);
         iconBox.setAlignment(Pos.TOP_CENTER);
         iconBox.getStyleClass().add("desktop-icon");
 
+        // 声明图标图形节点（可能是ImageView图片，也可能是回退的Label文字）
         Node graphicNode;
         try {
+            // ========================== 步骤2：加载指定图标图片 ==========================
             String iconPath = "/org/example/scau_os_simulation/icons/" + iconFileName;
             URL resource = getClass().getResource(iconPath);
+
+            // 检查资源是否存在（避免图片文件缺失导致空指针）
             if (resource != null) {
+                // 使用try-with-resources语法：自动关闭输入流，避免资源泄漏
                 try (InputStream is = resource.openStream()) {
-                    ImageView imageView = new ImageView(new Image(is));
+                    // 创建Image对象：从输入流加载图片
+                    Image image = new Image(is);
+                    // 创建ImageView：用于显示图片的JavaFX节点
+                    ImageView imageView = new ImageView(image);
                     imageView.setFitWidth(48);
                     imageView.setFitHeight(48);
                     imageView.setPreserveRatio(true);
+                    // 开启图片平滑渲染：让图片显示更清晰，避免锯齿
                     imageView.setSmooth(true);
                     imageView.getStyleClass().add("icon-image-view");
                     graphicNode = imageView;
                 }
             } else {
+                // 资源不存在时抛出异常，进入catch块使用回退图标
                 throw new RuntimeException("Icon not found: " + iconPath);
             }
         } catch (Exception e) {
+            // ========================== 步骤3：图标加载失败时的回退方案 ==========================
+            // 创建Label作为回退节点：显示emoji字符替代图片
             Label fallbackLabel = new Label();
+            // 添加CSS样式类，自定义回退文字的样式（如字体大小、颜色）
             fallbackLabel.getStyleClass().add("icon-label-fallback");
-            // 回退图标
+
+            // 根据图标名称匹配对应的emoji，保证不同功能的图标有辨识度
             switch (name) {
-                case "进程管理" -> fallbackLabel.setText("⚙️");
-                case "内存管理" -> fallbackLabel.setText("🧠");
-                case "资源管理器" -> fallbackLabel.setText("📁");
-                case "设备管理" -> fallbackLabel.setText("🖨️");
-                case "性能监视器" -> fallbackLabel.setText("📊");
-                case "终端" -> fallbackLabel.setText("💻");
-                default -> fallbackLabel.setText("📄");
+                case "进程管理" -> fallbackLabel.setText("⚙️"); // 齿轮：代表进程/设置
+                case "内存管理" -> fallbackLabel.setText("🧠"); // 大脑：代表内存/存储
+                case "资源管理器" -> fallbackLabel.setText("📁"); // 文件夹：代表文件/资源
+                case "设备管理" -> fallbackLabel.setText("🖨️"); // 打印机：代表硬件设备
+                case "性能监视器" -> fallbackLabel.setText("📊"); // 图表：代表性能/数据
+                case "终端" -> fallbackLabel.setText("💻"); // 电脑：代表终端/命令行
+                default -> fallbackLabel.setText("📄"); // 文档：默认回退图标
             }
+            // 将回退Label赋值给图形节点
             graphicNode = fallbackLabel;
         }
 
+        // ========================== 步骤4：创建图标名称标签 ==========================
+        // 创建Label显示图标名称（如“进程管理”）
         Label nameLbl = new Label(name);
+        // 添加CSS样式类，自定义名称文字的样式（如字体、颜色、大小）
         nameLbl.getStyleClass().add("icon-label");
+        // 将图形节点（图片/回退文字）和名称标签添加到图标容器
         iconBox.getChildren().addAll(graphicNode, nameLbl);
 
-        // 双击事件
+        // ========================== 步骤5：绑定双击事件 ==========================
+        // 为图标容器绑定鼠标点击事件
         iconBox.setOnMouseClicked(e -> {
+            // 判断：双击 + 鼠标左键（排除右键/中键双击、单击）
             if (e.getClickCount() == 2 && e.getButton() == MouseButton.PRIMARY) {
-                if ("终端".equals(name)) onOpenTerminalClick();
-                else openWindow(name, contentNode, winWidth, winHeight);
+                // 终端图标特殊处理：调用终端打开方法
+                if ("终端".equals(name)) {
+                    onOpenTerminalClick();
+                } else {
+                    // 其他图标：调用通用窗口打开方法，传入窗口名称、内容、尺寸
+                    openWindow(name, contentNode, winWidth, winHeight);
+                }
             }
         });
 
-        // 右键菜单
+        // ========================== 步骤6：绑定右键菜单 ==========================
+        // 创建右键菜单对象
         ContextMenu menu = new ContextMenu();
+        // 创建“打开”菜单项
         MenuItem openItem = new MenuItem("打开");
+        // 为“打开”菜单项绑定点击事件（逻辑与双击一致）
         openItem.setOnAction(ev -> {
-            if ("终端".equals(name)) onOpenTerminalClick();
-            else openWindow(name, contentNode, winWidth, winHeight);
+            if ("终端".equals(name)) {
+                onOpenTerminalClick();
+            } else {
+                openWindow(name, contentNode, winWidth, winHeight);
+            }
         });
+        // 将“打开”菜单项添加到右键菜单
         menu.getItems().add(openItem);
+
+        // 为图标容器绑定右键菜单触发事件：鼠标右键点击时显示菜单
+        // ev.getScreenX()/ev.getScreenY()：菜单显示在鼠标右键点击的位置，符合用户习惯
         iconBox.setOnContextMenuRequested(ev -> menu.show(iconBox, ev.getScreenX(), ev.getScreenY()));
 
+        // ========================== 步骤7：将图标添加到桌面区域 ==========================
+        // desktopArea：桌面布局容器（如AnchorPane/VBox），所有图标最终显示在该容器中
         desktopArea.getChildren().add(iconBox);
     }
+
+
+
 
     // =================================================================================
     // 6. 内存可视化逻辑 (Memory Visualization)
@@ -970,34 +1023,73 @@ public class MainController implements Initializable {
     // 8. 全局 UI 初始化方法 (开始菜单、关于窗口等)
     // =================================================================================
 
-    /** 初始化"开始"菜单的上下文菜单 */
+    /**
+     * 初始化模拟操作系统的“开始”菜单（基于JavaFX ContextMenu实现）
+     * 核心功能：
+     * 1. 构建开始菜单的UI结构（菜单项+分隔线），添加自定义样式模拟系统开始菜单外观
+     * 2. 为每个菜单项绑定功能事件（帮助、打开终端、关闭系统）
+     * 3. 实现“开始”按钮的点击逻辑：切换菜单的显示/隐藏状态
+     */
     private void initStartMenu() {
+        // ========================== 步骤1：创建开始菜单核心容器 ==========================
+        // ContextMenu：JavaFX的上下文菜单组件，此处用作“开始”下拉菜单（替代原生菜单栏）
         ContextMenu startMenu = new ContextMenu();
+        // 添加CSS样式类，用于自定义开始菜单的外观（如背景色、字体、边距，模拟Windows开始菜单风格）
         startMenu.getStyleClass().add("start-menu");
 
+        // ========================== 步骤2：创建菜单项（带emoji提升辨识度） ==========================
+        // 帮助菜单项：emoji❓+文字，用户易识别功能
         MenuItem itemHelp = new MenuItem("❓  关于 / 帮助");
+        // 终端菜单项：emoji💻+文字，对应打开系统终端功能
         MenuItem itemTerminal = new MenuItem("💻  终端");
+        // 菜单分隔线：用于区分普通功能和系统级功能（帮助/终端 vs 关闭系统），提升菜单可读性
         SeparatorMenuItem separator = new SeparatorMenuItem();
+        // 关闭系统菜单项：emoji🔴+文字，醒目提示是高危操作
         MenuItem itemShutdown = new MenuItem("🔴  关闭系统");
 
-        // 绑定事件
+        // ========================== 步骤3：为菜单项绑定功能事件 ==========================
+        // 帮助项：点击后显示“关于/帮助”窗口（展示系统版本、使用说明等）
         itemHelp.setOnAction(e -> showAboutWindow());
+        // 终端项：点击后调用终端打开方法（与桌面终端图标功能一致）
         itemTerminal.setOnAction(e -> onOpenTerminalClick());
+        // 关闭系统项：点击后执行系统优雅退出逻辑（避免线程/资源泄漏）
         itemShutdown.setOnAction(e -> {
-            shutdown(); // 关闭线程池
-            if (kernel != null && kernel.getScheduler() != null) kernel.getScheduler().stop();
+            // 步骤1：关闭自定义线程池（如调度器、设备管理器的线程），释放资源
+            shutdown();
+            // 步骤2：停止内核调度器（避免调度线程持续运行，导致程序无法退出）
+            if (kernel != null && kernel.getScheduler() != null) {
+                kernel.getScheduler().stop();
+            }
+            // 步骤3：退出JavaFX应用线程（释放UI资源）
             Platform.exit();
+            // 步骤4：退出JVM进程（彻底终止程序，0表示正常退出）
             System.exit(0);
         });
 
+        // ========================== 步骤4：将菜单项按顺序添加到开始菜单 ==========================
+        // 顺序：帮助 → 终端 → 分隔线 → 关闭系统，符合用户操作习惯（常用功能在前，高危功能在后）
         startMenu.getItems().addAll(itemHelp, itemTerminal, separator, itemShutdown);
 
-        // 点击按钮显示/隐藏菜单
+        // ========================== 步骤5：绑定“开始”按钮的点击事件（显示/隐藏菜单） ==========================
+        // startMenuBtn：界面上的“开始”按钮（如左下角的Windows风格按钮）
         startMenuBtn.setOnAction(e -> {
-            if (startMenu.isShowing()) startMenu.hide();
-            else startMenu.show(startMenuBtn, Side.TOP, 0, 0);
+            // 切换菜单状态：若菜单已显示则隐藏，未显示则显示
+            if (startMenu.isShowing()) {
+                startMenu.hide(); // 隐藏菜单
+            } else {
+                // 显示菜单：指定菜单的显示位置（相对于startMenuBtn）
+                // 参数说明：
+                // - startMenuBtn：菜单锚定的控件（开始按钮）
+                // - Side.TOP：菜单显示在按钮的上方（符合Windows开始菜单显示位置）
+                // - 0, 0：菜单相对于按钮的偏移量（无偏移，对齐显示）
+                startMenu.show(startMenuBtn, Side.TOP, 0, 0);
+            }
         });
     }
+
+
+
+
 
     /** 显示"关于"窗口 */
     private void showAboutWindow() {
@@ -1633,28 +1725,63 @@ public class MainController implements Initializable {
         return editorRoot;
     }
 
-    /** 打开当前选中的文件 */
+
+
+    /**
+     * 打开文件系统树中当前选中的文件（核心功能：创建文件编辑窗口并展示）
+     * 执行流程：
+     * 1. 获取树控件中选中的文件/文件夹节点
+     * 2. 从选中节点拼接文件完整路径
+     * 3. 通过路径从文件系统管理器获取文件对象
+     * 4. 构建文件编辑UI节点，创建级联偏移的编辑窗口
+     * 5. 将窗口添加到界面图层，更新任务栏和已打开窗口集合
+     */
     private void openSelectedFile() {
+        // ========================== 步骤1：获取树控件中选中的节点 ==========================
+        // fileSystemTreeView：文件系统树状视图（展示目录/文件层级结构）
+        // getSelectionModel()：获取树控件的选中模型（管理用户选中的节点）
+        // getSelectedItem()：获取当前选中的树节点（可能是文件夹或文件）
         TreeItem<String> selectedItem = fileSystemTreeView.getSelectionModel().getSelectedItem();
+        // 判空处理：用户未选中任何节点时，直接返回，避免空指针异常
         if (selectedItem == null) return;
 
+        // ========================== 步骤2：从选中节点拼接文件完整路径 ==========================
+        // buildPathFromTree()：自定义方法，遍历树节点的父节点，拼接出文件的完整路径（如/root/doc.txt）
         String path = buildPathFromTree(selectedItem);
+        // 通过文件系统管理器根据路径获取文件对象：内核级的文件查询，保证文件对象的准确性
         File file = kernel.getFileSystemManager().getFileByPath(path);
 
+        // ========================== 步骤3：文件存在时创建编辑窗口 ==========================
         if (file != null) {
+            // 创建文件编辑UI节点：createEditorNode()返回包含文本编辑器的VBox（如TextArea+保存按钮）
             VBox editorRoot = createEditorNode(file);
-            // 创建编辑器窗口
-            InternalWindow editorWin = new InternalWindow("编辑: " + file.getName(), editorRoot, 500, 400);
-            double offset = openWindows.size() * 30; // 级联偏移
-            editorWin.setLayoutX(100 + offset);
-            editorWin.setLayoutY(50 + offset);
 
+            // 步骤3.1：创建内部窗口（模拟操作系统的应用窗口）
+            // InternalWindow：自定义窗口组件，参数说明：
+            // - 窗口标题："编辑: " + 文件名（用户清晰知道编辑的是哪个文件）
+            // - 窗口内容：editorRoot（文件编辑UI）
+            // - 窗口宽度：500像素，高度：400像素（适配文本编辑的常规尺寸）
+            InternalWindow editorWin = new InternalWindow("编辑: " + file.getName(), editorRoot, 500, 400);
+
+            // 步骤3.2：设置窗口级联偏移（避免新窗口完全重叠）
+            // openWindows：已打开窗口的集合（key=窗口内容根节点，value=窗口对象）
+            // 偏移量计算：每打开一个新窗口，X/Y坐标各偏移30像素，形成级联效果（符合Windows多窗口打开的交互习惯）
+            double offset = openWindows.size() * 30;
+            editorWin.setLayoutX(100 + offset); // 窗口X坐标：基础值100 + 偏移量
+            editorWin.setLayoutY(50 + offset);  // 窗口Y坐标：基础值50 + 偏移量
+
+            // 步骤3.3：将窗口添加到界面的窗口图层（windowLayer是承载所有内部窗口的容器）
             windowLayer.getChildren().add(editorWin);
+            // 将新窗口置顶显示（避免被其他窗口遮挡，用户能立即看到编辑界面）
             editorWin.toFront();
+            // 为新窗口添加任务栏项（模拟Windows任务栏，方便用户切换窗口）
             addTaskBarItem(editorWin);
+            // 将新窗口存入已打开窗口集合：用于后续管理（如关闭、切换、计算偏移）
             openWindows.put(editorRoot, editorWin);
         }
     }
+
+
 
     // =================================================================================
     // 15. 视图更新总控 (UI Refresh)

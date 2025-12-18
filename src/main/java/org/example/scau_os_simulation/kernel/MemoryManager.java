@@ -245,7 +245,6 @@ public class MemoryManager
      * 1. 排序已分配块，遍历块间空闲区间
      * 2. 统计所有空闲区间的大小，记录最大值
      * 3. 包含最后一个块到内存末尾的空闲区间
-     *
      * @return 最大连续空闲块大小（KB）
      */
     public synchronized int getMaxFreeBlockSize() {
