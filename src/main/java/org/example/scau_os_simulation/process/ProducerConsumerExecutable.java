@@ -22,7 +22,6 @@ public class ProducerConsumerExecutable extends Executable
 
     /**
      * 构造函数
-     *
      * @param type  类型："producer" 或 "consumer"
      * @param id    编号
      * @param items 项目数量

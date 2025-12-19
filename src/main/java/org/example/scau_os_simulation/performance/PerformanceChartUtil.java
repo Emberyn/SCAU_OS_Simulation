@@ -19,10 +19,6 @@ import java.util.List;
 
 /**
  * 性能图表工具类 (稳定修复版)
- * <p>
- * 修复内容：
- * 1. 解决中文乱码 (configFont)
- * 2. 解决低版本 JFreeChart 导致的编译报错 (移除 Panning)
  */
 public class PerformanceChartUtil
 {
